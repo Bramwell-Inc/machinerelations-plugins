@@ -1,12 +1,20 @@
 {
   "name": "machinerelations",
-  "interface": { "displayName": "Machine Relations" },
+  "interface": {
+    "displayName": "Machine Relations"
+  },
   "plugins": [
     {
       "name": "machine-relations-index",
-      "source": { "source": "local", "path": "./plugins/machine-relations-index" },
-      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
-      "category": "Research"
+      "source": {
+        "source": "local",
+        "path": "./plugins/machine-relations-index"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
     }
   ]
 }
