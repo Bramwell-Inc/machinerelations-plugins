@@ -26,7 +26,7 @@
         "shortDescription": "Find sources cited by AI",
         "longDescription": "Research which sources appear in AI-generated answers using measured citation data. Find ranked domains by buyer category and question type, filter for editorial publications or vendor sites, and look up a domain’s observed citations. Compare sources to inform research and content planning. Results include release windows, sample counts and source links. Read-only access to public Machine Relations Index data; no account required. Data is licensed under CC BY 4.0.",
         "developerName": "Bramwell",
-        "category": "Productivity",
+        "category": "Data & Analytics",
         "capabilities": [
           "Read"
         ],
