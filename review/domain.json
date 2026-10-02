@@ -1,0 +1,260 @@
+{
+  "capturedAt": "2026-10-02T18:22:11.524574+00:00",
+  "endpoint": "https://machinerelations.ai/mcp",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": "domain",
+    "method": "tools/call",
+    "params": {
+      "name": "mri_get_domain",
+      "arguments": {
+        "domain": "techcrunch.com"
+      }
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": "domain",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"source\":{\"name\":\"Machine Relations Index\",\"publisher\":\"Machine Relations\",\"canonicalUrl\":\"https://machinerelations.ai/index/domains/techcrunch.com\",\"citation\":\"TechCrunch (techcrunch.com), 0.87% citation rate, 170 of 19,441 monitored answer runs, 2026-05-10 to 2026-10-01, mri_score_v2.0, mri_score_v2.0+2026-10-01+b215170b2762, https://machinerelations.ai/index/domains/techcrunch.com.\",\"license\":{\"id\":\"CC-BY-4.0\",\"url\":\"https://creativecommons.org/licenses/by/4.0/\"},\"release\":{\"releaseId\":\"mri_score_v2.0+2026-10-01+b215170b2762\",\"methodologyVersion\":\"mri_score_v2.0\",\"generated\":\"2026-10-01\",\"windowStart\":\"2026-05-10\",\"dataThrough\":\"2026-10-01\",\"artifactSha256\":\"b215170b2762f837a6aa42c04e6a63a44bd693e89c48fef844d1384d664045ed\"}},\"domain\":\"techcrunch.com\",\"requested\":\"techcrunch.com\",\"displayName\":\"TechCrunch\",\"sourceRole\":\"editorial_media\",\"sourceRoleLabel\":\"Editorial publication\",\"standing\":\"#11 of 1415 classified editorial publications\",\"overall\":{\"citationRate\":0.0087,\"runsCited\":170,\"runsObserved\":19441,\"confidence\":\"B\",\"enginesCiting\":[\"chatgpt\",\"claude\",\"google_ai_mode\",\"google_ai_overviews\",\"perplexity\"],\"daysCited\":47,\"daysObserved\":138,\"averagePosition\":5.2,\"bestPosition\":1},\"ranks\":{\"fullUniverse\":{\"rank\":36,\"total\":26071,\"percentile\":99.9},\"sourceRole\":{\"rank\":11,\"total\":1415,\"percentile\":99.3},\"evidenceQualifiedSourceRole\":{\"rank\":11,\"total\":112,\"percentile\":91.1},\"publicationRankLabel\":\"#11 of 1415 classified editorial publications\"},\"segments\":[{\"category\":\"legacy-unmapped\",\"categoryLabel\":\"Legacy News Topics\",\"questionShape\":\"news_topic\",\"questionShapeLabel\":\"News-driven citations\",\"status\":\"published\",\"citationRate\":0.0454,\"rank\":7,\"rankTotal\":4017,\"percentile\":99.9,\"runsCited\":97,\"runsObserved\":2138,\"url\":\"https://machinerelations.ai/index/categories/legacy-unmapped/news_topic\"},{\"category\":\"martech-advertising\",\"categoryLabel\":\"Martech & Advertising\",\"questionShape\":\"news_topic\",\"questionShapeLabel\":\"News-driven citations\",\"status\":\"published\",\"citationRate\":0.0382,\"rank\":31,\"rankTotal\":1243,\"percentile\":97.6,\"runsCited\":23,\"runsObserved\":602,\"url\":\"https://machinerelations.ai/index/categories/martech-advertising/news_topic\"},{\"category\":\"cybersecurity\",\"categoryLabel\":\"Cybersecurity\",\"questionShape\":\"news_topic\",\"questionShapeLabel\":\"News-driven citations\",\"status\":\"published\",\"citationRate\":0.0225,\"rank\":64,\"rankTotal\":1338,\"percentile\":95.3,\"runsCited\":14,\"runsObserved\":623,\"url\":\"https://machinerelations.ai/index/categories/cybersecurity/news_topic\"},{\"category\":\"fintech\",\"categoryLabel\":\"Fintech\",\"questionShape\":\"news_topic\",\"questionShapeLabel\":\"News-driven citations\",\"status\":\"published\",\"citationRate\":0.0146,\"rank\":130,\"rankTotal\":1528,\"percentile\":91.6,\"runsCited\":9,\"runsObserved\":616,\"url\":\"https://machinerelations.ai/index/categories/fintech/news_topic\"},{\"category\":\"hr-talent\",\"categoryLabel\":\"HR & Talent\",\"questionShape\":\"news_topic\",\"questionShapeLabel\":\"News-driven citations\",\"status\":\"published\",\"citationRate\":0.0148,\"rank\":130,\"rankTotal\":1246,\"percentile\":89.6,\"runsCited\":9,\"runsObserved\":608,\"url\":\"https://machinerelations.ai/index/categories/hr-talent/news_topic\"},{\"category\":\"enterprise-software\",\"categoryLabel\":\"Enterprise Software\",\"questionShape\":\"news_topic\",\"questionShapeLabel\":\"News-driven citations\",\"status\":\"published\",\"citationRate\":0.0101,\"rank\":190,\"rankTotal\":1371,\"percentile\":86.2,\"runsCited\":6,\"runsObserved\":596,\"url\":\"https://machinerelations.ai/index/categories/enterprise-software/news_topic\"},{\"category\":\"ai-security-privacy\",\"categoryLabel\":\"AI Security & Privacy\",\"questionShape\":\"problem_first\",\"questionShapeLabel\":\"Problem-first research\",\"status\":\"published\",\"citationRate\":0.0222,\"rank\":81,\"rankTotal\":356,\"percentile\":77.5,\"runsCited\":3,\"runsObserved\":135,\"url\":\"https://machinerelations.ai/index/categories/ai-security-privacy/problem_first\"},{\"category\":\"emergent-prosumer\",\"categoryLabel\":\"Emergent Prosumer\",\"questionShape\":\"is_x_worth\",\"questionShapeLabel\":\"Is it worth it\",\"status\":\"published\",\"citationRate\":0.0308,\"rank\":46,\"rankTotal\":198,\"percentile\":77.3,\"runsCited\":4,\"runsObserved\":130,\"url\":\"https://machinerelations.ai/index/categories/emergent-prosumer/is_x_worth\"},{\"category\":\"healthcare-services\",\"categoryLabel\":\"Healthcare Services\",\"questionShape\":\"news_topic\",\"questionShapeLabel\":\"News-driven citations\",\"status\":\"published\",\"citationRate\":0.0033,\"rank\":574,\"rankTotal\":1261,\"percentile\":54.6,\"runsCited\":2,\"runsObserved\":613,\"url\":\"https://machinerelations.ai/index/categories/healthcare-services/news_topic\"},{\"category\":\"emergent-prosumer\",\"categoryLabel\":\"Emergent Prosumer\",\"questionShape\":\"how_choose\",\"questionShapeLabel\":\"How buyers choose\",\"status\":\"published\",\"citationRate\":0.0078,\"rank\":227,\"rankTotal\":255,\"percentile\":11.4,\"runsCited\":1,\"runsObserved\":129,\"url\":\"https://machinerelations.ai/index/categories/emergent-prosumer/how_choose\"},{\"category\":\"ai-security-privacy\",\"categoryLabel\":\"AI Security & Privacy\",\"questionShape\":\"is_x_worth\",\"questionShapeLabel\":\"Is it worth it\",\"status\":\"published\",\"citationRate\":0.0063,\"rank\":347,\"rankTotal\":383,\"percentile\":9.7,\"runsCited\":1,\"runsObserved\":159,\"url\":\"https://machinerelations.ai/index/categories/ai-security-privacy/is_x_worth\"},{\"category\":\"fintech\",\"categoryLabel\":\"Fintech\",\"questionShape\":\"how_choose\",\"questionShapeLabel\":\"How buyers choose\",\"status\":\"published\",\"citationRate\":0.0098,\"rank\":162,\"rankTotal\":170,\"percentile\":5.3,\"runsCited\":1,\"runsObserved\":102,\"url\":\"https://machinerelations.ai/index/categories/fintech/how_choose\"}],\"profileUrl\":\"https://machinerelations.ai/index/domains/techcrunch.com\"}"
+        }
+      ],
+      "structuredContent": {
+        "source": {
+          "name": "Machine Relations Index",
+          "publisher": "Machine Relations",
+          "canonicalUrl": "https://machinerelations.ai/index/domains/techcrunch.com",
+          "citation": "TechCrunch (techcrunch.com), 0.87% citation rate, 170 of 19,441 monitored answer runs, 2026-05-10 to 2026-10-01, mri_score_v2.0, mri_score_v2.0+2026-10-01+b215170b2762, https://machinerelations.ai/index/domains/techcrunch.com.",
+          "license": {
+            "id": "CC-BY-4.0",
+            "url": "https://creativecommons.org/licenses/by/4.0/"
+          },
+          "release": {
+            "releaseId": "mri_score_v2.0+2026-10-01+b215170b2762",
+            "methodologyVersion": "mri_score_v2.0",
+            "generated": "2026-10-01",
+            "windowStart": "2026-05-10",
+            "dataThrough": "2026-10-01",
+            "artifactSha256": "b215170b2762f837a6aa42c04e6a63a44bd693e89c48fef844d1384d664045ed"
+          }
+        },
+        "domain": "techcrunch.com",
+        "requested": "techcrunch.com",
+        "displayName": "TechCrunch",
+        "sourceRole": "editorial_media",
+        "sourceRoleLabel": "Editorial publication",
+        "standing": "#11 of 1415 classified editorial publications",
+        "overall": {
+          "citationRate": 0.0087,
+          "runsCited": 170,
+          "runsObserved": 19441,
+          "confidence": "B",
+          "enginesCiting": [
+            "chatgpt",
+            "claude",
+            "google_ai_mode",
+            "google_ai_overviews",
+            "perplexity"
+          ],
+          "daysCited": 47,
+          "daysObserved": 138,
+          "averagePosition": 5.2,
+          "bestPosition": 1
+        },
+        "ranks": {
+          "fullUniverse": {
+            "rank": 36,
+            "total": 26071,
+            "percentile": 99.9
+          },
+          "sourceRole": {
+            "rank": 11,
+            "total": 1415,
+            "percentile": 99.3
+          },
+          "evidenceQualifiedSourceRole": {
+            "rank": 11,
+            "total": 112,
+            "percentile": 91.1
+          },
+          "publicationRankLabel": "#11 of 1415 classified editorial publications"
+        },
+        "segments": [
+          {
+            "category": "legacy-unmapped",
+            "categoryLabel": "Legacy News Topics",
+            "questionShape": "news_topic",
+            "questionShapeLabel": "News-driven citations",
+            "status": "published",
+            "citationRate": 0.0454,
+            "rank": 7,
+            "rankTotal": 4017,
+            "percentile": 99.9,
+            "runsCited": 97,
+            "runsObserved": 2138,
+            "url": "https://machinerelations.ai/index/categories/legacy-unmapped/news_topic"
+          },
+          {
+            "category": "martech-advertising",
+            "categoryLabel": "Martech & Advertising",
+            "questionShape": "news_topic",
+            "questionShapeLabel": "News-driven citations",
+            "status": "published",
+            "citationRate": 0.0382,
+            "rank": 31,
+            "rankTotal": 1243,
+            "percentile": 97.6,
+            "runsCited": 23,
+            "runsObserved": 602,
+            "url": "https://machinerelations.ai/index/categories/martech-advertising/news_topic"
+          },
+          {
+            "category": "cybersecurity",
+            "categoryLabel": "Cybersecurity",
+            "questionShape": "news_topic",
+            "questionShapeLabel": "News-driven citations",
+            "status": "published",
+            "citationRate": 0.0225,
+            "rank": 64,
+            "rankTotal": 1338,
+            "percentile": 95.3,
+            "runsCited": 14,
+            "runsObserved": 623,
+            "url": "https://machinerelations.ai/index/categories/cybersecurity/news_topic"
+          },
+          {
+            "category": "fintech",
+            "categoryLabel": "Fintech",
+            "questionShape": "news_topic",
+            "questionShapeLabel": "News-driven citations",
+            "status": "published",
+            "citationRate": 0.0146,
+            "rank": 130,
+            "rankTotal": 1528,
+            "percentile": 91.6,
+            "runsCited": 9,
+            "runsObserved": 616,
+            "url": "https://machinerelations.ai/index/categories/fintech/news_topic"
+          },
+          {
+            "category": "hr-talent",
+            "categoryLabel": "HR & Talent",
+            "questionShape": "news_topic",
+            "questionShapeLabel": "News-driven citations",
+            "status": "published",
+            "citationRate": 0.0148,
+            "rank": 130,
+            "rankTotal": 1246,
+            "percentile": 89.6,
+            "runsCited": 9,
+            "runsObserved": 608,
+            "url": "https://machinerelations.ai/index/categories/hr-talent/news_topic"
+          },
+          {
+            "category": "enterprise-software",
+            "categoryLabel": "Enterprise Software",
+            "questionShape": "news_topic",
+            "questionShapeLabel": "News-driven citations",
+            "status": "published",
+            "citationRate": 0.0101,
+            "rank": 190,
+            "rankTotal": 1371,
+            "percentile": 86.2,
+            "runsCited": 6,
+            "runsObserved": 596,
+            "url": "https://machinerelations.ai/index/categories/enterprise-software/news_topic"
+          },
+          {
+            "category": "ai-security-privacy",
+            "categoryLabel": "AI Security & Privacy",
+            "questionShape": "problem_first",
+            "questionShapeLabel": "Problem-first research",
+            "status": "published",
+            "citationRate": 0.0222,
+            "rank": 81,
+            "rankTotal": 356,
+            "percentile": 77.5,
+            "runsCited": 3,
+            "runsObserved": 135,
+            "url": "https://machinerelations.ai/index/categories/ai-security-privacy/problem_first"
+          },
+          {
+            "category": "emergent-prosumer",
+            "categoryLabel": "Emergent Prosumer",
+            "questionShape": "is_x_worth",
+            "questionShapeLabel": "Is it worth it",
+            "status": "published",
+            "citationRate": 0.0308,
+            "rank": 46,
+            "rankTotal": 198,
+            "percentile": 77.3,
+            "runsCited": 4,
+            "runsObserved": 130,
+            "url": "https://machinerelations.ai/index/categories/emergent-prosumer/is_x_worth"
+          },
+          {
+            "category": "healthcare-services",
+            "categoryLabel": "Healthcare Services",
+            "questionShape": "news_topic",
+            "questionShapeLabel": "News-driven citations",
+            "status": "published",
+            "citationRate": 0.0033,
+            "rank": 574,
+            "rankTotal": 1261,
+            "percentile": 54.6,
+            "runsCited": 2,
+            "runsObserved": 613,
+            "url": "https://machinerelations.ai/index/categories/healthcare-services/news_topic"
+          },
+          {
+            "category": "emergent-prosumer",
+            "categoryLabel": "Emergent Prosumer",
+            "questionShape": "how_choose",
+            "questionShapeLabel": "How buyers choose",
+            "status": "published",
+            "citationRate": 0.0078,
+            "rank": 227,
+            "rankTotal": 255,
+            "percentile": 11.4,
+            "runsCited": 1,
+            "runsObserved": 129,
+            "url": "https://machinerelations.ai/index/categories/emergent-prosumer/how_choose"
+          },
+          {
+            "category": "ai-security-privacy",
+            "categoryLabel": "AI Security & Privacy",
+            "questionShape": "is_x_worth",
+            "questionShapeLabel": "Is it worth it",
+            "status": "published",
+            "citationRate": 0.0063,
+            "rank": 347,
+            "rankTotal": 383,
+            "percentile": 9.7,
+            "runsCited": 1,
+            "runsObserved": 159,
+            "url": "https://machinerelations.ai/index/categories/ai-security-privacy/is_x_worth"
+          },
+          {
+            "category": "fintech",
+            "categoryLabel": "Fintech",
+            "questionShape": "how_choose",
+            "questionShapeLabel": "How buyers choose",
+            "status": "published",
+            "citationRate": 0.0098,
+            "rank": 162,
+            "rankTotal": 170,
+            "percentile": 5.3,
+            "runsCited": 1,
+            "runsObserved": 102,
+            "url": "https://machinerelations.ai/index/categories/fintech/how_choose"
+          }
+        ],
+        "profileUrl": "https://machinerelations.ai/index/domains/techcrunch.com"
+      },
+      "isError": false
+    }
+  }
+}

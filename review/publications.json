@@ -1,0 +1,121 @@
+{
+  "capturedAt": "2026-10-02T18:22:11.312443+00:00",
+  "endpoint": "https://machinerelations.ai/mcp",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": "publications",
+    "method": "tools/call",
+    "params": {
+      "name": "mri_get_cited_sources",
+      "arguments": {
+        "category": "cybersecurity",
+        "question_shape": "best_x",
+        "source_role": "editorial_media",
+        "limit": 3
+      }
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": "publications",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"source\":{\"name\":\"Machine Relations Index\",\"publisher\":\"Machine Relations\",\"canonicalUrl\":\"https://machinerelations.ai/index/categories/cybersecurity/best_x\",\"citation\":\"Cybersecurity / Best tools: 247 observed source domains in the leaderboard, measured on 105 observed runs across 8 distinct run dates, drawn from the 2026-05-10 to 2026-10-01 release window, mri_score_v2.0, mri_score_v2.0+2026-10-01+b215170b2762, https://machinerelations.ai/index/categories/cybersecurity/best_x.\",\"license\":{\"id\":\"CC-BY-4.0\",\"url\":\"https://creativecommons.org/licenses/by/4.0/\"},\"release\":{\"releaseId\":\"mri_score_v2.0+2026-10-01+b215170b2762\",\"methodologyVersion\":\"mri_score_v2.0\",\"generated\":\"2026-10-01\",\"windowStart\":\"2026-05-10\",\"dataThrough\":\"2026-10-01\",\"artifactSha256\":\"b215170b2762f837a6aa42c04e6a63a44bd693e89c48fef844d1384d664045ed\"}},\"category\":\"cybersecurity\",\"categoryLabel\":\"Cybersecurity\",\"questionShape\":\"best_x\",\"questionShapeLabel\":\"Best tools\",\"status\":\"published\",\"note\":\"Citation rate = share of monitored answer runs for this category and question shape that cited the domain. Rank and percentile are within this segment.\",\"evidenceFloor\":{\"min_observations\":10,\"min_run_dates\":7},\"segment\":{\"runsObserved\":105,\"runDates\":8,\"citedDomainObservations\":247,\"collectingSince\":null},\"filter\":{\"sourceRole\":\"editorial_media\",\"limit\":3,\"offset\":0},\"total\":26,\"sources\":[{\"domain\":\"cybersecuritynews.com\",\"displayName\":\"Cybersecuritynews.com\",\"sourceRole\":\"editorial_media\",\"sourceRoleLabel\":\"Editorial publication\",\"citationRate\":0.1333,\"rank\":11,\"rankTotal\":247,\"percentile\":96,\"runsCited\":14,\"runsObserved\":105,\"profileUrl\":\"https://machinerelations.ai/index/domains/cybersecuritynews.com\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/domains/cybersecuritynews.com\"},{\"domain\":\"decryptiondigest.com\",\"displayName\":\"Decryptiondigest.com\",\"sourceRole\":\"editorial_media\",\"sourceRoleLabel\":\"Editorial publication\",\"citationRate\":0.1333,\"rank\":12,\"rankTotal\":247,\"percentile\":95.5,\"runsCited\":14,\"runsObserved\":105,\"profileUrl\":\"https://machinerelations.ai/index/domains/decryptiondigest.com\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/domains/decryptiondigest.com\"},{\"domain\":\"techradar.com\",\"displayName\":\"TechRadar\",\"sourceRole\":\"editorial_media\",\"sourceRoleLabel\":\"Editorial publication\",\"citationRate\":0.0952,\"rank\":14,\"rankTotal\":247,\"percentile\":94.7,\"runsCited\":10,\"runsObserved\":105,\"profileUrl\":\"https://machinerelations.ai/index/domains/techradar.com\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/domains/techradar.com\"}],\"next\":{\"offset\":3,\"limit\":3}}"
+        }
+      ],
+      "structuredContent": {
+        "source": {
+          "name": "Machine Relations Index",
+          "publisher": "Machine Relations",
+          "canonicalUrl": "https://machinerelations.ai/index/categories/cybersecurity/best_x",
+          "citation": "Cybersecurity / Best tools: 247 observed source domains in the leaderboard, measured on 105 observed runs across 8 distinct run dates, drawn from the 2026-05-10 to 2026-10-01 release window, mri_score_v2.0, mri_score_v2.0+2026-10-01+b215170b2762, https://machinerelations.ai/index/categories/cybersecurity/best_x.",
+          "license": {
+            "id": "CC-BY-4.0",
+            "url": "https://creativecommons.org/licenses/by/4.0/"
+          },
+          "release": {
+            "releaseId": "mri_score_v2.0+2026-10-01+b215170b2762",
+            "methodologyVersion": "mri_score_v2.0",
+            "generated": "2026-10-01",
+            "windowStart": "2026-05-10",
+            "dataThrough": "2026-10-01",
+            "artifactSha256": "b215170b2762f837a6aa42c04e6a63a44bd693e89c48fef844d1384d664045ed"
+          }
+        },
+        "category": "cybersecurity",
+        "categoryLabel": "Cybersecurity",
+        "questionShape": "best_x",
+        "questionShapeLabel": "Best tools",
+        "status": "published",
+        "note": "Citation rate = share of monitored answer runs for this category and question shape that cited the domain. Rank and percentile are within this segment.",
+        "evidenceFloor": {
+          "min_observations": 10,
+          "min_run_dates": 7
+        },
+        "segment": {
+          "runsObserved": 105,
+          "runDates": 8,
+          "citedDomainObservations": 247,
+          "collectingSince": null
+        },
+        "filter": {
+          "sourceRole": "editorial_media",
+          "limit": 3,
+          "offset": 0
+        },
+        "total": 26,
+        "sources": [
+          {
+            "domain": "cybersecuritynews.com",
+            "displayName": "Cybersecuritynews.com",
+            "sourceRole": "editorial_media",
+            "sourceRoleLabel": "Editorial publication",
+            "citationRate": 0.1333,
+            "rank": 11,
+            "rankTotal": 247,
+            "percentile": 96,
+            "runsCited": 14,
+            "runsObserved": 105,
+            "profileUrl": "https://machinerelations.ai/index/domains/cybersecuritynews.com",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/domains/cybersecuritynews.com"
+          },
+          {
+            "domain": "decryptiondigest.com",
+            "displayName": "Decryptiondigest.com",
+            "sourceRole": "editorial_media",
+            "sourceRoleLabel": "Editorial publication",
+            "citationRate": 0.1333,
+            "rank": 12,
+            "rankTotal": 247,
+            "percentile": 95.5,
+            "runsCited": 14,
+            "runsObserved": 105,
+            "profileUrl": "https://machinerelations.ai/index/domains/decryptiondigest.com",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/domains/decryptiondigest.com"
+          },
+          {
+            "domain": "techradar.com",
+            "displayName": "TechRadar",
+            "sourceRole": "editorial_media",
+            "sourceRoleLabel": "Editorial publication",
+            "citationRate": 0.0952,
+            "rank": 14,
+            "rankTotal": 247,
+            "percentile": 94.7,
+            "runsCited": 10,
+            "runsObserved": 105,
+            "profileUrl": "https://machinerelations.ai/index/domains/techradar.com",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/domains/techradar.com"
+          }
+        ],
+        "next": {
+          "offset": 3,
+          "limit": 3
+        }
+      },
+      "isError": false
+    }
+  }
+}

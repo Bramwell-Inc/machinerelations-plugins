@@ -1,0 +1,501 @@
+{
+  "capturedAt": "2026-10-02T18:22:10.829478+00:00",
+  "endpoint": "https://machinerelations.ai/mcp",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": "categories",
+    "method": "tools/call",
+    "params": {
+      "name": "mri_list_categories",
+      "arguments": {}
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": "categories",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"source\":{\"name\":\"Machine Relations Index\",\"publisher\":\"Machine Relations\",\"canonicalUrl\":\"https://machinerelations.ai/machine-relations-index\",\"citation\":\"Machine Relations Index categories, mri_score_v2.0+2026-10-01+b215170b2762, https://machinerelations.ai/machine-relations-index.\",\"license\":{\"id\":\"CC-BY-4.0\",\"url\":\"https://creativecommons.org/licenses/by/4.0/\"},\"release\":{\"releaseId\":\"mri_score_v2.0+2026-10-01+b215170b2762\",\"methodologyVersion\":\"mri_score_v2.0\",\"generated\":\"2026-10-01\",\"windowStart\":\"2026-05-10\",\"dataThrough\":\"2026-10-01\",\"artifactSha256\":\"b215170b2762f837a6aa42c04e6a63a44bd693e89c48fef844d1384d664045ed\"}},\"questionShapes\":[{\"questionShape\":\"best_x\",\"label\":\"Best tools\",\"example\":\"best {category} tools\"},{\"questionShape\":\"how_choose\",\"label\":\"How buyers choose\",\"example\":\"how to choose {category} tools\"},{\"questionShape\":\"is_x_worth\",\"label\":\"Is it worth it\",\"example\":\"is {category} software worth it\"},{\"questionShape\":\"news_topic\",\"label\":\"News-driven citations\",\"example\":\"recent {category} news\"},{\"questionShape\":\"problem_first\",\"label\":\"Problem-first research\",\"example\":\"how to solve {category} problems\"},{\"questionShape\":\"top_list\",\"label\":\"Top lists\",\"example\":\"top {category} platforms\"},{\"questionShape\":\"x_vs_y\",\"label\":\"Comparisons\",\"example\":\"{category} platform A vs B\"}],\"sourceRoles\":[{\"role\":\"editorial_media\",\"label\":\"Editorial publication\"},{\"role\":\"analyst_research\",\"label\":\"Analyst and consulting research\"},{\"role\":\"market_database\",\"label\":\"Market and company database\"},{\"role\":\"academic_government\",\"label\":\"Academic and government source\"},{\"role\":\"community_social\",\"label\":\"Community and social platform\"},{\"role\":\"wire_distribution\",\"label\":\"Wire and press-release distribution\"},{\"role\":\"platform_search\",\"label\":\"Search or media platform\"},{\"role\":\"vendor_owned\",\"label\":\"Vendor-owned source\"},{\"role\":\"uncategorized_source\",\"label\":\"Other observed source\"}],\"categories\":[{\"category\":\"ai-infrastructure\",\"label\":\"AI Infrastructure\",\"publishedShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"collectingShapes\":[],\"url\":\"https://machinerelations.ai/index/categories/ai-infrastructure\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/ai-infrastructure\"},{\"category\":\"ai-security-privacy\",\"label\":\"AI Security & Privacy\",\"publishedShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"collectingShapes\":[],\"url\":\"https://machinerelations.ai/index/categories/ai-security-privacy\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/ai-security-privacy\"},{\"category\":\"ai-visibility-geo\",\"label\":\"AI Visibility & GEO\",\"publishedShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"collectingShapes\":[],\"url\":\"https://machinerelations.ai/index/categories/ai-visibility-geo\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/ai-visibility-geo\"},{\"category\":\"consumer-finance\",\"label\":\"Consumer Finance\",\"publishedShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"collectingShapes\":[],\"url\":\"https://machinerelations.ai/index/categories/consumer-finance\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/consumer-finance\"},{\"category\":\"consumer-health\",\"label\":\"Consumer Health\",\"publishedShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"collectingShapes\":[],\"url\":\"https://machinerelations.ai/index/categories/consumer-health\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/consumer-health\"},{\"category\":\"consumer-products\",\"label\":\"Consumer Products\",\"publishedShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"collectingShapes\":[],\"url\":\"https://machinerelations.ai/index/categories/consumer-products\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/consumer-products\"},{\"category\":\"cybersecurity\",\"label\":\"Cybersecurity\",\"publishedShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"news_topic\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"collectingShapes\":[],\"url\":\"https://machinerelations.ai/index/categories/cybersecurity\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/cybersecurity\"},{\"category\":\"deep-tech-hardware\",\"label\":\"Deep Tech & Hardware\",\"publishedShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"collectingShapes\":[],\"url\":\"https://machinerelations.ai/index/categories/deep-tech-hardware\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/deep-tech-hardware\"},{\"category\":\"education-training\",\"label\":\"Education & Training\",\"publishedShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"collectingShapes\":[],\"url\":\"https://machinerelations.ai/index/categories/education-training\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/education-training\"},{\"category\":\"emergent-prosumer\",\"label\":\"Emergent Prosumer\",\"publishedShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"collectingShapes\":[],\"url\":\"https://machinerelations.ai/index/categories/emergent-prosumer\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/emergent-prosumer\"},{\"category\":\"enterprise-software\",\"label\":\"Enterprise Software\",\"publishedShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"news_topic\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"collectingShapes\":[],\"url\":\"https://machinerelations.ai/index/categories/enterprise-software\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/enterprise-software\"},{\"category\":\"family-software\",\"label\":\"Family Software\",\"publishedShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"collectingShapes\":[],\"url\":\"https://machinerelations.ai/index/categories/family-software\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/family-software\"},{\"category\":\"fintech\",\"label\":\"Fintech\",\"publishedShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"news_topic\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"collectingShapes\":[],\"url\":\"https://machinerelations.ai/index/categories/fintech\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/fintech\"},{\"category\":\"healthcare-services\",\"label\":\"Healthcare Services\",\"publishedShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"news_topic\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"collectingShapes\":[],\"url\":\"https://machinerelations.ai/index/categories/healthcare-services\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/healthcare-services\"},{\"category\":\"hr-talent\",\"label\":\"HR & Talent\",\"publishedShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"news_topic\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"collectingShapes\":[],\"url\":\"https://machinerelations.ai/index/categories/hr-talent\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/hr-talent\"},{\"category\":\"igaming-betting\",\"label\":\"iGaming & Betting\",\"publishedShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\"],\"collectingShapes\":[\"problem_first\",\"top_list\",\"x_vs_y\"],\"url\":\"https://machinerelations.ai/index/categories/igaming-betting\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/igaming-betting\"},{\"category\":\"industrial\",\"label\":\"Industrial\",\"publishedShapes\":[],\"collectingShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"url\":\"https://machinerelations.ai/index/categories/industrial\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/industrial\"},{\"category\":\"legacy-unmapped\",\"label\":\"Legacy News Topics\",\"publishedShapes\":[\"news_topic\"],\"collectingShapes\":[],\"url\":\"https://machinerelations.ai/index/categories/legacy-unmapped\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/legacy-unmapped\"},{\"category\":\"local-services\",\"label\":\"Local Services\",\"publishedShapes\":[],\"collectingShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"url\":\"https://machinerelations.ai/index/categories/local-services\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/local-services\"},{\"category\":\"logistics-freight\",\"label\":\"Logistics & Freight\",\"publishedShapes\":[],\"collectingShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"url\":\"https://machinerelations.ai/index/categories/logistics-freight\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/logistics-freight\"},{\"category\":\"martech-advertising\",\"label\":\"Martech & Advertising\",\"publishedShapes\":[\"news_topic\"],\"collectingShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"url\":\"https://machinerelations.ai/index/categories/martech-advertising\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/martech-advertising\"},{\"category\":\"physical-consumer\",\"label\":\"Physical Consumer Products\",\"publishedShapes\":[],\"collectingShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"url\":\"https://machinerelations.ai/index/categories/physical-consumer\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/physical-consumer\"},{\"category\":\"professional-services\",\"label\":\"Professional Services\",\"publishedShapes\":[],\"collectingShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"url\":\"https://machinerelations.ai/index/categories/professional-services\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/professional-services\"},{\"category\":\"sales-gtm-crm\",\"label\":\"Sales, GTM & CRM\",\"publishedShapes\":[],\"collectingShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"url\":\"https://machinerelations.ai/index/categories/sales-gtm-crm\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/sales-gtm-crm\"},{\"category\":\"vc-private-equity\",\"label\":\"VC & Private Equity\",\"publishedShapes\":[],\"collectingShapes\":[\"best_x\",\"how_choose\",\"is_x_worth\",\"problem_first\",\"top_list\",\"x_vs_y\"],\"url\":\"https://machinerelations.ai/index/categories/vc-private-equity\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/vc-private-equity\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "source": {
+          "name": "Machine Relations Index",
+          "publisher": "Machine Relations",
+          "canonicalUrl": "https://machinerelations.ai/machine-relations-index",
+          "citation": "Machine Relations Index categories, mri_score_v2.0+2026-10-01+b215170b2762, https://machinerelations.ai/machine-relations-index.",
+          "license": {
+            "id": "CC-BY-4.0",
+            "url": "https://creativecommons.org/licenses/by/4.0/"
+          },
+          "release": {
+            "releaseId": "mri_score_v2.0+2026-10-01+b215170b2762",
+            "methodologyVersion": "mri_score_v2.0",
+            "generated": "2026-10-01",
+            "windowStart": "2026-05-10",
+            "dataThrough": "2026-10-01",
+            "artifactSha256": "b215170b2762f837a6aa42c04e6a63a44bd693e89c48fef844d1384d664045ed"
+          }
+        },
+        "questionShapes": [
+          {
+            "questionShape": "best_x",
+            "label": "Best tools",
+            "example": "best {category} tools"
+          },
+          {
+            "questionShape": "how_choose",
+            "label": "How buyers choose",
+            "example": "how to choose {category} tools"
+          },
+          {
+            "questionShape": "is_x_worth",
+            "label": "Is it worth it",
+            "example": "is {category} software worth it"
+          },
+          {
+            "questionShape": "news_topic",
+            "label": "News-driven citations",
+            "example": "recent {category} news"
+          },
+          {
+            "questionShape": "problem_first",
+            "label": "Problem-first research",
+            "example": "how to solve {category} problems"
+          },
+          {
+            "questionShape": "top_list",
+            "label": "Top lists",
+            "example": "top {category} platforms"
+          },
+          {
+            "questionShape": "x_vs_y",
+            "label": "Comparisons",
+            "example": "{category} platform A vs B"
+          }
+        ],
+        "sourceRoles": [
+          {
+            "role": "editorial_media",
+            "label": "Editorial publication"
+          },
+          {
+            "role": "analyst_research",
+            "label": "Analyst and consulting research"
+          },
+          {
+            "role": "market_database",
+            "label": "Market and company database"
+          },
+          {
+            "role": "academic_government",
+            "label": "Academic and government source"
+          },
+          {
+            "role": "community_social",
+            "label": "Community and social platform"
+          },
+          {
+            "role": "wire_distribution",
+            "label": "Wire and press-release distribution"
+          },
+          {
+            "role": "platform_search",
+            "label": "Search or media platform"
+          },
+          {
+            "role": "vendor_owned",
+            "label": "Vendor-owned source"
+          },
+          {
+            "role": "uncategorized_source",
+            "label": "Other observed source"
+          }
+        ],
+        "categories": [
+          {
+            "category": "ai-infrastructure",
+            "label": "AI Infrastructure",
+            "publishedShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "collectingShapes": [],
+            "url": "https://machinerelations.ai/index/categories/ai-infrastructure",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/ai-infrastructure"
+          },
+          {
+            "category": "ai-security-privacy",
+            "label": "AI Security & Privacy",
+            "publishedShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "collectingShapes": [],
+            "url": "https://machinerelations.ai/index/categories/ai-security-privacy",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/ai-security-privacy"
+          },
+          {
+            "category": "ai-visibility-geo",
+            "label": "AI Visibility & GEO",
+            "publishedShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "collectingShapes": [],
+            "url": "https://machinerelations.ai/index/categories/ai-visibility-geo",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/ai-visibility-geo"
+          },
+          {
+            "category": "consumer-finance",
+            "label": "Consumer Finance",
+            "publishedShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "collectingShapes": [],
+            "url": "https://machinerelations.ai/index/categories/consumer-finance",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/consumer-finance"
+          },
+          {
+            "category": "consumer-health",
+            "label": "Consumer Health",
+            "publishedShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "collectingShapes": [],
+            "url": "https://machinerelations.ai/index/categories/consumer-health",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/consumer-health"
+          },
+          {
+            "category": "consumer-products",
+            "label": "Consumer Products",
+            "publishedShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "collectingShapes": [],
+            "url": "https://machinerelations.ai/index/categories/consumer-products",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/consumer-products"
+          },
+          {
+            "category": "cybersecurity",
+            "label": "Cybersecurity",
+            "publishedShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "news_topic",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "collectingShapes": [],
+            "url": "https://machinerelations.ai/index/categories/cybersecurity",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/cybersecurity"
+          },
+          {
+            "category": "deep-tech-hardware",
+            "label": "Deep Tech & Hardware",
+            "publishedShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "collectingShapes": [],
+            "url": "https://machinerelations.ai/index/categories/deep-tech-hardware",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/deep-tech-hardware"
+          },
+          {
+            "category": "education-training",
+            "label": "Education & Training",
+            "publishedShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "collectingShapes": [],
+            "url": "https://machinerelations.ai/index/categories/education-training",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/education-training"
+          },
+          {
+            "category": "emergent-prosumer",
+            "label": "Emergent Prosumer",
+            "publishedShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "collectingShapes": [],
+            "url": "https://machinerelations.ai/index/categories/emergent-prosumer",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/emergent-prosumer"
+          },
+          {
+            "category": "enterprise-software",
+            "label": "Enterprise Software",
+            "publishedShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "news_topic",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "collectingShapes": [],
+            "url": "https://machinerelations.ai/index/categories/enterprise-software",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/enterprise-software"
+          },
+          {
+            "category": "family-software",
+            "label": "Family Software",
+            "publishedShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "collectingShapes": [],
+            "url": "https://machinerelations.ai/index/categories/family-software",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/family-software"
+          },
+          {
+            "category": "fintech",
+            "label": "Fintech",
+            "publishedShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "news_topic",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "collectingShapes": [],
+            "url": "https://machinerelations.ai/index/categories/fintech",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/fintech"
+          },
+          {
+            "category": "healthcare-services",
+            "label": "Healthcare Services",
+            "publishedShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "news_topic",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "collectingShapes": [],
+            "url": "https://machinerelations.ai/index/categories/healthcare-services",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/healthcare-services"
+          },
+          {
+            "category": "hr-talent",
+            "label": "HR & Talent",
+            "publishedShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "news_topic",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "collectingShapes": [],
+            "url": "https://machinerelations.ai/index/categories/hr-talent",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/hr-talent"
+          },
+          {
+            "category": "igaming-betting",
+            "label": "iGaming & Betting",
+            "publishedShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth"
+            ],
+            "collectingShapes": [
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "url": "https://machinerelations.ai/index/categories/igaming-betting",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/igaming-betting"
+          },
+          {
+            "category": "industrial",
+            "label": "Industrial",
+            "publishedShapes": [],
+            "collectingShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "url": "https://machinerelations.ai/index/categories/industrial",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/industrial"
+          },
+          {
+            "category": "legacy-unmapped",
+            "label": "Legacy News Topics",
+            "publishedShapes": [
+              "news_topic"
+            ],
+            "collectingShapes": [],
+            "url": "https://machinerelations.ai/index/categories/legacy-unmapped",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/legacy-unmapped"
+          },
+          {
+            "category": "local-services",
+            "label": "Local Services",
+            "publishedShapes": [],
+            "collectingShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "url": "https://machinerelations.ai/index/categories/local-services",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/local-services"
+          },
+          {
+            "category": "logistics-freight",
+            "label": "Logistics & Freight",
+            "publishedShapes": [],
+            "collectingShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "url": "https://machinerelations.ai/index/categories/logistics-freight",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/logistics-freight"
+          },
+          {
+            "category": "martech-advertising",
+            "label": "Martech & Advertising",
+            "publishedShapes": [
+              "news_topic"
+            ],
+            "collectingShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "url": "https://machinerelations.ai/index/categories/martech-advertising",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/martech-advertising"
+          },
+          {
+            "category": "physical-consumer",
+            "label": "Physical Consumer Products",
+            "publishedShapes": [],
+            "collectingShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "url": "https://machinerelations.ai/index/categories/physical-consumer",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/physical-consumer"
+          },
+          {
+            "category": "professional-services",
+            "label": "Professional Services",
+            "publishedShapes": [],
+            "collectingShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "url": "https://machinerelations.ai/index/categories/professional-services",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/professional-services"
+          },
+          {
+            "category": "sales-gtm-crm",
+            "label": "Sales, GTM & CRM",
+            "publishedShapes": [],
+            "collectingShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "url": "https://machinerelations.ai/index/categories/sales-gtm-crm",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/sales-gtm-crm"
+          },
+          {
+            "category": "vc-private-equity",
+            "label": "VC & Private Equity",
+            "publishedShapes": [],
+            "collectingShapes": [
+              "best_x",
+              "how_choose",
+              "is_x_worth",
+              "problem_first",
+              "top_list",
+              "x_vs_y"
+            ],
+            "url": "https://machinerelations.ai/index/categories/vc-private-equity",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/vc-private-equity"
+          }
+        ]
+      },
+      "isError": false
+    }
+  }
+}
