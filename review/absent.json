@@ -1,0 +1,35 @@
+{
+  "capturedAt": "2026-10-02T18:22:11.685680+00:00",
+  "endpoint": "https://machinerelations.ai/mcp",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": "absent",
+    "method": "tools/call",
+    "params": {
+      "name": "mri_get_domain",
+      "arguments": {
+        "domain": "mri-review-nonexistent.invalid"
+      }
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": "absent",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"error\":{\"code\":\"domain_not_observed\",\"message\":\"mri-review-nonexistent.invalid has not been cited in any monitored answer run in this release.\",\"hint\":\"The Index only lists domains answer engines actually cited. Absence means not observed in this release window, not a judgment of the site.\"}}"
+        }
+      ],
+      "structuredContent": {
+        "error": {
+          "code": "domain_not_observed",
+          "message": "mri-review-nonexistent.invalid has not been cited in any monitored answer run in this release.",
+          "hint": "The Index only lists domains answer engines actually cited. Absence means not observed in this release window, not a judgment of the site."
+        }
+      },
+      "isError": true
+    }
+  }
+}

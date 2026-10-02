@@ -1,6 +1,6 @@
 ---
 name: machine-relations-index
-description: Use when asked which sources or publications AI answer engines (ChatGPT, Perplexity, Gemini, Claude, Google AI Mode, Google AI Overviews) cite for a topic or category, where coverage gets cited by AI, or how often a given site is cited. Answers from the Machine Relations Index tools with measured rates and a citation.
+description: Use when asked which sources or publications AI answer engines cite for a topic or category, where coverage gets cited by AI, or how often a given site is cited. Answers from the Machine Relations Index tools with measured rates and a citation.
 ---
 
 # Machine Relations Index
@@ -13,6 +13,7 @@ The Machine Relations Index (MRI) measures which source domains AI answer engine
 4. For a specific site, call `mri_get_domain` with its domain or any URL on it.
 5. Report what the data says:
    - Citation rate as a percentage of monitored answer runs, with the domain's rank out of the segment total.
+   - Never infer per-engine rates from pooled rates, promise future citations, or claim that coverage causes citations. Preserve returned rank semantics when filtering sources.
    - The segment (category and question shape) and the release window from `source.release`.
    - If `status` is `collecting`, say rates are not yet published and do not present the order as a ranking.
    - If a domain is not found, say it was not observed in this release, not that it is never cited.

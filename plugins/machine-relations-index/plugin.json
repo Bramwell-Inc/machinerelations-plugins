@@ -1,31 +1,102 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "machine-relations-index",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Which source domains AI answer engines cite, by buyer category and question shape, from the Machine Relations Index.",
-  "author": { "name": "Machine Relations", "url": "https://machinerelations.ai" },
+  "author": {
+    "name": "Bramwell",
+    "url": "https://machinerelations.ai"
+  },
   "homepage": "https://machinerelations.ai/machine-relations-index",
   "repository": "https://github.com/Bramwell-Inc/machinerelations-plugins",
   "license": "MIT",
-  "keywords": ["ai-search", "citations", "geo", "aeo", "ai-visibility", "sources", "research"],
+  "keywords": [
+    "ai-search",
+    "citations",
+    "geo",
+    "aeo",
+    "ai-visibility",
+    "sources",
+    "research"
+  ],
   "extensions": {
     "com.openai": {
       "interface": {
         "displayName": "Machine Relations Index",
-        "shortDescription": "Which sources AI answer engines cite, by category",
-        "longDescription": "Query the Machine Relations Index, a neutral public measurement of which source domains ChatGPT, Claude, Gemini, Google AI Mode, Google AI Overviews and Perplexity cite when buyers ask questions. Get the ranked sources cited for a category and question shape, or how often a given site is cited and by which engines. Read-only, no account, CC BY 4.0 data.",
-        "developerName": "Machine Relations",
-        "category": "Research",
-        "capabilities": ["Read"],
+        "shortDescription": "Find sources cited by AI",
+        "longDescription": "Research which sources appear in AI-generated answers using measured citation data. Find ranked domains by buyer category and question type, filter for editorial publications or vendor sites, and look up a domain’s observed citations. Compare sources to inform research and content planning. Results include release windows, sample counts and source links. Read-only access to public Machine Relations Index data; no account required. Data is licensed under CC BY 4.0.",
+        "developerName": "Bramwell",
+        "category": "Data & Analytics",
+        "capabilities": [
+          "Read"
+        ],
         "websiteURL": "https://machinerelations.ai/machine-relations-index",
         "privacyPolicyURL": "https://machinerelations.ai/privacy",
         "defaultPrompt": [
-          "Which publications do AI answer engines cite most for cybersecurity tools?",
-          "How often do ChatGPT and Perplexity cite techcrunch.com, and for which categories?"
+          "Which publications are cited most for cybersecurity tools?",
+          "Look up techcrunch.com in the Machine Relations Index."
         ],
         "brandColor": "#111111",
-        "composerIcon": "./assets/icon.png",
-        "logo": "./assets/icon.png"
+        "composerIcon": "./assets/mr-granite-icon.png",
+        "logo": "./assets/mr-granite-icon.png",
+        "supportURL": "https://machinerelations.ai/contact",
+        "termsOfServiceURL": "https://machinerelations.ai/terms"
+      },
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Discover category coverage",
+              "prompt": "What buyer categories does the Machine Relations Index cover?",
+              "tools_triggered": "mri_list_categories",
+              "expected_behavior": "List covered category keys and names from the live response; do not invent coverage. Cite the canonical source and release."
+            },
+            {
+              "description": "Inspect available question shapes",
+              "prompt": "Show the published question shapes for cybersecurity in the Machine Relations Index.",
+              "tools_triggered": "mri_get_category",
+              "expected_behavior": "Read the cybersecurity category and report question shapes and published or collecting status from the response."
+            },
+            {
+              "description": "Rank editorial sources",
+              "prompt": "Which editorial publications are cited most for best cybersecurity tools in the Machine Relations Index?",
+              "tools_triggered": "mri_list_categories, mri_get_cited_sources",
+              "expected_behavior": "Query cybersecurity, best_x, source_role editorial_media. Report measured rates and sample counts, release window and citation link. Do not describe filtered positions as overall ranks or infer per-engine rates from pooled data."
+            },
+            {
+              "description": "Look up an observed domain",
+              "prompt": "Look up techcrunch.com in the Machine Relations Index and summarize its observed citation coverage.",
+              "tools_triggered": "mri_get_domain",
+              "expected_behavior": "Report only returned domain data, categories and engine observations, with the release and citation. Distinguish observed engine presence from per-engine citation rates."
+            },
+            {
+              "description": "Handle an absent domain",
+              "prompt": "Look up mri-review-nonexistent.invalid in the Machine Relations Index.",
+              "tools_triggered": "mri_get_domain",
+              "expected_behavior": "Explain that the domain is absent from this release or the lookup returned no observation. Do not claim it is never cited, and do not fabricate ranks or rates."
+            }
+          ],
+          "negative": [
+            {
+              "description": "No data mutation",
+              "prompt": "Change my domain’s citation score to 100% in the Index."
+            },
+            {
+              "description": "No purchases or placement service",
+              "prompt": "Buy guaranteed editorial placements for my company using this plugin."
+            },
+            {
+              "description": "Unrelated task",
+              "prompt": "Write a short birthday poem for my sister."
+            }
+          ]
+        },
+        "commerce": false,
+        "commerce_description": "This plugin only reads public research data. It does not sell products, purchase placements or process payments.",
+        "demo_recording_url": "https://raw.githubusercontent.com/Bramwell-Inc/machinerelations-plugins/2d2e7ffd1659af660fa657e60646596fd96d4454/review/mri-review-walkthrough.mp4"
+      },
+      "publication": {
+        "release_notes": "Directory-ready metadata, review cases and an updated Machine Relations icon."
       }
     }
   }

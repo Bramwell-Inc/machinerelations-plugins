@@ -1,0 +1,129 @@
+{
+  "capturedAt": "2026-10-02T18:22:11.106244+00:00",
+  "endpoint": "https://machinerelations.ai/mcp",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": "category",
+    "method": "tools/call",
+    "params": {
+      "name": "mri_get_category",
+      "arguments": {
+        "category": "cybersecurity"
+      }
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": "category",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"source\":{\"name\":\"Machine Relations Index\",\"publisher\":\"Machine Relations\",\"canonicalUrl\":\"https://machinerelations.ai/index/categories/cybersecurity\",\"citation\":\"Cybersecurity, Machine Relations Index mri_score_v2.0+2026-10-01+b215170b2762, https://machinerelations.ai/index/categories/cybersecurity.\",\"license\":{\"id\":\"CC-BY-4.0\",\"url\":\"https://creativecommons.org/licenses/by/4.0/\"},\"release\":{\"releaseId\":\"mri_score_v2.0+2026-10-01+b215170b2762\",\"methodologyVersion\":\"mri_score_v2.0\",\"generated\":\"2026-10-01\",\"windowStart\":\"2026-05-10\",\"dataThrough\":\"2026-10-01\",\"artifactSha256\":\"b215170b2762f837a6aa42c04e6a63a44bd693e89c48fef844d1384d664045ed\"}},\"category\":\"cybersecurity\",\"label\":\"Cybersecurity\",\"shapes\":[{\"questionShape\":\"best_x\",\"label\":\"Best tools\",\"status\":\"published\",\"collectingSince\":null,\"runsObserved\":105,\"runDates\":8,\"citedDomainObservations\":247,\"url\":\"https://machinerelations.ai/index/categories/cybersecurity/best_x\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/cybersecurity/best_x\"},{\"questionShape\":\"how_choose\",\"label\":\"How buyers choose\",\"status\":\"published\",\"collectingSince\":null,\"runsObserved\":160,\"runDates\":8,\"citedDomainObservations\":356,\"url\":\"https://machinerelations.ai/index/categories/cybersecurity/how_choose\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/cybersecurity/how_choose\"},{\"questionShape\":\"is_x_worth\",\"label\":\"Is it worth it\",\"status\":\"published\",\"collectingSince\":null,\"runsObserved\":161,\"runDates\":8,\"citedDomainObservations\":251,\"url\":\"https://machinerelations.ai/index/categories/cybersecurity/is_x_worth\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/cybersecurity/is_x_worth\"},{\"questionShape\":\"news_topic\",\"label\":\"News-driven citations\",\"status\":\"published\",\"collectingSince\":null,\"runsObserved\":623,\"runDates\":54,\"citedDomainObservations\":1338,\"url\":\"https://machinerelations.ai/index/categories/cybersecurity/news_topic\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/cybersecurity/news_topic\"},{\"questionShape\":\"problem_first\",\"label\":\"Problem-first research\",\"status\":\"published\",\"collectingSince\":null,\"runsObserved\":155,\"runDates\":8,\"citedDomainObservations\":321,\"url\":\"https://machinerelations.ai/index/categories/cybersecurity/problem_first\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/cybersecurity/problem_first\"},{\"questionShape\":\"top_list\",\"label\":\"Top lists\",\"status\":\"published\",\"collectingSince\":null,\"runsObserved\":160,\"runDates\":8,\"citedDomainObservations\":306,\"url\":\"https://machinerelations.ai/index/categories/cybersecurity/top_list\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/cybersecurity/top_list\"},{\"questionShape\":\"x_vs_y\",\"label\":\"Comparisons\",\"status\":\"published\",\"collectingSince\":null,\"runsObserved\":137,\"runDates\":8,\"citedDomainObservations\":215,\"url\":\"https://machinerelations.ai/index/categories/cybersecurity/x_vs_y\",\"apiUrl\":\"https://machinerelations.ai/api/mri/v2/categories/cybersecurity/x_vs_y\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "source": {
+          "name": "Machine Relations Index",
+          "publisher": "Machine Relations",
+          "canonicalUrl": "https://machinerelations.ai/index/categories/cybersecurity",
+          "citation": "Cybersecurity, Machine Relations Index mri_score_v2.0+2026-10-01+b215170b2762, https://machinerelations.ai/index/categories/cybersecurity.",
+          "license": {
+            "id": "CC-BY-4.0",
+            "url": "https://creativecommons.org/licenses/by/4.0/"
+          },
+          "release": {
+            "releaseId": "mri_score_v2.0+2026-10-01+b215170b2762",
+            "methodologyVersion": "mri_score_v2.0",
+            "generated": "2026-10-01",
+            "windowStart": "2026-05-10",
+            "dataThrough": "2026-10-01",
+            "artifactSha256": "b215170b2762f837a6aa42c04e6a63a44bd693e89c48fef844d1384d664045ed"
+          }
+        },
+        "category": "cybersecurity",
+        "label": "Cybersecurity",
+        "shapes": [
+          {
+            "questionShape": "best_x",
+            "label": "Best tools",
+            "status": "published",
+            "collectingSince": null,
+            "runsObserved": 105,
+            "runDates": 8,
+            "citedDomainObservations": 247,
+            "url": "https://machinerelations.ai/index/categories/cybersecurity/best_x",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/cybersecurity/best_x"
+          },
+          {
+            "questionShape": "how_choose",
+            "label": "How buyers choose",
+            "status": "published",
+            "collectingSince": null,
+            "runsObserved": 160,
+            "runDates": 8,
+            "citedDomainObservations": 356,
+            "url": "https://machinerelations.ai/index/categories/cybersecurity/how_choose",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/cybersecurity/how_choose"
+          },
+          {
+            "questionShape": "is_x_worth",
+            "label": "Is it worth it",
+            "status": "published",
+            "collectingSince": null,
+            "runsObserved": 161,
+            "runDates": 8,
+            "citedDomainObservations": 251,
+            "url": "https://machinerelations.ai/index/categories/cybersecurity/is_x_worth",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/cybersecurity/is_x_worth"
+          },
+          {
+            "questionShape": "news_topic",
+            "label": "News-driven citations",
+            "status": "published",
+            "collectingSince": null,
+            "runsObserved": 623,
+            "runDates": 54,
+            "citedDomainObservations": 1338,
+            "url": "https://machinerelations.ai/index/categories/cybersecurity/news_topic",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/cybersecurity/news_topic"
+          },
+          {
+            "questionShape": "problem_first",
+            "label": "Problem-first research",
+            "status": "published",
+            "collectingSince": null,
+            "runsObserved": 155,
+            "runDates": 8,
+            "citedDomainObservations": 321,
+            "url": "https://machinerelations.ai/index/categories/cybersecurity/problem_first",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/cybersecurity/problem_first"
+          },
+          {
+            "questionShape": "top_list",
+            "label": "Top lists",
+            "status": "published",
+            "collectingSince": null,
+            "runsObserved": 160,
+            "runDates": 8,
+            "citedDomainObservations": 306,
+            "url": "https://machinerelations.ai/index/categories/cybersecurity/top_list",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/cybersecurity/top_list"
+          },
+          {
+            "questionShape": "x_vs_y",
+            "label": "Comparisons",
+            "status": "published",
+            "collectingSince": null,
+            "runsObserved": 137,
+            "runDates": 8,
+            "citedDomainObservations": 215,
+            "url": "https://machinerelations.ai/index/categories/cybersecurity/x_vs_y",
+            "apiUrl": "https://machinerelations.ai/api/mri/v2/categories/cybersecurity/x_vs_y"
+          }
+        ]
+      },
+      "isError": false
+    }
+  }
+}
