@@ -1,0 +1,11 @@
+{
+  "name": "machinerelations",
+  "owner": { "name": "Machine Relations", "url": "https://machinerelations.ai" },
+  "plugins": [
+    {
+      "name": "machine-relations-index",
+      "source": "./plugins/machine-relations-index",
+      "description": "Which source domains AI answer engines cite, by buyer category and question shape."
+    }
+  ]
+}

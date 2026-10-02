@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "machine-relations-index": {
+      "type": "http",
+      "url": "https://machinerelations.ai/mcp"
+    }
+  }
+}

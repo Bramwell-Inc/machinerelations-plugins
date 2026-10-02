@@ -1,0 +1,10 @@
+{
+  "name": "machine-relations-index",
+  "version": "1.0.0",
+  "description": "Which source domains AI answer engines cite, by buyer category and question shape, from the Machine Relations Index.",
+  "author": { "name": "Machine Relations", "url": "https://machinerelations.ai" },
+  "homepage": "https://machinerelations.ai/machine-relations-index",
+  "repository": "https://github.com/Bramwell-Inc/machinerelations-plugins",
+  "license": "MIT",
+  "keywords": ["ai-search", "citations", "geo", "aeo", "ai-visibility"]
+}

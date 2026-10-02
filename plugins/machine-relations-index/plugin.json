@@ -1,0 +1,32 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "machine-relations-index",
+  "version": "1.0.0",
+  "description": "Which source domains AI answer engines cite, by buyer category and question shape, from the Machine Relations Index.",
+  "author": { "name": "Machine Relations", "url": "https://machinerelations.ai" },
+  "homepage": "https://machinerelations.ai/machine-relations-index",
+  "repository": "https://github.com/Bramwell-Inc/machinerelations-plugins",
+  "license": "MIT",
+  "keywords": ["ai-search", "citations", "geo", "aeo", "ai-visibility", "sources", "research"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Machine Relations Index",
+        "shortDescription": "Which sources AI answer engines cite, by category",
+        "longDescription": "Query the Machine Relations Index, a neutral public measurement of which source domains ChatGPT, Claude, Gemini, Google AI Mode, Google AI Overviews and Perplexity cite when buyers ask questions. Get the ranked sources cited for a category and question shape, or how often a given site is cited and by which engines. Read-only, no account, CC BY 4.0 data.",
+        "developerName": "Machine Relations",
+        "category": "Research",
+        "capabilities": ["Read"],
+        "websiteURL": "https://machinerelations.ai/machine-relations-index",
+        "privacyPolicyURL": "https://machinerelations.ai/privacy",
+        "defaultPrompt": [
+          "Which publications do AI answer engines cite most for cybersecurity tools?",
+          "How often do ChatGPT and Perplexity cite techcrunch.com, and for which categories?"
+        ],
+        "brandColor": "#111111",
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/icon.png"
+      }
+    }
+  }
+}
