@@ -37,8 +37,8 @@
           "Look up techcrunch.com in the Machine Relations Index."
         ],
         "brandColor": "#111111",
-        "composerIcon": "./assets/icon.png",
-        "logo": "./assets/icon.png",
+        "composerIcon": "./assets/mr-granite-icon.png",
+        "logo": "./assets/mr-granite-icon.png",
         "supportURL": "https://machinerelations.ai/contact",
         "termsOfServiceURL": "https://machinerelations.ai/terms"
       },
@@ -92,7 +92,8 @@
           ]
         },
         "commerce": false,
-        "commerce_description": "This plugin only reads public research data. It does not sell products, purchase placements or process payments."
+        "commerce_description": "This plugin only reads public research data. It does not sell products, purchase placements or process payments.",
+        "demo_recording_url": "https://raw.githubusercontent.com/Bramwell-Inc/machinerelations-plugins/2d2e7ffd1659af660fa657e60646596fd96d4454/review/mri-review-walkthrough.mp4"
       },
       "publication": {
         "release_notes": "Directory-ready metadata, review cases and an updated Machine Relations icon."
