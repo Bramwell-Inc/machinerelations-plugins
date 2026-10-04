@@ -11,12 +11,9 @@ The Machine Relations Index (MRI) measures which source domains AI answer engine
 2. Pick the question shape that matches the user's intent: `best_x` (best tools), `how_choose` (how to choose), `x_vs_y` (comparisons), `top_list` (top platforms), `problem_first` (solving a problem), `is_x_worth` (is it worth it), `news_topic` (recent news). If unclear, use `mri_get_category` to see which shapes have published rates and use those.
 3. Call `mri_get_cited_sources` with the category and question shape. Add `source_role: "editorial_media"` when the user asks about publications or media, `vendor_owned` for vendor sites.
 4. For a specific site, call `mri_get_domain` with its domain or any URL on it.
-5. Report what the data says:
-   - Citation rate as a percentage of monitored answer runs, with the domain's rank out of the segment total.
-   - Never infer per-engine rates from pooled rates, promise future citations, or claim that coverage causes citations. Preserve returned rank semantics when filtering sources.
-   - The segment (category and question shape) and the release window from `source.release`.
-   - If `status` is `collecting`, say rates are not yet published and do not present the order as a ranking.
-   - If a domain is not found, say it was not observed in this release, not that it is never cited.
-6. Cite the source with the response's `source.citation` and `source.canonicalUrl` (data is CC BY 4.0).
+5. Read `source.guidance` in the returned record before interpreting the result. The live service owns the interpretation rules, including release consistency, missing context, named/not-named/unresolved runs, evidence floors and source-role limitations. Read any field-specific `questionContext.readAs` and `limitations` as well. Do not substitute rules or figures remembered from a past install. If guidance or context is absent, state that limitation; absence is not a zero measurement.
+6. Report the observed counts, denominators, category, question shape and release. Cite `source.citation` and `source.canonicalUrl`. Do not promise future citations or placement outcomes.
+
+The [worked example](https://machinerelations.ai/research/segment-rank-question-set-named-brand-citations) is a frozen historical case, not today's numbers. Its two-source table uses a shared partition based on CrowdStrike's name; current per-source naming buckets are not automatically the same partition. Use the live response's guidance for current analysis.
 
 If the tools are unavailable, the same reads are at `https://machinerelations.ai/api/mri/v2` (OpenAPI: `https://machinerelations.ai/api/mri/v2/openapi.json`).

@@ -1,6 +1,6 @@
 {
   "name": "machine-relations-index",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Which source domains AI answer engines cite, by buyer category and question shape, from the Machine Relations Index.",
   "author": {
     "name": "Bramwell",

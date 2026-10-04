@@ -1,0 +1,31 @@
+name: Validate and package
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/validate-package.mjs
+      - name: Package the tested source
+        id: package
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./plugins/machine-relations-index/plugin.json').version")
+          mkdir -p dist
+          (cd plugins/machine-relations-index && zip -qr ../../dist/machine-relations-index.zip .)
+          (cd dist && sha256sum machine-relations-index.zip > SHA256SUMS)
+          git rev-parse HEAD > dist/SOURCE_COMMIT
+          echo "name=machine-relations-index-${VERSION}-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.name }}
+          path: dist/
+          if-no-files-found: error
