@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve, relative } from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 const root = resolve('plugins/machine-relations-index');
 const read = (name) => JSON.parse(readFileSync(resolve(root, name), 'utf8'));
@@ -11,6 +12,20 @@ assert.equal(codex.name, 'machine-relations-index');
 assert.equal(claude.name, codex.name);
 assert.equal(claude.version, codex.version, 'Both clients must ship the same package version');
 assert.match(codex.version, /^\d+\.\d+\.\d+$/);
+
+// Git-backed clients cache versions: changing packaged files without a bump
+// must fail at the PR/push seam, not become a release-owner memory task.
+const base = process.env.PACKAGE_BASE_SHA;
+if (base && !/^0+$/.test(base)) {
+  assert.match(base, /^[a-f0-9]{40}$/);
+  const changed = execFileSync('git', ['diff', '--name-only', base, 'HEAD', '--', 'plugins/machine-relations-index'], { encoding: 'utf8' }).trim();
+  if (changed) {
+    const previous = JSON.parse(execFileSync('git', ['show', `${base}:plugins/machine-relations-index/plugin.json`], { encoding: 'utf8' }));
+    const before = previous.version.split('.').map(Number);
+    const after = codex.version.split('.').map(Number);
+    assert.ok(after.some((part, i) => part > before[i] && after.slice(0, i).every((n, j) => n === before[j])), 'Packaged files changed: increase both manifest versions before shipping');
+  }
+}
 
 const endpoint = 'https://machinerelations.ai/mcp';
 for (const [file, transport] of [['mcp.json', 'streamable-http'], ['.mcp.json', 'http']]) {
