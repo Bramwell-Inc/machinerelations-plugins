@@ -40,6 +40,11 @@ for (const file of [claude.icon, codex.extensions['com.openai'].interface.logo, 
   assert.ok(!relative(root, path).startsWith('..'), 'Assets must be in the uploaded package');
   assert.ok(existsSync(path), `Missing package asset: ${file}`);
 }
+const readme = readFileSync(resolve(root, 'README.md'), 'utf8');
+assert.ok(readme.replace(/```[\s\S]*?```/g, '').trim().split(/\s+/).length >= 40, 'The installed package needs its own substantive README');
+for (const path of ['/developers', '/contact', '/privacy', '/terms']) {
+  assert.ok(readme.includes(`https://machinerelations.ai${path}`), `Packaged README must link to ${path}`);
+}
 const skill = readFileSync(resolve(root, 'skills/machine-relations-index/SKILL.md'), 'utf8');
 assert.ok(skill.includes('source.guidance'), 'The installed skill must read the live interpretation owner');
 for (const client of ['.agents/plugins', '.claude-plugin']) {

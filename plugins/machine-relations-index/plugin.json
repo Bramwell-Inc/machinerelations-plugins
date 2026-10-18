@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "machine-relations-index",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Which source domains AI answer engines cite, by buyer category and question shape, from the Machine Relations Index.",
   "author": {
     "name": "Bramwell",
@@ -96,7 +96,7 @@
         "demo_recording_url": "https://raw.githubusercontent.com/Bramwell-Inc/machinerelations-plugins/2d2e7ffd1659af660fa657e60646596fd96d4454/review/mri-review-walkthrough.mp4"
       },
       "publication": {
-        "release_notes": "Read interpretation guidance from live MRI responses; link the historical worked example and preserve release and missing-context limits."
+        "release_notes": "Include documentation, support, privacy and terms inside the installable package. Tool behavior and live interpretation guidance are unchanged."
       }
     }
   }
