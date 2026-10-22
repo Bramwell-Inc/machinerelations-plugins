@@ -18,6 +18,21 @@ jobs:
       - run: node scripts/validate-package.mjs
         env:
           PACKAGE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+      - name: Fresh Codex and Claude Code installations
+        shell: bash
+        env:
+          CODEX_HOME: ${{ runner.temp }}/mr-codex
+          CLAUDE_CONFIG_DIR: ${{ runner.temp }}/mr-claude
+          CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL: '1'
+        run: |
+          mkdir -p "$CODEX_HOME" "$CLAUDE_CONFIG_DIR"
+          npm exec --yes --package=@openai/codex@0.163.0 -- codex plugin marketplace add "$GITHUB_WORKSPACE" --json
+          npm exec --yes --package=@openai/codex@0.163.0 -- codex plugin add machine-relations-index@machinerelations --json | tee "$RUNNER_TEMP/mr-codex-install.json"
+          npm exec --yes --package=@openai/codex@0.163.0 -- codex plugin list --json
+          npm exec --yes --package=@anthropic-ai/claude-code@2.1.308 -- claude plugin marketplace add "$GITHUB_WORKSPACE"
+          npm exec --yes --package=@anthropic-ai/claude-code@2.1.308 -- claude plugin install machine-relations-index@machinerelations
+          npm exec --yes --package=@anthropic-ai/claude-code@2.1.308 -- claude plugin list --json | tee "$RUNNER_TEMP/mr-claude-install.json"
+          node scripts/verify-fresh-install.mjs
       - name: Package the tested source
         id: package
         shell: bash

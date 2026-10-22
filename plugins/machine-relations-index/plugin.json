@@ -1,40 +1,43 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "machine-relations-index",
-  "version": "1.0.4",
-  "description": "Which source domains AI answer engines cite, by buyer category and question shape, from the Machine Relations Index.",
+  "version": "1.1.0",
+  "description": "Build evidence-backed Machine Relations briefs for AI visibility, GEO/AEO, SEO content discovery and digital PR; research cited sources with the Machine Relations Index.",
   "author": {
     "name": "Bramwell",
     "url": "https://machinerelations.ai"
   },
-  "homepage": "https://machinerelations.ai/machine-relations-index",
+  "homepage": "https://machinerelations.ai/skill",
   "repository": "https://github.com/Bramwell-Inc/machinerelations-plugins",
   "license": "MIT",
   "keywords": [
+    "machine-relations",
     "ai-search",
-    "citations",
+    "seo",
     "geo",
     "aeo",
     "ai-visibility",
-    "sources",
+    "digital-pr",
+    "citations",
     "research"
   ],
   "extensions": {
     "com.openai": {
       "interface": {
-        "displayName": "Machine Relations Index",
-        "shortDescription": "Find sources cited by AI",
-        "longDescription": "Research which sources appear in AI-generated answers using measured citation data. Find ranked domains by buyer category and question type, filter for editorial publications or vendor sites, and look up a domain’s observed citations. Compare sources to inform research and content planning. Results include release windows, sample counts and source links. Read-only access to public Machine Relations Index data; no account required. Data is licensed under CC BY 4.0.",
+        "displayName": "Machine Relations",
+        "shortDescription": "Plan your next authority move",
+        "longDescription": "Use the official Machine Relations skill to turn a brand objective and available evidence into a client-ready intervention brief: a justified move, usable pitch or work draft, and separate execution and outcome checks. Supports AI visibility, GEO/AEO, SEO content discovery and digital PR planning. Includes the existing Machine Relations Index research skill and four read-only tools for measured category/source citations. No MRI account, compulsory purchase, outreach sending or paid measurement panel. Public MRI data is licensed CC BY 4.0; plugin code is MIT.",
         "developerName": "Bramwell",
         "category": "Data & Analytics",
         "capabilities": [
           "Read"
         ],
-        "websiteURL": "https://machinerelations.ai/machine-relations-index",
+        "websiteURL": "https://machinerelations.ai/skill",
         "privacyPolicyURL": "https://machinerelations.ai/privacy",
         "defaultPrompt": [
+          "Help me choose and draft the next digital PR move for my client using public evidence.",
           "Which publications are cited most for cybersecurity tools?",
-          "Look up techcrunch.com in the Machine Relations Index."
+          "Use Machine Relations to assess my brand’s AI visibility evidence and prepare an intervention brief."
         ],
         "brandColor": "#111111",
         "composerIcon": "./assets/mr-granite-icon.png",
@@ -74,6 +77,12 @@
               "prompt": "Look up mri-review-nonexistent.invalid in the Machine Relations Index.",
               "tools_triggered": "mri_get_domain",
               "expected_behavior": "Explain that the domain is absent from this release or the lookup returned no observation. Do not claim it is never cited, and do not fabricate ranks or rates."
+            },
+            {
+              "description": "Complete an authority intervention brief",
+              "prompt": "Use Machine Relations for my client. We have an original survey and want to contribute useful evidence to a trade guide. Choose a move, draft the pitch and explain execution versus outcome checks.",
+              "tools_triggered": "",
+              "expected_behavior": "Use supplied and public evidence to produce a scoped client-ready intervention brief and usable draft. MRI is optional when category evidence helps; do not invent a source, survey finding, visibility baseline, placement or recommendation lift. Do not send outreach or require an AuthorityTech purchase."
             }
           ],
           "negative": [
@@ -92,11 +101,11 @@
           ]
         },
         "commerce": false,
-        "commerce_description": "This plugin only reads public research data. It does not sell products, purchase placements or process payments.",
+        "commerce_description": "Research and draft authority interventions using public MRI data and user-authorized evidence. The plugin does not sell products, purchase placements, send pitches or process payments.",
         "demo_recording_url": "https://raw.githubusercontent.com/Bramwell-Inc/machinerelations-plugins/2d2e7ffd1659af660fa657e60646596fd96d4454/review/mri-review-walkthrough.mp4"
       },
       "publication": {
-        "release_notes": "Include documentation, support, privacy and terms inside the installable package. Tool behavior and live interpretation guidance are unchanged."
+        "release_notes": "Add the broader Machine Relations intervention-brief skill beside the unchanged MRI research skill. Broaden task discovery and display copy while preserving package identity, MCP tools and endpoints. Directory publication is a separate release step."
       }
     }
   }

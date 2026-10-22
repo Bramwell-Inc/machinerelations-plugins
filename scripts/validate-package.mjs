@@ -12,6 +12,8 @@ assert.equal(codex.name, 'machine-relations-index');
 assert.equal(claude.name, codex.name);
 assert.equal(claude.version, codex.version, 'Both clients must ship the same package version');
 assert.match(codex.version, /^\d+\.\d+\.\d+$/);
+assert.ok(codex.extensions['com.openai'].interface.shortDescription.length <= 30, 'Directory subtitle must fit its 30-character limit');
+assert.equal(readFileSync(resolve(root, 'LICENSE'), 'utf8'), readFileSync('LICENSE', 'utf8'), 'The standalone package must carry its declared license');
 
 // Git-backed clients cache versions: changing packaged files without a bump
 // must fail at the PR/push seam, not become a release-owner memory task.
@@ -47,6 +49,16 @@ for (const path of ['/developers', '/contact', '/privacy', '/terms']) {
 }
 const skill = readFileSync(resolve(root, 'skills/machine-relations-index/SKILL.md'), 'utf8');
 assert.ok(skill.includes('source.guidance'), 'The installed skill must read the live interpretation owner');
+for (const name of ['machine-relations', 'machine-relations-index']) {
+  const content = readFileSync(resolve(root, `skills/${name}/SKILL.md`), 'utf8');
+  assert.ok(content.startsWith(`---\nname: ${name}\n`), `Discoverable skill identity: ${name}`);
+  assert.match(content, /\ndescription: .+/);
+  for (const match of content.matchAll(/\]\((references\/[^)]+)\)/g)) {
+    const target = resolve(root, `skills/${name}`, match[1]);
+    assert.ok(!relative(root, target).startsWith('..'));
+    assert.ok(existsSync(target), `Missing packaged skill reference: ${match[1]}`);
+  }
+}
 for (const client of ['.agents/plugins', '.claude-plugin']) {
   const marketplace = JSON.parse(readFileSync(`${client}/marketplace.json`, 'utf8'));
   const plugin = marketplace.plugins.find((p) => p.name === codex.name);

@@ -1,8 +1,10 @@
 # Machine Relations plugins
 
-Agent plugins for the [Machine Relations Index](https://machinerelations.ai/machine-relations-index) (MRI): a neutral public measurement of which source domains AI answer engines (ChatGPT, Claude, Gemini, Google AI Mode, Google AI Overviews, Perplexity) cite when buyers ask questions, by category and question shape.
+The official [Machine Relations skill and plugin](https://machinerelations.ai/skill) helps practitioners choose and draft an evidence-backed authority intervention for a brand or client. It supports AI visibility, GEO/AEO, SEO content discovery and digital PR work, with separate execution checks and intended-outcome tests. No AuthorityTech purchase is required.
 
-The plugin connects the remote MCP server at `https://machinerelations.ai/mcp` (read-only, no account) and adds a skill that tells the agent how to use it. Tools:
+The package includes the broader `machine-relations` skill alongside the existing `machine-relations-index` research skill. The [Machine Relations Index](https://machinerelations.ai/machine-relations-index) (MRI) remains neutral public measurement of which source domains AI answer engines cite in sampled buyer answers, by category and question shape. Broader work can also use public or client-supplied evidence without MRI coverage.
+
+The plugin retains the package identifier `machine-relations-index` and remote MCP server at `https://machinerelations.ai/mcp` (read-only, no account). Its four research tools are unchanged:
 
 | Tool | What it answers |
 | --- | --- |
@@ -19,7 +21,7 @@ The plugin connects the remote MCP server at `https://machinerelations.ai/mcp` (
 codex plugin marketplace add Bramwell-Inc/machinerelations-plugins
 ```
 
-Then install **Machine Relations Index** from the Plugins Directory.
+Then install the **Machine Relations** package (identifier `machine-relations-index`) from that marketplace. Published directory versions may still display **Machine Relations Index**; verify that your installed version includes `machine-relations` before expecting the broader workflow.
 
 **Claude Code**
 
@@ -31,6 +33,8 @@ Then install **Machine Relations Index** from the Plugins Directory.
 **Any MCP client**: add a remote (streamable HTTP) server with URL `https://machinerelations.ai/mcp`. It is also listed in the official MCP Registry as `ai.machinerelations/mri`.
 
 **No MCP**: the same reads are a JSON API at `https://machinerelations.ai/api/mri/v2` ([OpenAPI](https://machinerelations.ai/api/mri/v2/openapi.json)).
+
+An MCP connection alone supplies research tools; it does not install the skill. The broader skill is at `plugins/machine-relations-index/skills/machine-relations/SKILL.md` for compatible skill hosts. New instructions do not require changing Editor's private method, the App journey or the Index's measurement.
 
 ## Data
 
