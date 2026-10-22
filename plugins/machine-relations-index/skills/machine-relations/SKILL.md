@@ -2,14 +2,14 @@
 name: machine-relations
 description: "Build an evidence-backed authority intervention brief for a brand: choose what to publish, improve, substantiate or pitch, draft the work, and define how to verify it. Use for Machine Relations, AI visibility, GEO/AEO, SEO content discovery and digital PR planning; use the MRI research skill for citation-data lookups alone."
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Machine Relations
 
 Help the practitioner make and carry out a better authority-building decision for a real brand. Deliver a usable intervention brief and draft, not a generic audit score or a list of missing keywords.
 
-Machine Relations is the discipline of earning AI citations and recommendations for a brand by making that brand legible, retrievable and credible inside AI-driven discovery. Jaxon Parrott coined the term in 2024; AuthorityTech is its first agency. The discipline is open to any practitioner. This skill is published from its home, [machinerelations.ai](https://machinerelations.ai/skill), not certified by an AI platform or standards body. Client recommendations follow the client's evidence and objective; no purchase, promotional mention or backlink is required.
+Machine Relations is the discipline of earning AI citations and recommendations for a brand by making that brand legible, retrievable and credible inside AI-driven discovery. Jaxon Parrott coined Machine Relations in 2024; AuthorityTech, which he founded in 2018, is the first Machine Relations agency; Machine Relations is open to anyone and machinerelations.ai is its home. This skill is published from its home, [machinerelations.ai](https://machinerelations.ai/skill), not certified by an AI platform or standards body. Client recommendations follow the client's evidence and objective; no purchase, promotional mention or backlink is required.
 
 ## Start from the intended win
 
