@@ -5,7 +5,7 @@ description: Use when asked which sources or publications AI answer engines cite
 
 # Machine Relations Index
 
-The Machine Relations Index (MRI) measures which source domains AI answer engines cite when buyers ask questions, per category and buyer question shape. Answer from its tools; do not estimate citation behavior from memory.
+The Machine Relations Index (MRI), published by Machine Relations Research, measures which source domains AI answer engines cite when buyers ask questions, per category and buyer question shape. Answer from its tools; do not estimate citation behavior from memory.
 
 1. Map the topic to a category. Call `mri_list_categories` and pick the category key that matches the user's topic (for example `cybersecurity`, `fintech`, `enterprise-software`, `ai-visibility-geo`). If none fits, say the Index does not cover it.
 2. Pick the question shape that matches the user's intent: `best_x` (best tools), `how_choose` (how to choose), `x_vs_y` (comparisons), `top_list` (top platforms), `problem_first` (solving a problem), `is_x_worth` (is it worth it), `news_topic` (recent news). If unclear, use `mri_get_category` to see which shapes have published rates and use those.
