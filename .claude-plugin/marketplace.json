@@ -5,13 +5,13 @@
     "url": "https://machinerelations.ai"
   },
   "metadata": {
-    "description": "Agent plugins for the Machine Relations Index: which sources AI answer engines cite, by category."
+    "description": "Build evidence-backed Machine Relations briefs for AI visibility, GEO/AEO, SEO content discovery and digital PR; research cited sources with the Machine Relations Index."
   },
   "plugins": [
     {
       "name": "machine-relations-index",
       "source": "./plugins/machine-relations-index",
-      "description": "Which source domains AI answer engines cite, by buyer category and question shape."
+      "description": "Build evidence-backed Machine Relations briefs for AI visibility, GEO/AEO, SEO content discovery and digital PR; research cited sources with the Machine Relations Index."
     }
   ]
 }

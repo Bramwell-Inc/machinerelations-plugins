@@ -1,0 +1,4 @@
+interface:
+  display_name: "Machine Relations"
+  short_description: "Turn authority evidence into a client-ready move"
+  default_prompt: "Use $machine-relations to choose an evidence-backed authority move for my brand and draft the intervention brief."

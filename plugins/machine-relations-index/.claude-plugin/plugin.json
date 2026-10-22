@@ -1,21 +1,25 @@
 {
   "name": "machine-relations-index",
-  "version": "1.0.4",
-  "description": "Which source domains AI answer engines cite, by buyer category and question shape, from the Machine Relations Index.",
+  "version": "1.1.0",
+  "description": "Build evidence-backed Machine Relations briefs for AI visibility, GEO/AEO, SEO content discovery and digital PR; research cited sources with the Machine Relations Index.",
   "author": {
     "name": "Bramwell",
     "url": "https://machinerelations.ai"
   },
-  "homepage": "https://machinerelations.ai/machine-relations-index",
+  "homepage": "https://machinerelations.ai/skill",
   "icon": "./assets/mr-granite-icon.png",
   "privacyPolicyUrl": "https://machinerelations.ai/privacy",
   "repository": "https://github.com/Bramwell-Inc/machinerelations-plugins",
   "license": "MIT",
   "keywords": [
+    "machine-relations",
     "ai-search",
-    "citations",
+    "seo",
     "geo",
     "aeo",
-    "ai-visibility"
+    "ai-visibility",
+    "digital-pr",
+    "citations",
+    "research"
   ]
 }
