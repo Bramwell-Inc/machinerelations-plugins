@@ -105,7 +105,7 @@
         "demo_recording_url": "https://raw.githubusercontent.com/Bramwell-Inc/machinerelations-plugins/2d2e7ffd1659af660fa657e60646596fd96d4454/review/mri-review-walkthrough.mp4"
       },
       "publication": {
-        "release_notes": "Add the broader Machine Relations intervention-brief skill beside the unchanged MRI research skill. Broaden task discovery and display copy while preserving package identity, MCP tools and endpoints. Directory publication is a separate release step."
+        "release_notes": "State the Machine Relations chain and name Machine Relations Research as the Index's publisher in the README and skills; tools, endpoints and behaviour unchanged. Directory publication is a separate release step."
       }
     }
   }

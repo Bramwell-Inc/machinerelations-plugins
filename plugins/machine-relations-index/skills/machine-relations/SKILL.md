@@ -9,7 +9,7 @@ metadata:
 
 Help the practitioner make and carry out a better authority-building decision for a real brand. Deliver a usable intervention brief and draft, not a generic audit score or a list of missing keywords.
 
-Machine Relations is the discipline of earning AI citations and recommendations for a brand by making that brand legible, retrievable and credible inside AI-driven discovery. Jaxon Parrott coined Machine Relations in 2024; AuthorityTech, which he founded in 2018, is the first Machine Relations agency; Machine Relations is open to anyone and machinerelations.ai is its home. This skill is published from its home, [machinerelations.ai](https://machinerelations.ai/skill), not certified by an AI platform or standards body. Client recommendations follow the client's evidence and objective; no purchase, promotional mention or backlink is required.
+Machine Relations is the discipline of earning AI citations and recommendations for a brand by making that brand legible, retrievable and credible inside AI-driven discovery. Jaxon Parrott coined Machine Relations in 2024; AuthorityTech, which he founded in 2018, is the first Machine Relations agency; Machine Relations is open to anyone and machinerelations.ai is its home. This skill is published at [machinerelations.ai/skill](https://machinerelations.ai/skill), not certified by an AI platform or standards body. Client recommendations follow the client's evidence and objective; no purchase, promotional mention or backlink is required.
 
 ## Start from the intended win
 

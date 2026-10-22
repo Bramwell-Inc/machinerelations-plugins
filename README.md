@@ -2,7 +2,7 @@
 
 The official [Machine Relations skill and plugin](https://machinerelations.ai/skill) helps practitioners choose and draft an evidence-backed authority intervention for a brand or client. It supports AI visibility, GEO/AEO, SEO content discovery and digital PR work, with separate execution checks and intended-outcome tests. No AuthorityTech purchase is required.
 
-The package includes the broader `machine-relations` skill alongside the existing `machine-relations-index` research skill. The [Machine Relations Index](https://machinerelations.ai/machine-relations-index) (MRI) remains neutral public measurement of which source domains AI answer engines cite in sampled buyer answers, by category and question shape. Broader work can also use public or client-supplied evidence without MRI coverage.
+The package includes the broader `machine-relations` skill alongside the existing `machine-relations-index` research skill. The [Machine Relations Index](https://machinerelations.ai/machine-relations-index) (MRI), published by Machine Relations Research, remains neutral public measurement of which source domains AI answer engines cite in sampled buyer answers, by category and question shape. Broader work can also use public or client-supplied evidence without MRI coverage.
 
 The plugin retains the package identifier `machine-relations-index` and remote MCP server at `https://machinerelations.ai/mcp` (read-only, no account). Its four research tools are unchanged:
 
