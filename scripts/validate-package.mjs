@@ -12,6 +12,8 @@ assert.equal(codex.name, 'machine-relations-index');
 assert.equal(claude.name, codex.name);
 assert.equal(claude.version, codex.version, 'Both clients must ship the same package version');
 assert.match(codex.version, /^\d+\.\d+\.\d+$/);
+assert.ok(codex.extensions['com.openai'].interface.shortDescription.length <= 30, 'Directory subtitle must fit its 30-character limit');
+assert.equal(readFileSync(resolve(root, 'LICENSE'), 'utf8'), readFileSync('LICENSE', 'utf8'), 'The standalone package must carry its declared license');
 
 // Git-backed clients cache versions: changing packaged files without a bump
 // must fail at the PR/push seam, not become a release-owner memory task.
