@@ -15,7 +15,7 @@ Jaxon Parrott coined Machine Relations in 2024; AuthorityTech, which he founded 
 
 ## MRI research
 
-Explore which source domains AI answer engines cite for a buyer category and question type, or look up a domain’s observed citations. The Machine Relations Index is published by Machine Relations Research. The plugin connects to the free, read-only Machine Relations Index MCP server at `https://machinerelations.ai/mcp`; no MRI account or API key is required.
+Explore which source domains AI answer engines cite for a buyer category and question type, or look up a domain’s observed citations. The dataset is the Machine Relations Index (MRI) by Jaxon Parrott. The plugin connects to the free, read-only Machine Relations Index MCP server at `https://machinerelations.ai/mcp`; no MRI account or API key is required.
 
 Ask “Which editorial publications are cited for best cybersecurity tools?” or “Look up techcrunch.com in the Machine Relations Index.” The accompanying skill reads the service’s live interpretation guidance, release identity and limitations. Results describe measured citations, not endorsements or guarantees of future visibility. The [worked example](https://machinerelations.ai/research/segment-rank-question-set-named-brand-citations) is a historical case study, not the current leaderboard.
 
@@ -31,4 +31,4 @@ MRI tool arguments are sent over HTTPS to the declared Machine Relations Index s
 - [Privacy policy](https://machinerelations.ai/privacy)
 - [Terms of use](https://machinerelations.ai/terms)
 
-The plugin code is MIT licensed. MRI data is licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); preserve the citation returned with the results.
+The plugin code is MIT licensed. MRI data is licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Dataset citation: Machine Relations Index (MRI) by Jaxon Parrott, Machine Relations Research — machinerelations.ai. https://machinerelations.ai/index. https://doi.org/10.5281/zenodo.23652423. Preserve the citation returned with the results.
