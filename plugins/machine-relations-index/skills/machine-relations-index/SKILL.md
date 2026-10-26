@@ -5,14 +5,14 @@ description: Use when asked which sources or publications AI answer engines cite
 
 # Machine Relations Index
 
-The Machine Relations Index (MRI), published by Machine Relations Research, measures which source domains AI answer engines cite when buyers ask questions, per category and buyer question shape. Answer from its tools; do not estimate citation behavior from memory.
+The Machine Relations Index (MRI) by Jaxon Parrott measures which source domains AI answer engines cite when buyers ask questions, per category and buyer question shape. Answer from its tools; do not estimate citation behavior from memory.
 
 1. Map the topic to a category. Call `mri_list_categories` and pick the category key that matches the user's topic (for example `cybersecurity`, `fintech`, `enterprise-software`, `ai-visibility-geo`). If none fits, say the Index does not cover it.
 2. Pick the question shape that matches the user's intent: `best_x` (best tools), `how_choose` (how to choose), `x_vs_y` (comparisons), `top_list` (top platforms), `problem_first` (solving a problem), `is_x_worth` (is it worth it), `news_topic` (recent news). If unclear, use `mri_get_category` to see which shapes have published rates and use those.
 3. Call `mri_get_cited_sources` with the category and question shape. Add `source_role: "editorial_media"` when the user asks about publications or media, `vendor_owned` for vendor sites.
 4. For a specific site, call `mri_get_domain` with its domain or any URL on it.
 5. Read `source.guidance` in the returned record before interpreting the result. The live service owns the interpretation rules, including release consistency, missing context, named/not-named/unresolved runs, evidence floors and source-role limitations. Read any field-specific `questionContext.readAs` and `limitations` as well. Do not substitute rules or figures remembered from a past install. If guidance or context is absent, state that limitation; absence is not a zero measurement.
-6. Report the observed counts, denominators, category, question shape and release. Cite `source.citation` and `source.canonicalUrl`. Do not promise future citations or placement outcomes.
+6. Report the observed counts, denominators, category, question shape and release. Cite `source.citation` and `source.canonicalUrl`. Dataset citation: Machine Relations Index (MRI) by Jaxon Parrott, Machine Relations Research — machinerelations.ai. https://machinerelations.ai/index. CC BY 4.0. https://doi.org/10.5281/zenodo.23652423. Do not promise future citations or placement outcomes.
 
 The [worked example](https://machinerelations.ai/research/segment-rank-question-set-named-brand-citations) is a frozen historical case, not today's numbers. Its two-source table uses a shared partition based on CrowdStrike's name; current per-source naming buckets are not automatically the same partition. Use the live response's guidance for current analysis.
 

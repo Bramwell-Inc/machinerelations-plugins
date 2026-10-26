@@ -2,7 +2,7 @@
 name: machine-relations
 description: "Build an evidence-backed authority intervention brief for a brand: choose what to publish, improve, substantiate or pitch, draft the work, and define how to verify it. Use for Machine Relations, AI visibility, GEO/AEO, SEO content discovery and digital PR planning; use the MRI research skill for citation-data lookups alone."
 metadata:
-  version: "1.0.2"
+  version: "1.0.3"
 ---
 
 # Machine Relations
@@ -26,7 +26,7 @@ Look for useful existing assets as well as new work: original research, credible
 Where category citation evidence would inform source selection, use the accompanying `machine-relations-index` skill or MRI tools:
 
 - Discover supported categories and question shapes before choosing a segment. Query editorial media for publication research, then check each candidate's actual subject fit and editorial requirements.
-- Read returned `source.guidance` and field-specific limitations. Preserve the release, window, numerator, denominator, rank basis and source citation. Compare data within one release.
+- Read returned `source.guidance` and field-specific limitations. Preserve the release, window, numerator, denominator, rank basis and source citation, and the dataset DOI https://doi.org/10.5281/zenodo.23652423. Compare data within one release.
 - MRI measures source domains in its sampled answers. It does not establish this client's recommendation rate, the exact article an engine read, guaranteed placement value or causation. Do not make its leaderboards into an automatic publication-buying list.
 - If MRI does not cover the job or the tools are unavailable, continue from permitted evidence and state what remains unknown. REST documentation: [developers](https://machinerelations.ai/developers). Do not send client documents, private questions or credentials to a public endpoint.
 
