@@ -2,7 +2,7 @@
 name: machine-relations
 description: "Build an evidence-backed authority intervention brief for a brand: choose what to publish, improve, substantiate or pitch, draft the work, and define how to verify it. Use for Machine Relations, AI visibility, GEO/AEO, SEO content discovery and digital PR planning; use the MRI research skill for citation-data lookups alone."
 metadata:
-  version: "1.0.3"
+  version: "1.1.4"
 ---
 
 # Machine Relations

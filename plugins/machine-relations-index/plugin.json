@@ -1,11 +1,11 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "machine-relations-index",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "Build evidence-backed Machine Relations briefs for AI visibility, GEO/AEO, SEO content discovery and digital PR; research cited sources with the Machine Relations Index.",
   "author": {
-    "name": "Bramwell",
-    "url": "https://machinerelations.ai"
+    "name": "Jaxon Parrott",
+    "url": "https://jaxonparrott.com"
   },
   "homepage": "https://machinerelations.ai/skill",
   "repository": "https://github.com/Bramwell-Inc/machinerelations-plugins",
@@ -105,7 +105,7 @@
         "demo_recording_url": "https://raw.githubusercontent.com/Bramwell-Inc/machinerelations-plugins/2d2e7ffd1659af660fa657e60646596fd96d4454/review/mri-review-walkthrough.mp4"
       },
       "publication": {
-        "release_notes": "Attribute the Index as Machine Relations Index (MRI) by Jaxon Parrott and cite the Zenodo concept DOI; tools, endpoints and behaviour unchanged. Directory publication is a separate release step."
+        "release_notes": "Credit Jaxon Parrott as the author of the Machine Relations skills and give every skill the package version. Each release now carries its own permanent DOI, checksums and a machine-readable library manifest; tools, endpoints and skill behaviour are unchanged."
       }
     }
   }

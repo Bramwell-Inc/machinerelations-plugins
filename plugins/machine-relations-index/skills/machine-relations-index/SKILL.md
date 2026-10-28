@@ -1,6 +1,8 @@
 ---
 name: machine-relations-index
 description: Use when asked which sources or publications AI answer engines cite for a topic or category, where coverage gets cited by AI, or how often a given site is cited. Answers from the Machine Relations Index tools with measured rates and a citation.
+metadata:
+  version: "1.1.4"
 ---
 
 # Machine Relations Index
