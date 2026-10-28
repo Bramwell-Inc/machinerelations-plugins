@@ -123,6 +123,10 @@ async function openDraft(plan, metadata) {
   return zenodoJson(opened.links.latest_draft);
 }
 
+function readSums(dist) {
+  return Object.fromEntries(readFileSync(resolve(dist, SUMS_FILE), 'utf8').trim().split('\n').map((line) => line.split(/\s+/).reverse()));
+}
+
 const md5 = (bytes) => createHash('md5').update(bytes).digest('hex');
 
 /** Deposit dist/ on Zenodo with reserved DOIs written into library.json first. */
@@ -135,9 +139,17 @@ async function deposit(plan, release, commit, dist) {
   if (!/^10\.5281\/zenodo\.\d+$/.test(versionDoi ?? '') || !/^\d+$/.test(conceptRecid)) {
     throw new Error(`Zenodo draft ${draft.id} reserved no DOI (doi ${versionDoi}, concept ${conceptRecid})`);
   }
+  if (String(draft.metadata.prereserve_doi.recid) !== String(draft.id)) {
+    throw new Error(`Zenodo draft ${draft.id} reserved the DOI of record ${draft.metadata.prereserve_doi.recid}`);
+  }
   const conceptDoi = `10.5281/zenodo.${conceptRecid}`;
   log(`draft ${draft.id}: version DOI ${versionDoi}, concept DOI ${conceptDoi}`);
+  const tested = readSums(dist);
   const library = build({ dist, doi: { concept: conceptDoi, version: versionDoi } });
+  const rebuilt = readSums(dist);
+  for (const [name, digest] of Object.entries(tested)) {
+    if (name !== LIBRARY_FILE && rebuilt[name] !== digest) throw new Error(`${name} rebuilt as ${rebuilt[name]}, tested artifact is ${digest}`);
+  }
 
   for (const file of draft.files ?? []) {
     if (file.links?.self) await request(file.links.self, { method: 'DELETE', headers: zenodoHeaders() });
@@ -162,7 +174,17 @@ async function adopt(depositRecord, dist) {
   const record = await zenodoJson(`/deposit/depositions/${depositRecord.id}`);
   for (const name of readdirSync(dist)) unlinkSync(resolve(dist, name));
   for (const file of record.files ?? []) {
-    const bytes = Buffer.from(await (await request(file.links.download, { headers: zenodoHeaders() }, 180_000)).arrayBuffer());
+    const urls = [file.links?.download, `${ZENODO}/records/${record.id}/files/${encodeURIComponent(file.filename)}/content`].filter(Boolean);
+    let bytes;
+    for (const url of urls) {
+      try {
+        bytes = Buffer.from(await (await request(url, { headers: zenodoHeaders() }, 180_000)).arrayBuffer());
+        break;
+      } catch (error) {
+        log(`download ${file.filename} from ${url} failed: ${error.message}`);
+      }
+    }
+    if (!bytes) throw new Error(`Could not download ${file.filename} from Zenodo record ${record.id}`);
     if (md5(bytes) !== file.checksum.replace(/^md5:/, '')) throw new Error(`Downloaded ${file.filename} does not match Zenodo's checksum`);
     writeFileSync(resolve(dist, file.filename), bytes);
   }
@@ -231,7 +253,12 @@ export async function publish({ dist }) {
   const tag = releaseTag(release.version);
   const existing = githubRelease(tag);
   if (existing && !existing.isDraft) {
-    if (existing.assets?.some((a) => a.name === LIBRARY_FILE)) return log(`${tag} is already released; nothing to do`);
+    if (existing.assets?.some((a) => a.name === LIBRARY_FILE)) {
+      log(`${tag} is already released`);
+      // A rerun exists because something failed; rebuilding the sites again is harmless.
+      if (Number(process.env.GITHUB_RUN_ATTEMPT ?? 1) > 1) await callDeployHooks();
+      return;
+    }
     // Releases are immutable once published: one without library.json can't be repaired in place.
     throw new Error(`${tag} was published without ${LIBRARY_FILE}; release the next patch version`);
   }
@@ -246,6 +273,8 @@ export async function publish({ dist }) {
   const notes = resolve(dist, '..', 'release-notes.md');
   writeFileSync(notes, releaseNotes(library, dist));
   const files = readdirSync(dist).sort().map((name) => resolve(dist, name));
+  // A draft left by a failed upload has no tag yet; replace it rather than add a second release.
+  if (existing?.isDraft) gh(['release', 'delete', tag, '--repo', REPO, '--yes']);
   gh(['release', 'create', tag, ...files, '--repo', REPO, '--target', library.source.commit, '--title', `${LIBRARY_TITLE} ${release.version}`, '--notes-file', notes, '--latest']);
   log(`GitHub release ${tag} carries ${files.length} files`);
   await callDeployHooks();
