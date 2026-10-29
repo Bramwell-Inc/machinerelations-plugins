@@ -8,11 +8,22 @@ authors:
     given-names: Jaxon
     orcid: "https://orcid.org/0009-0004-0039-3913"
     website: "https://jaxonparrott.com"
-version: "1.1.4"
-date-released: "2026-10-28"
+version: "1.1.5"
+date-released: "2026-10-29"
+doi: "10.5281/zenodo.23749768"
 license: MIT
 url: "https://machinerelations.ai/skill"
 repository-code: "https://github.com/Bramwell-Inc/machinerelations-plugins"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.23749768"
+    description: Concept DOI, all versions
+  - type: url
+    value: "https://www.wikidata.org/wiki/Q141909117"
+    description: Wikidata item
+  - type: url
+    value: "https://jaxonparrott.com/skills"
+    description: The author's library
 keywords:
   - machine relations
   - agent skills

@@ -56,6 +56,8 @@ Every version is released once, from a reviewed pull request, and the release is
 2. When the bump merges, the same workflow deposits the tested files on Zenodo (it rebuilds `library.json` with the reserved DOIs and refuses to continue if any other file differs from the tested build), which gives the version its own DOI, then publishes the GitHub release with `library.json` (every skill, version, DOI and sha256), the plugin ZIP, one archive per skill and `SHA256SUMS`.
 3. [machinerelations.ai/skill](https://machinerelations.ai/skill) and [jaxonparrott.com/skills](https://jaxonparrott.com/skills), and their `/.well-known/agent-skills/index.json`, rebuild from `https://github.com/Bramwell-Inc/machinerelations-plugins/releases/latest/download/library.json`. Nothing is copied by hand.
 
-Cite the library with its concept DOI (all versions) or a version DOI, both listed in `library.json` and on each release. `CITATION.cff` gives the author record.
+Cite the library with its concept DOI, [10.5281/zenodo.23749768](https://doi.org/10.5281/zenodo.23749768) (all versions); cite a version DOI only for work that used that exact version. Both are in `library.json` and on each release. `CITATION.cff` gives the author record. The library's Wikidata item is [Q141909117](https://www.wikidata.org/wiki/Q141909117).
+
+A skill can carry `metadata.title` and `metadata.summary` (a human name and a one-sentence practitioner summary; not the `description` trigger text). Pages use them when present.
 
 Directory listings (Claude, ChatGPT) update through their own review and can lag the latest release. The remote MCP service owns the Index's data and interpretation; daily data never requires a plugin release. The `review/` captures and video are dated evidence, not current API documentation.
