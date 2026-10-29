@@ -240,9 +240,26 @@ export function releaseNotes(library, dist) {
   ].join('\n');
 }
 
-async function callDeployHooks() {
+/**
+ * The sites read releases/latest/download/library.json when they build. Right after a release
+ * that URL can still resolve to the previous one, so a site rebuilt at once keeps the old version.
+ * Wait until it serves this version (bounded) before asking the sites to rebuild.
+ */
+export async function waitForLatest(version, { url = process.env.LATEST_LIBRARY_URL ?? `https://github.com/${REPO}/releases/latest/download/${LIBRARY_FILE}`, attempts = 40, delayMs = Number(process.env.LATEST_WAIT_MS ?? 15_000) } = {}) {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      const response = await fetch(`${url}?release=${encodeURIComponent(version)}&attempt=${attempt}`, { cache: 'no-store', signal: AbortSignal.timeout(20_000) });
+      if (response.ok && (await response.json()).version === version) return log(`latest library.json serves ${version}`);
+    } catch {}
+    if (attempt < attempts) await new Promise((ok) => setTimeout(ok, delayMs));
+  }
+  throw new Error(`releases/latest still does not serve ${version}; the sites were not rebuilt`);
+}
+
+async function callDeployHooks(version) {
   const hooks = (process.env.VERCEL_DEPLOY_HOOKS ?? '').split('\n').map((s) => s.trim()).filter(Boolean);
   if (!hooks.length) throw new Error('No deploy hooks configured; the sites will not rebuild from this release');
+  await waitForLatest(version);
   for (const hook of hooks) {
     const response = await request(hook, { method: 'POST' });
     const body = await response.json().catch(() => ({}));
@@ -258,7 +275,7 @@ export async function publish({ dist }) {
     if (existing.assets?.some((a) => a.name === LIBRARY_FILE)) {
       log(`${tag} is already released`);
       // A rerun exists because something failed; rebuilding the sites again is harmless.
-      if (Number(process.env.GITHUB_RUN_ATTEMPT ?? 1) > 1) await callDeployHooks();
+      if (Number(process.env.GITHUB_RUN_ATTEMPT ?? 1) > 1) await callDeployHooks(release.version);
       return;
     }
     // Releases are immutable once published: one without library.json can't be repaired in place.
@@ -279,7 +296,7 @@ export async function publish({ dist }) {
   if (existing?.isDraft) gh(['release', 'delete', tag, '--repo', REPO, '--yes']);
   gh(['release', 'create', tag, ...files, '--repo', REPO, '--target', library.source.commit, '--title', `${LIBRARY_TITLE} ${release.version}`, '--notes-file', notes, '--latest']);
   log(`GitHub release ${tag} carries ${files.length} files`);
-  await callDeployHooks();
+  await callDeployHooks(release.version);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
