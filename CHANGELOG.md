@@ -4,7 +4,7 @@ Every released version of the Machine Relations skills and plugin. The newest en
 
 ## [1.1.5] - 2026-10-29
 
-Name Machine Relations Research as publisher by its permanent identifier, link the library to its Wikidata item and to both of its pages, and lead every citation with the DOI that covers all versions. Skills, tools and endpoints are unchanged.
+Name Machine Relations Research as publisher by its permanent identifier, link the library to its Wikidata item and to both of its pages, and add a citation by the DOI that covers all versions, which the sites now show first. Skills, tools and endpoints are unchanged.
 
 ## [1.1.4] - 2026-10-28
 

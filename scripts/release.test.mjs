@@ -223,6 +223,8 @@ test('publish: create, rerun, adopt, draft recovery, hook retry, tamper refusal,
     assert.match(library.citation_concept, new RegExp(`Machine Relations Skills \\[Computer software\\]\\. Machine Relations Research\\. https://doi.org/10.5281/zenodo.${id - 1}$`));
     assert.equal(library.publisher['@id'], 'https://machinerelations.ai/about#research');
     assert.equal(library.wikidata, 'https://www.wikidata.org/wiki/Q141909117');
+    assert.equal(library.publisher.wikidata, 'https://www.wikidata.org/wiki/Q141909235');
+    assert.equal(library.license_url, 'https://spdx.org/licenses/MIT.html');
     assert.deepEqual(library.pages, { author: 'https://jaxonparrott.com/skills', install: 'https://machinerelations.ai/skill' });
     const deposited = [...zen.state.deposits.values()].find((d) => d.id === id).metadata;
     for (const target of ['https://jaxonparrott.com/skills', 'https://machinerelations.ai/skill', 'https://www.wikidata.org/wiki/Q141909117']) {
@@ -284,9 +286,9 @@ test('publish: create, rerun, adopt, draft recovery, hook retry, tamper refusal,
     assert.notEqual(next.doi.version, library.doi.version);
     const nextFiles = zen.state.files.get(zen.state.published[1]);
     assert.deepEqual([...nextFiles.keys()].sort(), readdirSync(dist).sort());
-    assert.ok(nextFiles.get('library.json').equals(readFileSync(join(dist, 'library.json'))), 'no 1.1.4 file survives in 1.1.5');
+    assert.ok(nextFiles.get('library.json').equals(readFileSync(join(dist, 'library.json'))), 'no 1.1.5 file survives in 1.1.6');
 
-    // And 1.1.6 branches from the newest published version.
+    // And 1.1.7 branches from the newest published version.
     bump('1.1.6', '1.1.7');
     pack();
     assert.match(await run(), /plan for 1\.1\.7: new-version/);
@@ -295,6 +297,30 @@ test('publish: create, rerun, adopt, draft recovery, hook retry, tamper refusal,
   } finally {
     zen.server.close();
     hooks.server.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('validator: title and summary go together and the summary is not trigger text', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'mr-validate-'));
+  try {
+    for (const file of execFileSync('git', ['ls-files'], { encoding: 'utf8' }).trim().split('\n')) {
+      if (file.startsWith('review/')) continue;
+      mkdirSync(join(dir, file, '..'), { recursive: true });
+      writeFileSync(join(dir, file), readFileSync(file));
+    }
+    const skill = join(dir, 'plugins/machine-relations-index/skills/machine-relations/SKILL.md');
+    const base = readFileSync(skill, 'utf8');
+    const withMeta = (lines) => base.replace(/(\n {2}version: "[^"]+")/, `$1${lines}`);
+    const validate = () => execFileSync(process.execPath, ['scripts/validate-package.mjs'], { cwd: dir, stdio: 'pipe' });
+    validate();
+    writeFileSync(skill, withMeta('\n  title: "Machine Relations"'));
+    assert.throws(validate, /go together/);
+    writeFileSync(skill, withMeta('\n  title: "Machine Relations"\n  summary: "Use when you need an authority brief for a brand."'));
+    assert.throws(validate, /not host trigger text/);
+    writeFileSync(skill, withMeta('\n  title: "Machine Relations"\n  summary: "Choose, draft and verify the next authority move for a brand."'));
+    validate();
+  } finally {
     rmSync(dir, { recursive: true, force: true });
   }
 });
