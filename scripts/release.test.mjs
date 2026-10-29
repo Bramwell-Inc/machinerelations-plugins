@@ -146,10 +146,22 @@ process.exit(2);
   return { log, releases };
 }
 
+/** Deploy hooks plus GitHub's releases/latest library.json, which can lag a fresh release. */
 function hookServer() {
   const calls = [];
-  const server = createServer((req, res) => { calls.push(req.url); res.writeHead(201, { 'Content-Type': 'application/json' }); res.end('{"job":{"id":"j1"}}'); });
-  return { server, calls };
+  const state = { latest: null, staleReads: 0, reads: 0 };
+  const server = createServer((req, res) => {
+    if (req.url.startsWith('/latest')) {
+      state.reads++;
+      const stale = state.staleReads > 0 && state.staleReads--;
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ version: stale ? '0.0.0' : state.latest?.() }));
+    }
+    calls.push(req.url);
+    res.writeHead(201, { 'Content-Type': 'application/json' });
+    res.end('{"job":{"id":"j1"}}');
+  });
+  return { server, calls, state };
 }
 
 const listen = (server) => new Promise((ok) => server.listen(0, '127.0.0.1', ok));
@@ -202,6 +214,8 @@ test('publish: create, rerun, adopt, draft recovery, hook retry, tamper refusal,
       ...process.env,
       NODE_USE_ENV_PROXY: '', HTTP_PROXY: '', HTTPS_PROXY: '', http_proxy: '', https_proxy: '',
       GITHUB_RUN_ATTEMPT: '1',
+      LATEST_LIBRARY_URL: `http://127.0.0.1:${hooks.server.address().port}/latest`,
+      LATEST_WAIT_MS: '10',
       PATH: `${dir}:${process.env.PATH}`,
       ZENODO_API: `http://127.0.0.1:${zen.server.address().port}/api`,
       ZENODO_TOKEN: 'test-zenodo-token',
@@ -217,6 +231,7 @@ test('publish: create, rerun, adopt, draft recovery, hook retry, tamper refusal,
     execFileSync(process.execPath, [join(tree, 'scripts/build-release.mjs'), '--dist', dist], { cwd: tree });
   };
   const releaseFile = (tag) => join(gh.releases, `${tag}.json`);
+  hooks.state.latest = () => JSON.parse(readFileSync(join(dist, 'library.json'), 'utf8')).version;
   try {
     execFileSync(process.execPath, ['scripts/validate-package.mjs'], { cwd: tree });
     pack();
@@ -243,14 +258,25 @@ test('publish: create, rerun, adopt, draft recovery, hook retry, tamper refusal,
     const create = readFileSync(gh.log, 'utf8').trim().split('\n').map((l) => JSON.parse(l)).find((c) => c[1] === 'create');
     assert.ok(create.includes('--latest') && create.includes(library.source.commit));
     assert.deepEqual(hooks.calls, ['/hook-a', '/hook-b']);
+    const firstReads = hooks.state.reads;
+    assert.ok(firstReads >= 1, 'checked releases/latest before rebuilding the sites');
 
     // Rerun after success: nothing deposited, no hooks on a first attempt...
     assert.match(await run(), /already released/);
     assert.equal(zen.state.published.length, 1);
     assert.equal(hooks.calls.length, 2);
-    // ...but a retried run (hooks failed last time) rebuilds the sites.
-    await run({ GITHUB_RUN_ATTEMPT: '2' });
+    // ...but a retried run rebuilds the sites, after releases/latest serves this version.
+    hooks.state.staleReads = 2;
+    const retried = await run({ GITHUB_RUN_ATTEMPT: '2' });
     assert.equal(hooks.calls.length, 4);
+    assert.equal(hooks.state.staleReads, 0, 'waited through the stale reads');
+    assert.match(retried, /latest library.json serves/);
+
+    // A latest that never catches up fails the run instead of rebuilding the sites with the old release.
+    hooks.state.staleReads = 1000;
+    await assert.rejects(run({ GITHUB_RUN_ATTEMPT: '2' }), /still does not serve/);
+    assert.equal(hooks.calls.length, 4);
+    hooks.state.staleReads = 0;
 
     // GitHub release lost after Zenodo published: adopt Zenodo's exact bytes.
     rmSync(releaseFile(library.source.tag));
