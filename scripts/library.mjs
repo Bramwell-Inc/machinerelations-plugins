@@ -89,7 +89,7 @@ export function readCitation(text) {
     return value.startsWith('"') ? JSON.parse(value) : value;
   };
   const orcid = /^\s+orcid: "?(https:\/\/orcid\.org\/[0-9X-]+)"?\s*$/m.exec(text);
-  return { version: field('version'), dateReleased: field('date-released'), title: field('title'), doi: field('doi'), orcid: orcid?.[1], wikidata: new RegExp(`^\\s+value: "${LIBRARY_WIKIDATA.replace(/[.\/]/g, '\\$&')}"\\s*$`, 'm').test(text) };
+  return { version: field('version'), dateReleased: field('date-released'), title: field('title'), doi: field('doi'), orcid: orcid?.[1], wikidata: text.split(/\r?\n/).some((line) => line.trim() === `value: "${LIBRARY_WIKIDATA}"`) };
 }
 
 /** The release as the reviewed tree states it. */

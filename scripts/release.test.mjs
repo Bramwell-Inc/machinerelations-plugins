@@ -28,6 +28,13 @@ test('skill frontmatter reads quoted, bare and nested version', () => {
   assert.deepEqual([titled.version, titled.title, titled.summary], ['1.0.0', 'Query-set-first consolidation', 'Merge pages only when their real query sets match.']);
 });
 
+test('citation names the library Wikidata item only on an exact value line', () => {
+  const at = (body) => readCitation(body).wikidata;
+  assert.equal(at('identifiers:\n  - type: url\n    value: "https://www.wikidata.org/wiki/Q141909117"\n'), true);
+  assert.equal(at('identifiers:\n  - type: url\n    value: "https://www.wikidata.org/wiki/Q1419091170"\n'), false);
+  assert.equal(at('abstract: "see https://www.wikidata.org/wiki/Q141909117"\n'), false);
+});
+
 test('citation fields', () => {
   const c = readCitation('version: "1.1.4"\ndate-released: "2026-10-28"\ndoi: "10.5281/zenodo.1"\nauthors:\n  - family-names: P\n    orcid: "https://orcid.org/0009-0004-0039-3913"\n');
   assert.deepEqual(c, { version: '1.1.4', dateReleased: '2026-10-28', title: undefined, doi: '10.5281/zenodo.1', orcid: 'https://orcid.org/0009-0004-0039-3913', wikidata: false });
