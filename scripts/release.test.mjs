@@ -309,6 +309,8 @@ test('validator: title and summary go together and the summary is not trigger te
       mkdirSync(join(dir, file, '..'), { recursive: true });
       writeFileSync(join(dir, file), readFileSync(file));
     }
+    execFileSync('git', ['init', '-q'], { cwd: dir });
+    execFileSync('git', ['add', '-A'], { cwd: dir });
     const skill = join(dir, 'plugins/machine-relations-index/skills/machine-relations/SKILL.md');
     const base = readFileSync(skill, 'utf8');
     const withMeta = (lines) => base.replace(/(\n {2}version: "[^"]+")/, `$1${lines}`);
