@@ -8,6 +8,8 @@ permissions:
 jobs:
   package:
     runs-on: ubuntu-latest
+    outputs:
+      artifact: ${{ steps.package.outputs.name }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -15,6 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - run: node --test scripts/release.test.mjs
       - run: node scripts/validate-package.mjs
         env:
           PACKAGE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -39,12 +42,41 @@ jobs:
         run: |
           VERSION=$(node -p "require('./plugins/machine-relations-index/plugin.json').version")
           mkdir -p dist
-          (cd plugins/machine-relations-index && zip -qr ../../dist/machine-relations-index.zip .)
-          (cd dist && sha256sum machine-relations-index.zip > SHA256SUMS)
-          git rev-parse HEAD > dist/SOURCE_COMMIT
+          (cd plugins/machine-relations-index && zip -qrX ../../dist/machine-relations-index.zip .)
+          node scripts/build-release.mjs --dist dist
           echo "name=machine-relations-index-${VERSION}-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.package.outputs.name }}
           path: dist/
           if-no-files-found: error
+
+  # A merged version bump becomes one release: Zenodo DOI, GitHub release with
+  # the exact files tested above, then both sites rebuild from it. A version
+  # that is already released ends the job at its first check.
+  release:
+    needs: package
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: release
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.package.outputs.artifact }}
+          path: dist
+      - name: Publish the release
+        run: node scripts/publish-release.mjs --dist dist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
+          VERCEL_DEPLOY_HOOKS: |
+            ${{ secrets.VERCEL_DEPLOY_HOOK_JAXONPARROTT }}
+            ${{ secrets.VERCEL_DEPLOY_HOOK_MACHINERELATIONS }}

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve, relative } from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { AUTHOR, DESCRIPTOR, compareVersions, readCitation, readRelease } from './library.mjs';
 
 const root = resolve('plugins/machine-relations-index');
 const read = (name) => JSON.parse(readFileSync(resolve(root, name), 'utf8'));
@@ -59,6 +60,42 @@ for (const name of ['machine-relations', 'machine-relations-index']) {
     assert.ok(existsSync(target), `Missing packaged skill reference: ${match[1]}`);
   }
 }
+// One version everywhere a reader or citation can see it.
+const release = readRelease();
+const [latest, previous] = release.changelog;
+assert.ok(latest, 'CHANGELOG.md needs a `## [x.y.z] - YYYY-MM-DD` entry');
+assert.equal(latest.version, codex.version, 'The newest CHANGELOG entry must be the package version');
+assert.ok(latest.notes.length >= 40, 'The newest CHANGELOG entry needs a practitioner-facing note');
+if (previous) assert.ok(compareVersions(latest.version, previous.version) > 0, 'CHANGELOG versions must increase');
+assert.equal(codex.extensions['com.openai'].publication.release_notes, latest.notes, 'Directory release notes are the newest CHANGELOG entry, verbatim');
+for (const skill of release.skills) {
+  assert.equal(skill.name, skill.slug, `${skill.path}: name must match its folder`);
+  assert.equal(skill.version, codex.version, `${skill.path}: metadata.version must be the package version`);
+}
+const citation = readCitation(readFileSync('CITATION.cff', 'utf8'));
+assert.equal(citation.version, codex.version, 'CITATION.cff version must be the package version');
+assert.equal(citation.dateReleased, latest.date, 'CITATION.cff date-released must be the newest CHANGELOG date');
+assert.equal(citation.orcid, `https://orcid.org/${AUTHOR.orcid}`, 'CITATION.cff must carry the author ORCID');
+for (const manifest of [codex, claude]) {
+  assert.deepEqual(manifest.author, { name: AUTHOR.name, url: AUTHOR.url }, 'The skills are authored by Jaxon Parrott');
+}
+
+// Public text: exact agency descriptor, no internal ids, paths or secrets.
+const publicFiles = [
+  'README.md', 'CHANGELOG.md', 'CITATION.cff',
+  ...execFileSync('git', ['ls-files', 'plugins'], { encoding: 'utf8' }).split('\n').filter((f) => /\.(md|json|ya?ml|txt)$/.test(f)),
+];
+for (const file of publicFiles) {
+  const text = readFileSync(file, 'utf8');
+  for (const match of text.matchAll(/first machine relations agency/gi)) {
+    const start = match.index - 'The World\'s '.length;
+    assert.equal(text.slice(start, match.index + match[0].length), DESCRIPTOR, `${file}: AuthorityTech is exactly "${DESCRIPTOR}"`);
+  }
+  assert.doesNotMatch(text, /\bBrain\s+(?:seq\s*)?#?\d{3,6}\b|\bseq\s?\d{4,6}\b/i, `${file}: no internal Brain ids in public files`);
+  assert.doesNotMatch(text, /\/home\/jarvis|\.openclaw\/|jarvis-runtime\/|workspace-[a-z]+\//, `${file}: no internal paths in public files`);
+  assert.doesNotMatch(text, /\b(?:ghp_|gho_|github_pat_|xox[abp]-|AKIA[0-9A-Z]{16}|sk-[A-Za-z0-9]{20,})/, `${file}: no secrets in public files`);
+}
+
 for (const client of ['.agents/plugins', '.claude-plugin']) {
   const marketplace = JSON.parse(readFileSync(`${client}/marketplace.json`, 'utf8'));
   const plugin = marketplace.plugins.find((p) => p.name === codex.name);
