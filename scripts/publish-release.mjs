@@ -11,7 +11,7 @@ import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { build, sha256 } from './build-release.mjs';
 import {
-  AUTHOR, COMMIT_FILE, LIBRARY_FILE, LIBRARY_TITLE, PACKAGE_FILE, PUBLISHER, REPO, SUMS_FILE,
+  AUTHOR, COMMIT_FILE, LIBRARY_FILE, LIBRARY_TITLE, LIBRARY_WIKIDATA, PACKAGE_FILE, PUBLISHER, REPO, SUMS_FILE,
   readRelease, releaseTag,
 } from './library.mjs';
 
@@ -109,6 +109,8 @@ export function zenodoMetadata(release, commit) {
     related_identifiers: [
       { identifier: tagUrl, relation: 'isSupplementTo', scheme: 'url', resource_type: 'software' },
       { identifier: 'https://machinerelations.ai/skill', relation: 'isDocumentedBy', scheme: 'url', resource_type: 'publication' },
+      { identifier: 'https://jaxonparrott.com/skills', relation: 'isDocumentedBy', scheme: 'url', resource_type: 'publication' },
+      { identifier: LIBRARY_WIKIDATA, relation: 'isDescribedBy', scheme: 'url', resource_type: 'other' },
       { identifier: '10.5281/zenodo.23652423', relation: 'references', scheme: 'doi', resource_type: 'dataset' },
     ],
     prereserve_doi: true,

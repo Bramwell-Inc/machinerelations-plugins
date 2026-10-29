@@ -18,7 +18,18 @@ export const AUTHOR = Object.freeze({
   id: 'https://jaxonparrott.com/#person',
   orcid: '0009-0004-0039-3913',
 });
-export const PUBLISHER = Object.freeze({ name: 'Machine Relations Research', url: 'https://machinerelations.ai' });
+export const PUBLISHER = Object.freeze({
+  name: 'Machine Relations Research',
+  url: 'https://machinerelations.ai',
+  '@id': 'https://machinerelations.ai/about#research',
+  wikidata: 'https://www.wikidata.org/wiki/Q141909235',
+});
+/** The library's own Wikidata item and concept DOI (all versions); both are permanent. */
+export const LIBRARY_WIKIDATA = 'https://www.wikidata.org/wiki/Q141909117';
+export const CONCEPT_DOI = '10.5281/zenodo.23749768';
+export const LICENSE_URL = 'https://spdx.org/licenses/MIT.html';
+/** Each site keeps its own job: the author's library on JP, install and standard on MR. */
+export const PAGES = Object.freeze({ author: 'https://jaxonparrott.com/skills', install: 'https://machinerelations.ai/skill' });
 export const DESCRIPTOR = "The World's First Machine Relations Agency";
 
 /** "1.2.3" -> [1, 2, 3]; anything else throws. */
@@ -61,8 +72,13 @@ export function skillFrontmatter(text) {
     const line = new RegExp(`^${key}: (.+)$`, 'm').exec(block[1]);
     return line ? scalar(line[1]) : undefined;
   };
-  const version = /^metadata:\n(?:[ ]{2}.*\n)*?[ ]{2}version: (.+)$/m.exec(`${block[1]}\n`);
-  return { name: top('name'), description: top('description'), version: version ? scalar(version[1]) : undefined };
+  const meta = (key) => {
+    const line = new RegExp(`^metadata:\\n(?:[ ]{2}.*\\n)*?[ ]{2}${key}: (.+)$`, 'm').exec(`${block[1]}\n`);
+    return line ? scalar(line[1]) : undefined;
+  };
+  // title and summary are the human name and one-sentence practitioner summary pages show;
+  // description stays the host's trigger text.
+  return { name: top('name'), description: top('description'), version: meta('version'), title: meta('title'), summary: meta('summary') };
 }
 
 export function readCitation(text) {
@@ -73,7 +89,7 @@ export function readCitation(text) {
     return value.startsWith('"') ? JSON.parse(value) : value;
   };
   const orcid = /^\s+orcid: "?(https:\/\/orcid\.org\/[0-9X-]+)"?\s*$/m.exec(text);
-  return { version: field('version'), dateReleased: field('date-released'), title: field('title'), orcid: orcid?.[1] };
+  return { version: field('version'), dateReleased: field('date-released'), title: field('title'), doi: field('doi'), orcid: orcid?.[1], wikidata: text.split(/\r?\n/).some((line) => line.trim() === `value: "${LIBRARY_WIKIDATA}"`) };
 }
 
 /** The release as the reviewed tree states it. */

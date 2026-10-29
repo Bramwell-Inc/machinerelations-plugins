@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve, relative } from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { AUTHOR, DESCRIPTOR, compareVersions, readCitation, readRelease } from './library.mjs';
+import { AUTHOR, CONCEPT_DOI, DESCRIPTOR, compareVersions, readCitation, readRelease } from './library.mjs';
 
 const root = resolve('plugins/machine-relations-index');
 const read = (name) => JSON.parse(readFileSync(resolve(root, name), 'utf8'));
@@ -71,11 +71,18 @@ assert.equal(codex.extensions['com.openai'].publication.release_notes, latest.no
 for (const skill of release.skills) {
   assert.equal(skill.name, skill.slug, `${skill.path}: name must match its folder`);
   assert.equal(skill.version, codex.version, `${skill.path}: metadata.version must be the package version`);
+  assert.equal(skill.title === undefined, skill.summary === undefined, `${skill.path}: metadata.title and metadata.summary go together`);
+  if (skill.summary !== undefined) {
+    assert.ok(skill.title.length >= 3 && skill.summary.length >= 20, `${skill.path}: a human title and a one-sentence summary`);
+    assert.doesNotMatch(skill.summary, /^use when/i, `${skill.path}: metadata.summary is for practitioners, not host trigger text`);
+  }
 }
 const citation = readCitation(readFileSync('CITATION.cff', 'utf8'));
 assert.equal(citation.version, codex.version, 'CITATION.cff version must be the package version');
 assert.equal(citation.dateReleased, latest.date, 'CITATION.cff date-released must be the newest CHANGELOG date');
 assert.equal(citation.orcid, `https://orcid.org/${AUTHOR.orcid}`, 'CITATION.cff must carry the author ORCID');
+assert.equal(citation.doi, CONCEPT_DOI, 'CITATION.cff doi is the concept DOI (all versions)');
+assert.ok(citation.wikidata, 'CITATION.cff lists the library Wikidata item');
 for (const manifest of [codex, claude]) {
   assert.deepEqual(manifest.author, { name: AUTHOR.name, url: AUTHOR.url }, 'The skills are authored by Jaxon Parrott');
 }

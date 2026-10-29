@@ -22,13 +22,22 @@ test('changelog entries parse newest first with flattened notes', () => {
 });
 
 test('skill frontmatter reads quoted, bare and nested version', () => {
-  assert.deepEqual(skillFrontmatter('---\nname: a\ndescription: "x: y"\nmetadata:\n  version: "1.0.0"\n---\nbody'), { name: 'a', description: 'x: y', version: '1.0.0' });
+  assert.deepEqual(skillFrontmatter('---\nname: a\ndescription: "x: y"\nmetadata:\n  version: "1.0.0"\n---\nbody'), { name: 'a', description: 'x: y', version: '1.0.0', title: undefined, summary: undefined });
   assert.equal(skillFrontmatter('---\nname: a\ndescription: b\n---\n').version, undefined);
+  const titled = skillFrontmatter('---\nname: a\ndescription: b\nmetadata:\n  version: "1.0.0"\n  title: "Query-set-first consolidation"\n  summary: "Merge pages only when their real query sets match."\n---\n');
+  assert.deepEqual([titled.version, titled.title, titled.summary], ['1.0.0', 'Query-set-first consolidation', 'Merge pages only when their real query sets match.']);
+});
+
+test('citation names the library Wikidata item only on an exact value line', () => {
+  const at = (body) => readCitation(body).wikidata;
+  assert.equal(at('identifiers:\n  - type: url\n    value: "https://www.wikidata.org/wiki/Q141909117"\n'), true);
+  assert.equal(at('identifiers:\n  - type: url\n    value: "https://www.wikidata.org/wiki/Q1419091170"\n'), false);
+  assert.equal(at('abstract: "see https://www.wikidata.org/wiki/Q141909117"\n'), false);
 });
 
 test('citation fields', () => {
-  const c = readCitation('version: "1.1.4"\ndate-released: "2026-10-28"\nauthors:\n  - family-names: P\n    orcid: "https://orcid.org/0009-0004-0039-3913"\n');
-  assert.deepEqual(c, { version: '1.1.4', dateReleased: '2026-10-28', title: undefined, orcid: 'https://orcid.org/0009-0004-0039-3913' });
+  const c = readCitation('version: "1.1.4"\ndate-released: "2026-10-28"\ndoi: "10.5281/zenodo.1"\nauthors:\n  - family-names: P\n    orcid: "https://orcid.org/0009-0004-0039-3913"\n');
+  assert.deepEqual(c, { version: '1.1.4', dateReleased: '2026-10-28', title: undefined, doi: '10.5281/zenodo.1', orcid: 'https://orcid.org/0009-0004-0039-3913', wikidata: false });
 });
 
 const ours = (extra) => ({ conceptrecid: 7, metadata: { keywords: [CONCEPT_MARKER], version: '1.0.0' }, listStatus: 'published', id: 8, ...extra });
@@ -162,7 +171,7 @@ function treeCopy(dir) {
     for (const file of ['plugins/machine-relations-index/plugin.json', 'plugins/machine-relations-index/.claude-plugin/plugin.json', 'CITATION.cff',
       ...readdirSync(join(tree, 'plugins/machine-relations-index/skills')).map((s) => `plugins/machine-relations-index/skills/${s}/SKILL.md`)]) {
       const path = join(tree, file);
-      writeFileSync(path, readFileSync(path, 'utf8').replaceAll(`"${from}"`, `"${to}"`).replace('date-released: "2026-10-28"', 'date-released: "2026-11-02"'));
+      writeFileSync(path, readFileSync(path, 'utf8').replaceAll(`"${from}"`, `"${to}"`).replace('date-released: "2026-10-29"', 'date-released: "2026-11-02"'));
     }
     const changelog = join(tree, 'CHANGELOG.md');
     const text = readFileSync(changelog, 'utf8');
@@ -218,6 +227,16 @@ test('publish: create, rerun, adopt, draft recovery, hook retry, tamper refusal,
     assert.equal(library.doi.version, `10.5281/zenodo.${id}`);
     assert.equal(library.doi.concept, `10.5281/zenodo.${id - 1}`);
     assert.match(library.citation, new RegExp(`https://doi.org/10.5281/zenodo.${id}$`));
+    assert.match(library.citation_concept, new RegExp(`Machine Relations Skills \\[Computer software\\]\\. Machine Relations Research\\. https://doi.org/10.5281/zenodo.${id - 1}$`));
+    assert.equal(library.publisher['@id'], 'https://machinerelations.ai/about#research');
+    assert.equal(library.wikidata, 'https://www.wikidata.org/wiki/Q141909117');
+    assert.equal(library.publisher.wikidata, 'https://www.wikidata.org/wiki/Q141909235');
+    assert.equal(library.license_url, 'https://spdx.org/licenses/MIT.html');
+    assert.deepEqual(library.pages, { author: 'https://jaxonparrott.com/skills', install: 'https://machinerelations.ai/skill' });
+    const deposited = [...zen.state.deposits.values()].find((d) => d.id === id).metadata;
+    for (const target of ['https://jaxonparrott.com/skills', 'https://machinerelations.ai/skill', 'https://www.wikidata.org/wiki/Q141909117']) {
+      assert.ok(deposited.related_identifiers.some((r) => r.identifier === target), `Zenodo relates ${target}`);
+    }
     const stored = zen.state.files.get(id);
     assert.deepEqual([...stored.keys()].sort(), readdirSync(dist).sort(), 'Zenodo holds every release file');
     for (const name of stored.keys()) assert.ok(stored.get(name).equals(readFileSync(join(dist, name))), `${name} identical on Zenodo and GitHub`);
@@ -256,7 +275,7 @@ test('publish: create, rerun, adopt, draft recovery, hook retry, tamper refusal,
     await assert.rejects(run({ VERCEL_DEPLOY_HOOKS: '' }), /No deploy hooks/);
 
     // Next version: a tampered artifact is refused before Zenodo publishes anything.
-    bump('1.1.4', '1.1.5');
+    bump('1.1.5', '1.1.6');
     execFileSync(process.execPath, ['scripts/validate-package.mjs'], { cwd: tree });
     pack();
     writeFileSync(join(dist, 'skill-machine-relations.tar.gz'), 'tampered');
@@ -267,24 +286,50 @@ test('publish: create, rerun, adopt, draft recovery, hook retry, tamper refusal,
     // The honest artifact then releases as a new version of the same concept, reusing the open draft.
     pack();
     const out = await run();
-    assert.match(out, /plan for 1\.1\.5: reuse-draft/);
+    assert.match(out, /plan for 1\.1\.6: reuse-draft/);
     assert.equal(zen.state.published.length, 2);
     const next = JSON.parse(readFileSync(join(dist, 'library.json'), 'utf8'));
     assert.equal(next.doi.concept, library.doi.concept, 'one concept DOI for every version');
     assert.notEqual(next.doi.version, library.doi.version);
     const nextFiles = zen.state.files.get(zen.state.published[1]);
     assert.deepEqual([...nextFiles.keys()].sort(), readdirSync(dist).sort());
-    assert.ok(nextFiles.get('library.json').equals(readFileSync(join(dist, 'library.json'))), 'no 1.1.4 file survives in 1.1.5');
+    assert.ok(nextFiles.get('library.json').equals(readFileSync(join(dist, 'library.json'))), 'no 1.1.5 file survives in 1.1.6');
 
-    // And 1.1.6 branches from the newest published version.
-    bump('1.1.5', '1.1.6');
+    // And 1.1.7 branches from the newest published version.
+    bump('1.1.6', '1.1.7');
     pack();
-    assert.match(await run(), /plan for 1\.1\.6: new-version/);
+    assert.match(await run(), /plan for 1\.1\.7: new-version/);
     assert.equal(zen.state.published.length, 3);
     assert.equal(JSON.parse(readFileSync(join(dist, 'library.json'), 'utf8')).doi.concept, library.doi.concept);
   } finally {
     zen.server.close();
     hooks.server.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('validator: title and summary go together and the summary is not trigger text', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'mr-validate-'));
+  try {
+    for (const file of execFileSync('git', ['ls-files'], { encoding: 'utf8' }).trim().split('\n')) {
+      if (file.startsWith('review/')) continue;
+      mkdirSync(join(dir, file, '..'), { recursive: true });
+      writeFileSync(join(dir, file), readFileSync(file));
+    }
+    execFileSync('git', ['init', '-q'], { cwd: dir });
+    execFileSync('git', ['add', '-A'], { cwd: dir });
+    const skill = join(dir, 'plugins/machine-relations-index/skills/machine-relations/SKILL.md');
+    const base = readFileSync(skill, 'utf8');
+    const withMeta = (lines) => base.replace(/(\n {2}version: "[^"]+")/, `$1${lines}`);
+    const validate = () => execFileSync(process.execPath, ['scripts/validate-package.mjs'], { cwd: dir, stdio: 'pipe' });
+    validate();
+    writeFileSync(skill, withMeta('\n  title: "Machine Relations"'));
+    assert.throws(validate, /go together/);
+    writeFileSync(skill, withMeta('\n  title: "Machine Relations"\n  summary: "Use when you need an authority brief for a brand."'));
+    assert.throws(validate, /not host trigger text/);
+    writeFileSync(skill, withMeta('\n  title: "Machine Relations"\n  summary: "Choose, draft and verify the next authority move for a brand."'));
+    validate();
+  } finally {
     rmSync(dir, { recursive: true, force: true });
   }
 });

@@ -2,6 +2,10 @@
 
 Every released version of the Machine Relations skills and plugin. The newest entry's text is the release note for the GitHub release, the Zenodo record and the directory listings, so it is written for practitioners. Versions follow semver: a minor version adds or graduates a method, a patch corrects wording or metadata, and a major version changes a tool or endpoint.
 
+## [1.1.5] - 2026-10-29
+
+Name Machine Relations Research as publisher by its permanent identifier, link the library to its Wikidata item and to both of its pages, and add a citation by the DOI that covers all versions, which the sites now show first. Skills, tools and endpoints are unchanged.
+
 ## [1.1.4] - 2026-10-28
 
 Credit Jaxon Parrott as the author of the Machine Relations skills and give every skill the package version. Each release now carries its own permanent DOI, checksums and a machine-readable library manifest; tools, endpoints and skill behaviour are unchanged.

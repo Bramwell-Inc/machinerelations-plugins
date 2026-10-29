@@ -9,7 +9,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import {
-  AUTHOR, COMMIT_FILE, LIBRARY_FILE, LIBRARY_TITLE, PACKAGE_FILE, PLUGIN_ROOT, PUBLISHER, REPO, SUMS_FILE,
+  AUTHOR, COMMIT_FILE, LIBRARY_FILE, LIBRARY_TITLE, LIBRARY_WIKIDATA, LICENSE_URL, PACKAGE_FILE, PAGES, PLUGIN_ROOT, PUBLISHER, REPO, SUMS_FILE,
   assetUrl, readRelease, releaseTag, skillArchive,
 } from './library.mjs';
 
@@ -28,7 +28,8 @@ function archiveSkill(dist, slug, mtime) {
 export function buildLibrary({ release, commit, files, doi }) {
   const { version, latest, changelog, skills } = release;
   const file = (name) => ({ file: name, url: assetUrl(version, name), sha256: files[name].sha256, bytes: files[name].bytes });
-  const citation = `${AUTHOR.family}, ${AUTHOR.given}. (${latest.date.slice(0, 4)}). ${LIBRARY_TITLE} (Version ${version}) [Computer software]. ${PUBLISHER.name}.${doi.version ? ` https://doi.org/${doi.version}` : ''}`;
+  const cite = (versionText, id) => `${AUTHOR.family}, ${AUTHOR.given}. (${latest.date.slice(0, 4)}). ${LIBRARY_TITLE}${versionText} [Computer software]. ${PUBLISHER.name}.${id ? ` https://doi.org/${id}` : ''}`;
+  const citation = cite(` (Version ${version})`, doi.version);
   return {
     schema: 'machinerelations_skill_library_v1',
     name: LIBRARY_TITLE,
@@ -38,12 +39,17 @@ export function buildLibrary({ release, commit, files, doi }) {
     author: { name: AUTHOR.name, url: AUTHOR.url, '@id': AUTHOR.id, orcid: `https://orcid.org/${AUTHOR.orcid}` },
     publisher: PUBLISHER,
     license: 'MIT',
+    license_url: LICENSE_URL,
+    wikidata: LIBRARY_WIKIDATA,
+    pages: PAGES,
     doi: {
       concept: doi.concept ?? null,
       concept_url: doiUrl(doi.concept),
       version: doi.version ?? null,
       version_url: doiUrl(doi.version),
     },
+    // Cite the library by its concept DOI; the version citation is for work that used this exact version.
+    citation_concept: cite('', doi.concept),
     citation,
     source: {
       repository: `https://github.com/${REPO}`,
@@ -60,6 +66,8 @@ export function buildLibrary({ release, commit, files, doi }) {
     skills: skills.map((skill) => ({
       name: skill.name,
       slug: skill.slug,
+      title: skill.title ?? null,
+      summary: skill.summary ?? null,
       description: skill.description,
       version: skill.version,
       source_url: `https://github.com/${REPO}/blob/${releaseTag(version)}/${skill.path}`,
