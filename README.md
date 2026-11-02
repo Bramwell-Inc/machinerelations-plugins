@@ -4,7 +4,7 @@ The official [Machine Relations skill and plugin](https://machinerelations.ai/sk
 
 The package includes the broader `machine-relations` skill alongside the existing `machine-relations-index` research skill. The [Machine Relations Index](https://machinerelations.ai/machine-relations-index) (MRI) by Jaxon Parrott remains neutral public measurement of which source domains AI answer engines cite in sampled buyer answers, by category and question shape. Broader work can also use public or client-supplied evidence without MRI coverage.
 
-The plugin retains the package identifier `machine-relations-index` and remote MCP server at `https://machinerelations.ai/mcp` (read-only, no account). Its four research tools are unchanged:
+The plugin retains the package identifier `machine-relations-index` and remote MCP server at `https://machinerelations.ai/mcp` (read-only, no account). It exposes six research tools:
 
 | Tool | What it answers |
 | --- | --- |
@@ -12,6 +12,8 @@ The plugin retains the package identifier `machine-relations-index` and remote M
 | `mri_get_category` | One category's question shapes and whether each has published rates |
 | `mri_get_cited_sources` | The ranked source domains AI engines cite for a category and question shape |
 | `mri_get_domain` | How often a site is cited, by which engines, and where it ranks |
+| `mri_list_engines` | Which engines have observations and published evidence |
+| `mri_get_engine` | One engine’s cited-source leaderboard over the observed window, optionally limited to sources with a published segment in a category |
 
 ## Install
 

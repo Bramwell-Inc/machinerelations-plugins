@@ -301,7 +301,9 @@ test('publish: create, rerun, adopt, draft recovery, hook retry, tamper refusal,
     await assert.rejects(run({ VERCEL_DEPLOY_HOOKS: '' }), /No deploy hooks/);
 
     // Next version: a tampered artifact is refused before Zenodo publishes anything.
-    bump('1.1.5', '1.1.6');
+    const patchAfter = (version) => version.replace(/\d+$/, (patch) => String(Number(patch) + 1));
+    const nextVersion = patchAfter(library.version);
+    bump(library.version, nextVersion);
     execFileSync(process.execPath, ['scripts/validate-package.mjs'], { cwd: tree });
     pack();
     writeFileSync(join(dist, 'skill-machine-relations.tar.gz'), 'tampered');
@@ -312,19 +314,20 @@ test('publish: create, rerun, adopt, draft recovery, hook retry, tamper refusal,
     // The honest artifact then releases as a new version of the same concept, reusing the open draft.
     pack();
     const out = await run();
-    assert.match(out, /plan for 1\.1\.6: reuse-draft/);
+    assert.ok(out.includes(`plan for ${nextVersion}: reuse-draft`));
     assert.equal(zen.state.published.length, 2);
     const next = JSON.parse(readFileSync(join(dist, 'library.json'), 'utf8'));
     assert.equal(next.doi.concept, library.doi.concept, 'one concept DOI for every version');
     assert.notEqual(next.doi.version, library.doi.version);
     const nextFiles = zen.state.files.get(zen.state.published[1]);
     assert.deepEqual([...nextFiles.keys()].sort(), readdirSync(dist).sort());
-    assert.ok(nextFiles.get('library.json').equals(readFileSync(join(dist, 'library.json'))), 'no 1.1.5 file survives in 1.1.6');
+    assert.ok(nextFiles.get('library.json').equals(readFileSync(join(dist, 'library.json'))), 'no previous-version file survives in the next version');
 
-    // And 1.1.7 branches from the newest published version.
-    bump('1.1.6', '1.1.7');
+    // The following patch branches from the newest published version.
+    const followingVersion = patchAfter(nextVersion);
+    bump(nextVersion, followingVersion);
     pack();
-    assert.match(await run(), /plan for 1\.1\.7: new-version/);
+    assert.ok((await run()).includes(`plan for ${followingVersion}: new-version`));
     assert.equal(zen.state.published.length, 3);
     assert.equal(JSON.parse(readFileSync(join(dist, 'library.json'), 'utf8')).doi.concept, library.doi.concept);
   } finally {
