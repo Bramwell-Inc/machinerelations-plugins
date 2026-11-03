@@ -5,7 +5,7 @@ The official Machine Relations plugin helps practitioners turn a brand's authori
 Two skills are included:
 
 - **Machine Relations:** inspect permitted evidence, choose whether to publish, improve, substantiate or pitch, produce the work, and define the next decision. It can work from supplied material without MRI coverage.
-- **Machine Relations Index:** research measured source-domain citations by category and question shape. Its existing tools and behavior are unchanged.
+- **Machine Relations Index:** research measured source-domain citations by category and question shape. Look up domains directly, explore engine citations, or discover categories and question shapes.
 
 Try: “Use Machine Relations for this brand and authority objective. Choose a supported intervention, draft the work and explain how to verify execution separately from its intended outcome.” See the [skill and worked example](https://machinerelations.ai/skill).
 
@@ -15,9 +15,20 @@ Jaxon Parrott coined Machine Relations in 2024; AuthorityTech, which he founded 
 
 ## MRI research
 
-Explore which source domains AI answer engines cite for a buyer category and question type, or look up a domain’s observed citations. The dataset is the Machine Relations Index (MRI) by Jaxon Parrott. The plugin connects to the free, read-only Machine Relations Index MCP server at `https://machinerelations.ai/mcp`; no MRI account or API key is required.
+Explore which source domains AI answer engines cite for a buyer category and question type, look up a domain’s observed citations, or explore sources cited by an engine. The dataset is the Machine Relations Index (MRI) by Jaxon Parrott. The plugin connects to the free, read-only Machine Relations Index MCP server at `https://machinerelations.ai/mcp`; no MRI account or API key is required.
 
 Ask “Which editorial publications are cited for best cybersecurity tools?” or “Look up techcrunch.com in the Machine Relations Index.” The accompanying skill reads the service’s live interpretation guidance, release identity and limitations. Results describe measured citations, not endorsements or guarantees of future visibility. The [worked example](https://machinerelations.ai/research/segment-rank-question-set-named-brand-citations) is a historical case study, not the current leaderboard.
+
+Six read-only tools are available:
+
+| Tool | Research intent |
+| --- | --- |
+| `mri_get_domain` | A specific domain’s observed citations and engine coverage |
+| `mri_list_engines` | Discover engine keys and available evidence |
+| `mri_get_engine` | An engine’s cited-source leaderboard over the observed window, optionally limited to sources with a published segment in a category |
+| `mri_list_categories` | Discover category keys, question shapes and source roles |
+| `mri_get_category` | Inspect one category’s question shapes and publication status |
+| `mri_get_cited_sources` | Rank sources within a category and question shape, with optional source-role filtering |
 
 ## Data handling
 
