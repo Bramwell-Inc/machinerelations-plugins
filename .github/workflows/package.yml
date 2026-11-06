@@ -10,13 +10,14 @@ on:
         required: true
         type: string
       action:
-        description: inspect reads only. delete-one removes one listed draft file after the checks pass, and stops if Zenodo returns 500.
+        description: inspect reads only. delete-one removes one listed draft file after the checks pass, and stops if Zenodo returns 500. resume-reviewed publishes draft 24020018 from the reviewed 1.2.3 artifact and refuses while other files remain.
         required: true
         default: inspect
         type: choice
         options:
           - inspect
           - delete-one
+          - resume-reviewed
       file_id:
         description: File id on that draft. Used only when action is delete-one.
         required: false
@@ -36,7 +37,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test scripts/release.test.mjs scripts/release-trigger.test.mjs scripts/zenodo-draft.test.mjs plugins/machine-relations-index/skills/*/scripts/*.test.mjs actions/*/*.test.mjs
+      - run: node --test scripts/release.test.mjs scripts/release-trigger.test.mjs scripts/zenodo-draft.test.mjs scripts/resume-reviewed.test.mjs plugins/machine-relations-index/skills/*/scripts/*.test.mjs actions/*/*.test.mjs
       - run: node scripts/validate-package.mjs
         env:
           PACKAGE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -115,7 +116,7 @@ jobs:
   # unknown and stops; the next write has to read the draft again. It does not
   # delete the deposition or publish.
   zenodo-draft:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && inputs.action != 'resume-reviewed'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -129,3 +130,37 @@ jobs:
           DRAFT_ID: ${{ inputs.draft_id }}
           ACTION: ${{ inputs.action }}
           FILE_ID: ${{ inputs.file_id }}
+
+  # Publish the reviewed 1.2.3 artifact onto the open draft. It downloads the
+  # package artifact tested at 9a3357a. That library.json has null DOIs; the
+  # reserved DOI is written into library.json and SHA256SUMS only after the
+  # draft read confirms it. The zip, archives and SOURCE_COMMIT stay as tested.
+  # It refuses while any file is listed. It does not rerun workflow 42274178672,
+  # call newversion, or delete a file or a GitHub release.
+  resume-reviewed:
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'resume-reviewed'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Refuse a different draft id
+        run: test "${{ inputs.draft_id }}" = "24020018"
+      - uses: actions/download-artifact@v4
+        with:
+          name: machine-relations-index-1.2.3-9a3357a
+          run-id: 42274178672
+          github-token: ${{ github.token }}
+          path: reviewed-dist
+      - name: Publish the reviewed artifact onto the open draft
+        run: node scripts/resume-reviewed.mjs --dist reviewed-dist
+        env:
+          ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          VERCEL_DEPLOY_HOOKS: |
+            ${{ secrets.VERCEL_DEPLOY_HOOK_JAXONPARROTT }}
+            ${{ secrets.VERCEL_DEPLOY_HOOK_MACHINERELATIONS }}
