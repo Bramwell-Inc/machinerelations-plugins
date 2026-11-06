@@ -78,7 +78,11 @@ the ZIP from a newer checkout.
    against `library.package.sha256`. Use `library.version`, `library.released`,
    `library.source.release_url` and `library.doi.version` throughout the handoff.
    Do not mix a pinned ZIP with a later `latest` manifest.
-2. **ChatGPT:** in the existing Machine Relations publisher listing, choose
+2. **ChatGPT:** hosted tool changes reach the listing through OpenAI's daily
+   scan of the MCP server, with no new ZIP; metadata and skill changes need one.
+   Uploading, submitting and publishing happen only in the OpenAI Plugins portal,
+   as an organization owner or a member with Apps Management Write; there is no
+   API for them. In the existing Machine Relations publisher listing, choose
    **Create draft from ZIP**, upload the verified ZIP, then inspect the draft's
    version, skills, tools, server instructions, metadata and scan findings before
    submitting for review. Compare skills with `library.skills`; this package
@@ -95,20 +99,18 @@ the ZIP from a newer checkout.
    **Approved / ready to publish** from the published version. Never add credentials
    to the installed plugin to make a directory check pass: protected-preview and
    pull-request integration belongs under `actions/`, outside `plugins/`.
-4. **Wikidata:** read [Q141909117's current claims](https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q141909117&props=claims&format=json)
-   before editing. Find or add `software version identifier` (P348) equal to
-   `library.version`; reuse a matching statement rather than duplicating it. Add
-   `publication date` (P577) from `library.released`, `DOI` (P356) from
-   `library.doi.version` (uppercase for Wikidata), and `version type` (P548) =
-   `stable version` (Q2804309) for a stable release. Reference the exact GitHub
-   release and Zenodo version record with `reference URL` (P854). The library's
-   top-level concept DOI stays unchanged. If this is the newest stable release,
-   make its statement preferred and older preferred release statements normal;
-   retain history and do not demote a newer release. Re-read the public claims
-   and verify the version, rank, date, version DOI and references. An API writer
-   must use separately authorized Wikimedia authentication, conflict detection
-   against the revision read, and the same read-back; GitHub credentials are not
-   Wikidata credentials.
+4. **Wikidata:** nothing to edit by hand.
+   [Github-wiki-bot](https://www.wikidata.org/wiki/User:Github-wiki-bot) imports
+   every stable GitHub release of this repository into Q141909117, usually within
+   a day: `software version identifier` (P348) with `publication date` (P577),
+   `version type` = stable version and the GitHub release as reference, and
+   preferred rank on the newest release. Leave version statements to it. After
+   its pass, read [Q141909117's claims](https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q141909117&props=claims&format=json)
+   and confirm that `library.version` is the preferred P348, dated
+   `library.released`. If a release is still missing after two days, check the
+   bot's [exceptions](https://www.wikidata.org/wiki/User:Github-wiki-bot/Exceptions)
+   before editing. The item's DOI (P356) is the concept DOI and stays unchanged;
+   version DOIs live on Zenodo and in `library.doi.version`.
 
 If authorized publishing access is absent, stop at the verified artifact handoff
 and name the missing access. Do not extract another browser's cookies, bypass an
