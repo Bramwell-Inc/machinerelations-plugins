@@ -274,6 +274,10 @@ async function renderAll(browser, root, pages, { shots = true } = {}) {
     }
   }
   await Promise.all(Array.from({ length: Number(args.workers || 4) }, worker));
+  // A dark-view contrast pair the light view of the same page also reported is text dark mode leaves unchanged
+  // (a site with no dark theme): one problem, reported once.
+  const light = new Map(results.filter((r) => r.view === 'wide').map((r) => [r.path, new Set(r.defects.filter((d) => d.kind === 'contrast').map((d) => d.pair))]));
+  for (const r of results) if (r.view === 'wide-dark') r.defects = r.defects.filter((d) => d.kind !== 'contrast' || !light.get(r.path)?.has(d.pair));
   return results;
 }
 

@@ -4,7 +4,7 @@ Every released version of the Machine Relations skills and plugin. The newest en
 
 ## [1.2.2] - 2026-11-06
 
-Stop the Page check flagging what is set small or coded on purpose: footnote marks, short capitalised labels such as kickers, table heads and datelines, and bare numbers such as steps and counts no longer count as small text, and an error code written after its HTTP status ("returns 409 release_unavailable") no longer counts as a leaked value. Running text at 10px and raw values printed in prose are still flagged. Skills, MRI tools and endpoints are unchanged.
+Stop the Page check flagging what is set small or coded on purpose: footnote marks, short capitalised labels such as kickers, table heads and datelines, and bare numbers such as steps and counts no longer count as small text, and an error code written after its HTTP status ("returns 409 release_unavailable") no longer counts as a leaked value. Running text at 10px and raw values printed in prose are still flagged. Text contrast is now measured on every page in light and dark, including text above the dot-grid and other gradient backgrounds that the accessibility engine skipped, and each failing colour pair is reported once. Skills, MRI tools and endpoints are unchanged.
 
 ## [1.2.1] - 2026-11-06
 
