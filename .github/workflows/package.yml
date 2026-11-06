@@ -131,10 +131,12 @@ jobs:
           ACTION: ${{ inputs.action }}
           FILE_ID: ${{ inputs.file_id }}
 
-  # Publish the reviewed 1.2.3 artifact onto the open draft. It checks out this
-  # 1.2.3 line, downloads the package artifact tested at 9a3357a, and refuses
-  # to upload while any file is still listed. It does not rerun workflow
-  # 42274178672, does not call newversion, and does not delete a file.
+  # Publish the reviewed 1.2.3 artifact onto the open draft. It downloads the
+  # package artifact tested at 9a3357a. That library.json has null DOIs; the
+  # reserved DOI is written into library.json and SHA256SUMS only after the
+  # draft read confirms it. The zip, archives and SOURCE_COMMIT stay as tested.
+  # It refuses while any file is listed. It does not rerun workflow 42274178672,
+  # call newversion, or delete a file or a GitHub release.
   resume-reviewed:
     if: github.event_name == 'workflow_dispatch' && inputs.action == 'resume-reviewed'
     runs-on: ubuntu-latest
