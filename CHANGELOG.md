@@ -2,6 +2,10 @@
 
 Every released version of the Machine Relations skills and plugin. The newest entry's text is the release note for the GitHub release, the Zenodo record and the directory listings, so it is written for practitioners. Versions follow semver: a minor version adds or graduates a method, a patch corrects wording or metadata, and a major version changes a tool or endpoint.
 
+## [1.2.2] - 2026-11-06
+
+Stop the Page check flagging what is set small or coded on purpose: footnote marks, short capitalised labels such as kickers, table heads and datelines, and bare numbers such as steps and counts no longer count as small text, and an error code written after its HTTP status ("returns 409 release_unavailable") no longer counts as a leaked value. Running text at 10px and raw values printed in prose are still flagged. Skills, MRI tools and endpoints are unchanged.
+
 ## [1.2.1] - 2026-11-06
 
 Keep the Page check skill free of credentials: the installed skill reads only public pages, and the GitHub Action that checks protected previews and comments on pull requests moves out of the plugin into the repository's actions folder. Skills, MRI tools and endpoints are unchanged.

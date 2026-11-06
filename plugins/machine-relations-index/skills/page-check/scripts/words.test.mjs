@@ -29,6 +29,7 @@ test('ordinary prose and prose about code pass', () => {
   assert.deepEqual(kinds('Write to first_last@example.com or read the `next_cursor` field.'), []);
   assert.deepEqual(kinds('See globenewswire.com/NewsRoom/AttachmentNg/b906ef82-3f51-4b53-a1da-ddb4b1c97da9 for the file.'), []);
   assert.deepEqual(kinds('Read [auth.md](${SITE_ORIGIN}/auth.md).'), ['raw-value:${SITE_ORIGIN}']);
+  assert.deepEqual(kinds('Any other release returns 409 release_unavailable; unknown categories return 404 unknown_category.'), []);
 });
 
 test('judgment calls are notes, never blockers', () => {

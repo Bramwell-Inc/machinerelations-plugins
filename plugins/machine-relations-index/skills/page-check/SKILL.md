@@ -2,7 +2,7 @@
 name: page-check
 description: Use when building, changing or reviewing a website or page and you need to know whether people and AI engines can read it, before it ships. Renders a preview or live site from its own sitemap at phone, tablet and desktop widths in light and dark, and reports broken layout, unreadable text, raw values printed to readers, broken links and images, and gaps in what machines read (llms.txt, Markdown twins, JSON-LD, og:image, 404s).
 metadata:
-  version: "1.2.1"
+  version: "1.2.2"
   title: "Page check"
   summary: "Check that every page type of a site reads cleanly for people and for AI engines, and fix only what a change adds, before it ships."
 ---

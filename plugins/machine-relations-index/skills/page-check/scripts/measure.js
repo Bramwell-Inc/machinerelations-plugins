@@ -145,11 +145,19 @@
   // 5. Text smaller than 12px.
   const small = new Map();
   for (const { el } of lines) {
+    // A footnote or reference mark is set small by convention; the sentence it sits in is what people read.
+    if (el.closest('sup,sub')) continue;
     const px = parseFloat(getComputedStyle(el).fontSize);
     if (px < 12 && !small.has(el)) small.set(el, px);
   }
-  // A short capitalised label (a kicker, a table head, a crumb) at 10px is a house style to judge, not a defect; running text is.
-  const isLabel = (el) => { const t = (el.textContent || '').trim(); return t.length <= 30 && /[A-Za-z]/.test(t) && (getComputedStyle(el).textTransform === 'uppercase' || t === t.toUpperCase()); };
+  // A short capitalised label (a kicker, a table head, a dateline, a crumb) or a bare number (a step "01", a count "14")
+  // at 10px is a house style to judge, not a defect; running text is. Short means eight words or fewer: a label is
+  // judged by its words, not its letters, so "FOUNDING PRACTITIONER · SINCE 2018" is a label and a wrapped sentence is not.
+  const isLabel = (el) => {
+    const t = (el.textContent || '').trim();
+    if (/^[\d\s.,:/#%+–-]{1,6}$/.test(t) && /\d/.test(t)) return true;
+    return t.split(/\s+/).filter((x) => /[A-Za-z0-9]/.test(x)).length <= 8 && /[A-Za-z]/.test(t) && (getComputedStyle(el).textTransform === 'uppercase' || t === t.toUpperCase());
+  };
   const tiny = [...small.entries()].filter(([el, px]) => px < 9.5 || (px < 10.95 && !isLabel(el)));
   const labels = [...small.entries()].filter(([el, px]) => px >= 9.5 && px < 10.95 && isLabel(el));
   const eleven = [...small.entries()].filter(([, px]) => px >= 10.95);
