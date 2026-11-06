@@ -27,6 +27,9 @@ test('AuthorityTech website caller is not vendored here', () => {
   const local = readFileSync(path.join(ROOT, '.github/workflows/page-check.yml'), 'utf8');
   assert.doesNotMatch(local, /AuthorityTech\/website/);
   assert.throws(() => readFileSync(path.join(ROOT, 'fixtures/website-page-check.yml'), 'utf8'));
+  const doc = readFileSync(path.join(ROOT, 'plugins/machine-relations-index/skills/page-check/references/how-it-works.md'), 'utf8');
+  assert.match(doc, /AuthorityTech keeps its own copy/);
+  assert.match(doc, /not coverage of it/);
 });
 
 test('AuthorityTech website caller runs on drafts when this environment can read it', (t) => {

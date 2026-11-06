@@ -2,11 +2,11 @@
 
 The page check reads a site the way people and machines read it. In CI it runs on a pull request against that commit's Vercel preview, with nothing to configure per site. Run locally, it reads any URL you give it (see the skill). The pull request comment is the result, and it uses one of three names.
 
-- **Clean.** The sampled pages were read. This change adds nothing that blocks.
+- **Clean.** This run finished with exit 0, and its report lists nothing that blocks. A report left from an earlier run is not clean.
 - **Blocking.** The sampled pages were read. This change adds a defect production does not already show. The job fails.
 - **Not judged.** The pages were not read. The job stays green so a broken or skipped check does not hold every merge.
 
-Not judged covers a repository Vercel has never deployed, a preview that refused this run, a preview that did not build, a site whose production domain could not be read, and a checker that did not finish a report. Clean is a finished report with an empty blocking list on a run that was not skipped.
+Not judged covers a repository Vercel has never deployed, a preview that refused this run, a preview that did not build, a site whose production domain could not be read, a missing or unreadable report, and a checker exit other than 0 while that report lists nothing blocking. Those runs stay green. Clean is exit 0 and an empty blocking list from the report this run wrote. The output directory is cleared before the checker starts. AuthorityTech keeps its own copy of the caller. A test in this repository that cannot read that file is not coverage of it.
 
 ## What a green job does not cover
 

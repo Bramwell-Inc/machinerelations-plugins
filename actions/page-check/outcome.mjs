@@ -1,8 +1,13 @@
-// The three results of a page-check run. Clean and blocking require a finished report.
-// Every skip and every missing or unreadable report is not judged. Not judged does not fail the job.
-// A report that lists blocking defects fails the job even if a skip flag is also set.
+// The three results of a page-check run.
+// Clean is only a report this run finished: blocking is an empty array and the checker exited 0.
+// The checker itself exits 1 when that same report lists defects, and that still fails the job.
+// Any other exit, a skip, or a missing or unreadable report is not judged and does not fail the job.
+// A report that lists blocking defects fails the job even if the checker exit was not 0, so a stale
+// defect list is not turned into a pass. Clear the output directory before each run so a previous
+// report cannot satisfy this.
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const HOW = 'https://github.com/Bramwell-Inc/machinerelations-plugins/tree/main/plugins/machine-relations-index/skills/page-check';
 const HEAD = {
@@ -39,19 +44,29 @@ export function reasonForSkip(skip, detail = '') {
   return 'The check did not judge this change.';
 }
 
+export function resetOutDir(outDir) {
+  const dir = path.resolve(String(outDir || ''));
+  if (!outDir || dir === path.parse(dir).root) throw new Error('page-check: refusing to clear an empty output path');
+  fs.rmSync(dir, { recursive: true, force: true });
+}
+
 export function classifyRun({ skip = '', detail = '', report, checkerExit } = {}) {
-  if (report && Array.isArray(report.blocking) && report.blocking.length > 0) {
-    const count = report.blocking.length;
+  const findings = report && Array.isArray(report.blocking) ? report.blocking : null;
+  if (findings && findings.length > 0) {
+    const count = findings.length;
     return {
       verdict: 'blocking',
       fail: true,
-      reason: `${count} blocking finding${count === 1 ? '' : 's'} in the finished report.`,
+      reason: `${count} blocking finding${count === 1 ? '' : 's'} in the report.`,
     };
   }
-  if (skip || !report || !Array.isArray(report.blocking)) {
+  if (skip || findings === null || checkerExit !== 0) {
+    const exitNote = checkerExit === undefined ? '' : ` (exit ${checkerExit})`;
     const reason = skip
       ? reasonForSkip(skip, detail)
-      : `The checker did not finish a report${checkerExit === undefined ? '' : ` (exit ${checkerExit})`}.`;
+      : findings === null
+        ? `The checker did not finish a report${exitNote}.`
+        : `The checker did not finish this run${exitNote}. A report left on disk is not a clean result.`;
     return { verdict: 'not-judged', fail: false, reason };
   }
   return { verdict: 'clean', fail: false, reason: 'The sampled pages were read and this change adds nothing that blocks.' };
@@ -101,3 +116,6 @@ export function planFromDir(outDir, env = process.env) {
   const summary = fs.existsSync(summaryPath) ? fs.readFileSync(summaryPath, 'utf8') : '';
   return planComment({ ...run, report, summary });
 }
+
+const isDirect = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isDirect && process.argv[2] === '--reset') resetOutDir(process.argv[3] || 'page-check-report');

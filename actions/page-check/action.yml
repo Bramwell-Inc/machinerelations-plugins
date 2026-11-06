@@ -36,6 +36,7 @@ runs:
         GH_TOKEN: ${{ github.token }}
         PR: ${{ github.event.pull_request.number }}
       run: |
+        node "$GITHUB_ACTION_PATH/outcome.mjs" --reset page-check-report
         set +e
         SKILL="$GITHUB_ACTION_PATH/../../plugins/machine-relations-index/skills/page-check/scripts"
         # Files this pull request edits: their pages are always read, and the first few rendered.
