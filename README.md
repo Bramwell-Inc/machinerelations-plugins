@@ -63,3 +63,53 @@ Cite the library with its concept DOI, [10.5281/zenodo.23749768](https://doi.org
 A skill can carry `metadata.title` and `metadata.summary` (a human name and a one-sentence practitioner summary; not the `description` trigger text). Pages use them when present.
 
 Directory listings (Claude, ChatGPT) update through their own review and can lag the latest release. The remote MCP service owns the Index's data and interpretation; daily data never requires a plugin release. The `review/` captures and video are dated evidence, not current API documentation.
+
+
+### Finish the directory and Wikidata handoff
+
+A GitHub release is not proof that a directory has published it. These steps are
+for a maintainer with authorized publisher access; downloading public artifacts
+requires no publisher credentials. Do not create a replacement listing or rebuild
+the ZIP from a newer checkout.
+
+1. Select one immutable tag from [Releases](https://github.com/Bramwell-Inc/machinerelations-plugins/releases).
+   Download that tag's `library.json`, `machine-relations-index.zip` and
+   `SHA256SUMS`. Verify the manifest and ZIP against `SHA256SUMS`, and the ZIP
+   against `library.package.sha256`. Use `library.version`, `library.released`,
+   `library.source.release_url` and `library.doi.version` throughout the handoff.
+   Do not mix a pinned ZIP with a later `latest` manifest.
+2. **ChatGPT:** in the existing Machine Relations publisher listing, choose
+   **Create draft from ZIP**, upload the verified ZIP, then inspect the draft's
+   version, skills, tools, server instructions, metadata and scan findings before
+   submitting for review. Compare skills with `library.skills`; this package
+   currently exposes six MCP tools, not four. Do not submit an older draft over a
+   newer submitted or published version. Submission is not publication: completion
+   means the publisher record says **Published** for the intended version and the
+   [public listing](https://chatgpt.com/plugins/plugin_asdk_app_6abff210fc508191ba0bbe0e96fd11e1)
+   agrees wherever it exposes the same fields. Record anything not publicly visible
+   as publisher-only evidence. An OpenAI API key is not publisher access.
+3. **Claude:** the existing plugin listing scans changes on `main`. Read its
+   newest-version scan and policy result in the publisher portal. A policy hold
+   needs its stated cause fixed in the repository; a passed scan still does not
+   mean the version is live. Keep the existing submission, and distinguish
+   **Approved / ready to publish** from the published version. Never add credentials
+   to the installed plugin to make a directory check pass: protected-preview and
+   pull-request integration belongs under `actions/`, outside `plugins/`.
+4. **Wikidata:** read [Q141909117's current claims](https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q141909117&props=claims&format=json)
+   before editing. Find or add `software version identifier` (P348) equal to
+   `library.version`; reuse a matching statement rather than duplicating it. Add
+   `publication date` (P577) from `library.released`, `DOI` (P356) from
+   `library.doi.version` (uppercase for Wikidata), and `version type` (P548) =
+   `stable version` (Q2804309) for a stable release. Reference the exact GitHub
+   release and Zenodo version record with `reference URL` (P854). The library's
+   top-level concept DOI stays unchanged. If this is the newest stable release,
+   make its statement preferred and older preferred release statements normal;
+   retain history and do not demote a newer release. Re-read the public claims
+   and verify the version, rank, date, version DOI and references. An API writer
+   must use separately authorized Wikimedia authentication, conflict detection
+   against the revision read, and the same read-back; GitHub credentials are not
+   Wikidata credentials.
+
+If authorized publishing access is absent, stop at the verified artifact handoff
+and name the missing access. Do not extract another browser's cookies, bypass an
+access refusal, or call a draft, scan approval or local plan a published update.
