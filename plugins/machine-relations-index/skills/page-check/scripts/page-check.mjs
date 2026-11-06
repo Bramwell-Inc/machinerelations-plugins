@@ -90,13 +90,19 @@ function spread(list, n) { if (list.length <= n) return [...list]; const out = [
 
 // ---------- 1b. Sweep: read hundreds of pages as plain HTML (fast, no browser) for printed raw values,
 // and learn which page of each type is the biggest and which carries tables or code, so the render goes there.
+// Text only, never rendered: drop whole elements until none are left (nested or split tags included).
+function dropElements(html, names) {
+  const re = new RegExp(`<(${names})\\b[\\s\\S]*?<\\/\\1[^>]*>`, 'gi');
+  let prev;
+  do { prev = html; html = html.replace(re, ' '); } while (html !== prev);
+  return html;
+}
 function htmlText(html) {
-  return html
-    .replace(/<(script|style|noscript|svg|template|pre|head)\b[\s\S]*?<\/\1>/gi, ' ')
+  return dropElements(html, 'script|style|noscript|svg|template|pre|head')
     .replace(/<(code|kbd|samp)\b[\s\S]*?<\/\1>/gi, ' `code` ')
     .replace(/<\/(p|div|li|h\d|td|th|tr|section|article|header|footer|br)>|<br\s*\/?>/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;|&#39;/g, "'")
+    .replace(/&(nbsp|lt|gt|quot|#x27|#39|amp);/g, (m, e) => ({ nbsp: ' ', lt: '<', gt: '>', quot: '"', '#x27': "'", '#39': "'", amp: '&' })[e])
     .replace(/[ \t]+/g, ' ');
 }
 async function sweep(root, list) {
@@ -106,7 +112,7 @@ async function sweep(root, list) {
       const p = queue.shift();
       const r = await get(root + p);
       if (r.status !== 200 || !/html/.test(r.type)) { out.set(p, { status: r.status, size: 0, rich: false, words: [] }); continue; }
-      const body = r.body.replace(/<script\b[\s\S]*?<\/script>/gi, '');
+      const body = dropElements(r.body, 'script');
       out.set(p, { status: r.status, size: body.length, rich: /<(table|pre)\b/i.test(body), words: scanWords(htmlText(body)).filter((w) => w.hard) });
     }
   }));
