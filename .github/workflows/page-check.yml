@@ -22,6 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: Bramwell-Inc/machinerelations-plugins/plugins/machine-relations-index/skills/page-check@main
+      - uses: Bramwell-Inc/machinerelations-plugins/actions/page-check@main
         with:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}

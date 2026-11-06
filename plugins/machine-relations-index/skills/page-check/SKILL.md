@@ -2,7 +2,7 @@
 name: page-check
 description: Use when building, changing or reviewing a website or page and you need to know whether people and AI engines can read it, before it ships. Renders a preview or live site from its own sitemap at phone, tablet and desktop widths in light and dark, and reports broken layout, unreadable text, raw values printed to readers, broken links and images, and gaps in what machines read (llms.txt, Markdown twins, JSON-LD, og:image, 404s).
 metadata:
-  version: "1.2.0"
+  version: "1.2.1"
   title: "Page check"
   summary: "Check that every page type of a site reads cleanly for people and for AI engines, and fix only what a change adds, before it ships."
 ---
@@ -24,7 +24,7 @@ node page-check.mjs --url <preview or site URL> --base <production URL> --out pa
 
 - `--base` is the live site the change will replace. Problems the live site already has are listed but never counted against the change. Leave it out to judge the site on its own.
 - `--changed files.txt` (optional): one changed file path per line; the pages those files produce are always read and rendered first.
-- A Vercel preview behind protection: pass `--bypass` with the project's automation bypass value only if the person you work for gives it to you, or ask them to add the repo's GitHub Actions as a Trusted Source and let CI run it.
+- A Vercel preview behind protection: this skill can't open it. Check the public production site, or let the pull request's CI check run it (see In CI).
 
 It takes one to seven minutes depending on the site's size. Exit code 1 means something blocks.
 
@@ -40,6 +40,6 @@ What each rule measures and why: [how it works](references/how-it-works.md).
 
 ## In CI
 
-The same scripts run as a GitHub Action from this folder (`action.yml`). An organization can require them on every pull request with one ruleset that points at `.github/workflows/page-check.yml` in this repository; a repository Vercel never deploys passes untouched. The check never needs a stored secret, and a checker that breaks warns instead of blocking.
+This skill reads public pages and handles no credentials. To check a protected preview, run it from the GitHub Action in this repository (`actions/page-check`), which adds the run's own identity and posts the result on the pull request. An organization can run it on every pull request with one ruleset that points at `.github/workflows/page-check.yml` in this repository; a repository Vercel never deploys passes untouched. The check never needs a stored secret, and a checker that breaks warns instead of blocking.
 
 Do not judge a page by memory or by its source alone; render it. Do not claim a page is readable to AI engines without the machine checks passing.

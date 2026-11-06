@@ -18,7 +18,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
         SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-      run: node "$GITHUB_ACTION_PATH/scripts/resolve.mjs"
+      run: node "$GITHUB_ACTION_PATH/resolve.mjs"
     - if: steps.resolve.outputs.skip == ''
       uses: actions/cache@v4
       with:
@@ -26,7 +26,7 @@ runs:
         key: page-check-chromium-1.49.1
     - if: steps.resolve.outputs.skip == ''
       shell: bash
-      working-directory: ${{ github.action_path }}/scripts
+      working-directory: ${{ github.action_path }}/../../plugins/machine-relations-index/skills/page-check/scripts
       run: |
         for i in 1 2 3; do npm ci --no-audit --no-fund && npx playwright install --with-deps chromium && break; sleep $((i * 10)); done
     - if: steps.resolve.outputs.skip == ''
@@ -37,10 +37,11 @@ runs:
         PR: ${{ github.event.pull_request.number }}
       run: |
         set +e
+        SKILL="$GITHUB_ACTION_PATH/../../plugins/machine-relations-index/skills/page-check/scripts"
         # Files this pull request edits: their pages are always read, and the first few rendered.
         : > page-check-changed.txt
         if [ -n "$PR" ]; then gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/files" --jq '.[].filename' > page-check-changed.txt 2>/dev/null; fi
-        node "$GITHUB_ACTION_PATH/scripts/page-check.mjs" --changed page-check-changed.txt --url "${{ steps.resolve.outputs.url }}" --base "${{ steps.resolve.outputs.base }}" --out page-check-report
+        node "$SKILL/page-check.mjs" --access "$GITHUB_ACTION_PATH/access.mjs" --changed page-check-changed.txt --url "${{ steps.resolve.outputs.url }}" --base "${{ steps.resolve.outputs.base }}" --out page-check-report
         code=$?
         # Only a finished report with blocking problems fails the check. If the checker itself broke
         # (no report), say so loudly and pass: a broken tool must never hold up every site's merges.
@@ -53,14 +54,14 @@ runs:
       env:
         ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
         DESIGN_LAYER: ${{ inputs.design-layer }}
-      run: node "$GITHUB_ACTION_PATH/scripts/taste.mjs" page-check-report || true
+      run: node "$GITHUB_ACTION_PATH/taste.mjs" page-check-report || true
     - if: steps.resolve.outputs.skip == '' && github.event_name == 'pull_request' && hashFiles('page-check-report/report.json') != ''
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
         PR: ${{ github.event.pull_request.number }}
         CODE: ${{ steps.check.outputs.code }}
-      run: node "$GITHUB_ACTION_PATH/scripts/comment.mjs" page-check-report
+      run: node "$GITHUB_ACTION_PATH/comment.mjs" page-check-report
     - if: steps.resolve.outputs.skip == ''
       uses: actions/upload-artifact@v4
       with:

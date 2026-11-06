@@ -4,7 +4,7 @@ The page check reads a site the way people and machines read it. In CI it runs o
 
 ## What it does
 
-1. In CI, finds this commit's Vercel preview from the GitHub Deployment Vercel records on the repo, and the production domain from the preview's own sitemap (`resolve.mjs`). No stored secret: GitHub's own token reads the deployment, and the run's OIDC identity gets past preview protection on any Vercel project that lists this org's GitHub Actions as a Trusted Source for previews (`access.mjs`). A protected preview that refuses the run is a loud warning, never a block.
+1. In CI, finds this commit's Vercel preview from the GitHub Deployment Vercel records on the repo, and the production domain from the preview's own sitemap (the action's `resolve.mjs`). No stored secret: GitHub's own token reads the deployment, and the run's OIDC identity gets past preview protection on any Vercel project that lists this org's GitHub Actions as a Trusted Source for previews (the action's `access.mjs`, outside the plugin, so the installed skill never handles a credential). A protected preview that refuses the run is a loud warning, never a block.
 2. Reads the sitemap and groups pages by route (`/blog/*`, `/index/domains/*`…).
 3. **Sweep:** reads up to 1,500 pages as plain HTML (every page type, big types get more) for printed raw values, and learns which page of each type is fullest and which carries a table or code block. Pages this pull request edits (a changed `content/posts/foo.md` matches `/blog/foo`) are always read. About a minute.
 4. **Render:** per page type, its fullest page (a table or code block if any page has one) and its longest-named page, plus up to six pages this PR edits. Renders each at 390, 1024 and 1440 wide, light and dark, and measures:
