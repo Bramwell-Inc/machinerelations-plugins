@@ -410,7 +410,7 @@ function group(list) {
   return [...g.values()];
 }
 const lines = [];
-lines.push(blocking.length ? `**Page check: ${group(blocking).length} problem(s) this change adds.** Fix these before merging.` : `**Page check: clean.** ${swept.size} pages read, ${picks.length} rendered across ${typeCount} page types (${rendered.length} renders), ${linkCheck.checked} links, in ${seconds}s.`);
+lines.push(blocking.length ? `**Page check: blocking.** ${group(blocking).length} problem(s) this change adds. Fix these before merging.` : `**Page check: clean.** ${swept.size} pages read, ${picks.length} rendered across ${typeCount} page types (${rendered.length} renders), ${linkCheck.checked} links, in ${seconds}s.`);
 for (const d of group(blocking).slice(0, 25)) lines.push(`- **${d.kind}** on \`${[...d.paths][0] || '/'}\`${d.paths.size > 1 ? ` and ${d.paths.size - 1} more page(s)` : ''} (${[...d.views].join(', ')}): ${d.detail}${d.where ? ` at \`${String(d.where).slice(0, 120)}\`` : ''}`);
 const known = group(hard.filter((d) => d.known));
 if (known.length) { lines.push('', `<details><summary>${known.length} problem(s) production already has (not blocking)</summary>`, ''); for (const d of known.slice(0, 30)) lines.push(`- ${d.kind} on \`${[...d.paths][0] || '/'}\` (${[...d.views].join(', ')}): ${d.detail}`); lines.push('', '</details>'); }

@@ -1,6 +1,12 @@
 # The org-required page check. An org ruleset ("Require workflows to pass") points at this file, so it runs
-# on every pull request of every repo in the org and passes untouched in a repo Vercel never deploys.
-# Another org requires a copy of this file kept in one of its own repos; the code always comes from here.
+# on every pull request of every repo in the org. Another org keeps its own copy of this caller; the code
+# comes from actions/page-check here.
+# The pull request comment is clean, blocking, or not judged. Not judged (no site, preview refused,
+# preview not built, no production to compare, or the checker did not finish) passes the job and is a
+# separate result from clean. Only blocking fails the job. Requiring this workflow does not judge a push
+# straight to the default branch, and it does not make a not-judged run into a reading of the pages.
+# A site merge gate still has to treat a skipped Page check as unfinished. Preview trust is per Vercel project.
+# Sampling limits are in the page-check reference, plugins/machine-relations-index/skills/page-check/references/how-it-works.md.
 # No stored secret: GitHub's own token finds the preview, and the run's OIDC identity gets past preview
 # protection on Vercel projects that trust the org's GitHub Actions. ANTHROPIC_API_KEY is optional (taste notes).
 name: Page check
@@ -17,9 +23,8 @@ concurrency:
   cancel-in-progress: true
 jobs:
   page-check:
-    # The skills repo is not a site, and on the pull request that adds this file the action is not on main yet.
-    # Runs on drafts too: the org ruleset never delivers ready_for_review, so a draft-only head would
-    # otherwise reach the merge gate with nothing but a skipped page check.
+    # The skills repo is not a site. Runs on drafts too: the org ruleset never delivers ready_for_review,
+    # so a draft-only head would otherwise reach a merge gate with a skipped page check.
     if: github.repository != 'Bramwell-Inc/machinerelations-plugins'
     runs-on: ubuntu-latest
     timeout-minutes: 40

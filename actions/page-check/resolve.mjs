@@ -18,7 +18,7 @@ const isPreview = (d) => /preview/i.test(d.environment || '') || d.transient_env
 
 // A repo Vercel has never deployed is not a site: nothing to check.
 const any = await gh('/deployments?per_page=100');
-if (!any.some((d) => d.creator?.login?.startsWith('vercel'))) { console.log(`page-check: Vercel has never deployed ${GITHUB_REPOSITORY}, so it is not a site; nothing to check`); out('skip', 'not-a-site'); process.exit(0); }
+if (!any.some((d) => d.creator?.login?.startsWith('vercel'))) { console.log(`page-check: not judged. Vercel has never deployed ${GITHUB_REPOSITORY}, so it is not a site.`); out('skip', 'not-a-site'); process.exit(0); }
 
 // The preview of this exact commit. Vercel starts it on push; wait until it reports.
 let url = ''; let last = 'missing'; const until = Date.now() + 25 * 60 * 1000;
@@ -33,7 +33,7 @@ while (Date.now() < until && !url) {
   if (!url && ['failure', 'error', 'inactive'].includes(last)) break;
   if (!url) await wait(20000);
 }
-if (!url) { console.log(`page-check: Vercel preview of ${SHA.slice(0, 7)} is ${last}; the build check reports that, not this one`); out('skip', `deployment-${last}`); process.exit(0); }
+if (!url) { console.log(`page-check: not judged. Vercel preview of ${SHA.slice(0, 7)} is ${last}; the build check reports that.`); out('skip', `deployment-${last}`); process.exit(0); }
 
 // Past preview protection with the run's own identity. If the preview still answers 401/403, this org's
 // GitHub Actions is not yet a Trusted Source on the Vercel project: say so loudly and pass, never block on it.
@@ -41,7 +41,8 @@ if (!url) { console.log(`page-check: Vercel preview of ${SHA.slice(0, 7)} is ${l
   const access = previewAccess({ previewUrl: url });
   const r = await fetch(url + '/', { headers: await access.forUrl(url + '/'), redirect: 'manual', signal: AbortSignal.timeout(20000) }).catch(() => null);
   if (r && [401, 403].includes(r.status)) {
-    console.log(`::warning::page-check: the preview is protected and refused this run (${r.status}). Add GitHub Actions of this org as a Trusted Source for previews on the Vercel project (Settings, Deployment Protection).`);
+    console.log(`::warning::page-check: not judged. The preview refused this run (${r.status}). Trusted preview access is a setting on this Vercel project for GitHub Actions of this org (Settings, Deployment Protection).`);
+    out('detail', String(r.status));
     out('skip', 'preview-protected'); process.exit(0);
   }
 }
@@ -60,7 +61,7 @@ try {
 if (!base) { const { homepage } = await gh(''); if (homepage && /^https?:\/\//.test(homepage) && !/vercel\.app/.test(homepage)) base = homepage.replace(/\/$/, ''); }
 
 // Without production to compare with, every old flaw would look new and block: pass, loudly, instead.
-if (!base) { console.log('::warning::page-check: could not tell this site\'s production domain (no sitemap host, no repo homepage), so it did not judge this change. Set the repo homepage to the site address.'); out('skip', 'no-production'); process.exit(0); }
+if (!base) { console.log('::warning::page-check: not judged. Could not tell this site\'s production domain (no sitemap host, no repo homepage). Set the repo homepage to the site address.'); out('skip', 'no-production'); process.exit(0); }
 
 out('skip', '');
 out('url', url);
