@@ -262,13 +262,20 @@ function previewFinal(dist) {
   return scratch;
 }
 
+export function tagIsAbsent(text, tag) {
+  const detail = String(text ?? '');
+  if (/\b404\b/i.test(detail) || /\bnot found\b/i.test(detail)) return true;
+  const escaped = String(tag).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`No commit found for SHA:\\s*${escaped}(?:\\s|\\)|$)`, 'i').test(detail);
+}
+
 function tagCommit(tag, gh) {
   try {
     const body = JSON.parse(gh(['api', `repos/${REPO}/commits/${tag}`], { stdio: ['ignore', 'pipe', 'pipe'] }));
     return { sha: body.sha ?? null };
   } catch (error) {
-    const text = String(error.stderr ?? error.message ?? '');
-    if (/\b404\b|not found/i.test(text)) return { sha: null };
+    const text = `${error.stderr ?? ''}\n${error.message ?? ''}`;
+    if (tagIsAbsent(text, tag)) return { sha: null };
     return { error };
   }
 }

@@ -9,7 +9,7 @@ import { sha256 } from './build-release.mjs';
 import { readRelease } from './library.mjs';
 import { verifyDist } from './publish-release.mjs';
 import {
-  PRESERVED, REVIEWED_COMMIT, REVIEWED_DOI, decideResume, finalizeReviewedDist, inspectReviewedDist, resumeReviewed,
+  PRESERVED, REVIEWED_COMMIT, REVIEWED_DOI, decideResume, finalizeReviewedDist, inspectReviewedDist, resumeReviewed, tagIsAbsent,
 } from './resume-reviewed.mjs';
 
 const TOKEN = 'zenodo-test-token-not-real';
@@ -333,6 +333,121 @@ test('a release created during recovery stays an unknown mutation when its tag c
   assert.equal(result.mutation, 'unknown');
   assert.deepEqual(zen.calls.map((call) => call.method), ['GET']);
   assert.equal(calls.some((args) => args.includes('delete')), false);
+  rmSync(finalized, { recursive: true, force: true });
+});
+
+test('GitHub 422 for a missing tag is absence, and a wrong tag or another 422 is not', () => {
+  const absent = 'gh: No commit found for SHA: v1.2.3 (HTTP 422)';
+  assert.equal(tagIsAbsent(absent, 'v1.2.3'), true);
+  assert.equal(tagIsAbsent('HTTP 404: Not Found', 'v1.2.3'), true);
+  assert.equal(tagIsAbsent(absent, 'v1.2.30'), false);
+  assert.equal(tagIsAbsent('gh: Validation Failed (HTTP 422)', 'v1.2.3'), false);
+  assert.equal(tagIsAbsent('HTTP 401: Bad credentials', 'v1.2.3'), false);
+  assert.equal(tagIsAbsent('connect ECONNRESET', 'v1.2.3'), false);
+});
+
+test('a published Zenodo record with no tag gets a GitHub release of the finalized bytes and is not uploaded again', async () => {
+  const dist = originalDist();
+  const finalized = originalDist();
+  finalizeReviewedDist(finalized);
+  const names = ['library.json', 'SHA256SUMS', ...PRESERVED];
+  const listed = names.map((name) => ({
+    filename: name,
+    checksum: createHash('md5').update(readFileSync(join(finalized, name))).digest('hex'),
+  }));
+  const published = record(listed, { submitted: true, doi: REVIEWED_DOI, state: 'done' });
+  const zen = client(async ({ method }) => {
+    assert.equal(method, 'GET');
+    return { body: published };
+  });
+  let created = false;
+  const gh = (args) => {
+    if (args.includes('delete')) throw new Error('release delete is outside this recovery');
+    if (args[0] === 'api') {
+      if (!created) {
+        const error = new Error('missing tag');
+        error.stderr = 'gh: No commit found for SHA: v1.2.3 (HTTP 422)';
+        throw error;
+      }
+      return JSON.stringify({ sha: REVIEWED_COMMIT });
+    }
+    if (args[1] === 'view') {
+      if (!created) {
+        const error = new Error('missing');
+        error.stderr = 'release not found';
+        throw error;
+      }
+      return JSON.stringify({ isDraft: false, tagName: 'v1.2.3', assets: names.map((name) => ({ name })) });
+    }
+    if (args[1] === 'create') {
+      created = true;
+      const files = args.slice(args.indexOf('create') + 2, args.indexOf('--repo'));
+      assert.equal(files.length, 7);
+      assert.equal(args[args.indexOf('--target') + 1], REVIEWED_COMMIT);
+      const libraryPath = files.find((file) => file.endsWith('/library.json'));
+      assert.match(readFileSync(libraryPath, 'utf8'), new RegExp(REVIEWED_DOI));
+      const zipPath = files.find((file) => file.endsWith('/machine-relations-index.zip'));
+      assert.deepEqual(readFileSync(zipPath), readFileSync(join(FIXTURE, 'machine-relations-index.zip')));
+      const sourcePath = files.find((file) => file.endsWith('/SOURCE_COMMIT'));
+      assert.equal(readFileSync(sourcePath, 'utf8').trim(), REVIEWED_COMMIT);
+      return '';
+    }
+    throw new Error(args.join(' '));
+  };
+  const result = await resumeReviewed({
+    dist, release: release(), token: TOKEN, fetch: zen.fetch, gh,
+    readAsset: async (name) => readFileSync(join(finalized, name)),
+    hooks: async () => true,
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.action, 'github-only');
+  assert.equal(result.mutation, 'published');
+  assert.equal(created, true);
+  assert.deepEqual(zen.calls.map((call) => call.method), ['GET']);
+  rmSync(dist, { recursive: true, force: true });
+  rmSync(finalized, { recursive: true, force: true });
+});
+
+test('an invalid 422 or a network error does not create a release', async () => {
+  const finalized = originalDist();
+  finalizeReviewedDist(finalized);
+  const listed = ['library.json', 'SHA256SUMS', ...PRESERVED].map((name) => ({
+    filename: name,
+    checksum: createHash('md5').update(readFileSync(join(finalized, name))).digest('hex'),
+  }));
+  const published = record(listed, { submitted: true, doi: REVIEWED_DOI, state: 'done' });
+  for (const failure of [
+    { stderr: 'gh: Validation Failed (HTTP 422)', message: 'validation' },
+    { stderr: '', message: 'connect ECONNRESET' },
+  ]) {
+    const zen = client(async () => ({ body: published }));
+    let created = false;
+    const gh = (args) => {
+      if (args[1] === 'view') {
+        const error = new Error('missing');
+        error.stderr = 'release not found';
+        throw error;
+      }
+      if (args[0] === 'api') {
+        const error = new Error(failure.message);
+        error.stderr = failure.stderr;
+        throw error;
+      }
+      if (args[1] === 'create') {
+        created = true;
+        return '';
+      }
+      throw new Error(args.join(' '));
+    };
+    const result = await resumeReviewed({
+      dist: originalDist(), release: release(), token: TOKEN, fetch: zen.fetch, gh, readAsset: async () => Buffer.from(''),
+    });
+    assert.equal(result.stopped, 'github', failure.message);
+    assert.equal(result.created, false, failure.message);
+    assert.equal(result.mutation, 'not-attempted', failure.message);
+    assert.equal(created, false, failure.message);
+    assert.deepEqual(zen.calls.map((call) => call.method), ['GET']);
+  }
   rmSync(finalized, { recursive: true, force: true });
 });
 
