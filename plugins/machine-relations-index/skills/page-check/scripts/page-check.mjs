@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 // One check for every site: reads the site's own sitemap, renders one page per page type
 // (its fullest and its longest-named page) as people see it and as machines read it, and fails only on hard defects.
-// Usage: node page-check.mjs --url <preview> [--base <production>] [--out dir] [--bypass <secret>] [--changed files.txt] [--sweep 1500]
+// Usage: node page-check.mjs --url <preview> [--base <production>] [--out dir] [--changed files.txt] [--sweep 1500]
+// It reads only public pages and holds no credentials. A caller that can reach a protected preview
+// (the CI action beside this repository's plugin) passes --access <module> to add its own request headers.
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { scanWords } from './words.mjs';
-import { previewAccess } from './access.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MEASURE = fs.readFileSync(path.join(HERE, 'measure.js'), 'utf8');
@@ -15,7 +16,6 @@ const URL0 = (args.url || process.env.PAGE_CHECK_URL || '').replace(/\/$/, '');
 if (!URL0) { console.error('page-check: --url is required'); process.exit(2); }
 const BASE = (args.base || process.env.PAGE_CHECK_BASE || '').replace(/\/$/, '');
 const OUT = args.out || 'page-check-report';
-const BYPASS = args.bypass || process.env.VERCEL_AUTOMATION_BYPASS_SECRET || '';
 const MAX_TYPES = Number(args['max-types'] || 18);
 const VIEWS = [
   { name: 'phone', width: 390, height: 844, scheme: 'light' },
@@ -26,13 +26,9 @@ const VIEWS = [
 ];
 fs.mkdirSync(path.join(OUT, 'shots'), { recursive: true });
 
-const access = previewAccess({ previewUrl: URL0, bypass: BYPASS, cookie: args.cookie || process.env.PAGE_CHECK_COOKIE || '' });
-// A Vercel share link (?_vercel_share=…) trades for a session cookie once; every later request carries it.
-if (args.share) {
-  const r = await fetch(`${URL0}/?_vercel_share=${args.share}`, { redirect: 'manual' });
-  const jar = (r.headers.getSetCookie?.() || []).map((c) => c.split(';')[0]).join('; ');
-  if (jar) access.setCookie(jar); else console.error(`page-check: share link answered ${r.status} with no cookie`);
-}
+// No access module: public pages only. With one, it decides which headers go to which host.
+const noAccess = { forUrl: async () => ({}), attach: async () => {} };
+const access = args.access ? await (await import(pathToFileURL(path.resolve(args.access)).href)).default({ previewUrl: URL0 }) : noAccess;
 async function get(url, extra = {}) {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {

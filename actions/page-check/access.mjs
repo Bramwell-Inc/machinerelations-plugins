@@ -1,7 +1,8 @@
-// How the check gets past Vercel preview protection with no stored secret.
+// How the page check gets past Vercel preview protection with no stored secret. It lives with the CI action,
+// outside the plugin package, so the skill an agent installs never handles a credential.
 // In GitHub Actions it presents the run's own short-lived OIDC token, which each Vercel project accepts
-// once GitHub Actions of its org is a Trusted Source for previews. Locally, an automation bypass secret,
-// a cookie or a share link still work. Headers go only to the preview's own host, never to third parties.
+// once GitHub Actions of its org is a Trusted Source for previews. An automation bypass secret, a cookie or a
+// share link also work, from the environment. Headers go only to the preview's own host, never to third parties.
 const { ACTIONS_ID_TOKEN_REQUEST_URL: REQ_URL, ACTIONS_ID_TOKEN_REQUEST_TOKEN: REQ_TOKEN, GITHUB_REPOSITORY_OWNER: OWNER } = process.env;
 let cached = { token: '', at: 0 };
 
@@ -39,4 +40,17 @@ export function previewAccess({ previewUrl, bypass = '', cookie = '' }) {
     });
   };
   return { forUrl, attach, setCookie: (c) => { fixed.cookie = c; } };
+}
+
+// What page-check.mjs loads with --access: the run's identity plus any bypass, cookie or share link from the environment.
+export default async function access({ previewUrl }) {
+  const env = process.env;
+  const a = previewAccess({ previewUrl, bypass: env.VERCEL_AUTOMATION_BYPASS_SECRET || '', cookie: env.PAGE_CHECK_COOKIE || '' });
+  // A Vercel share link trades for a session cookie once; every later request carries it.
+  if (env.PAGE_CHECK_SHARE) {
+    const r = await fetch(`${previewUrl}/?_vercel_share=${env.PAGE_CHECK_SHARE}`, { redirect: 'manual' });
+    const jar = (r.headers.getSetCookie?.() || []).map((c) => c.split(';')[0]).join('; ');
+    if (jar) a.setCookie(jar); else console.error(`page-check: share link answered ${r.status} with no cookie`);
+  }
+  return a;
 }

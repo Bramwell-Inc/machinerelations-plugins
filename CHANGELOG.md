@@ -2,6 +2,10 @@
 
 Every released version of the Machine Relations skills and plugin. The newest entry's text is the release note for the GitHub release, the Zenodo record and the directory listings, so it is written for practitioners. Versions follow semver: a minor version adds or graduates a method, a patch corrects wording or metadata, and a major version changes a tool or endpoint.
 
+## [1.2.1] - 2026-11-06
+
+Keep the Page check skill free of credentials: the installed skill reads only public pages, and the GitHub Action that checks protected previews and comments on pull requests moves out of the plugin into the repository's actions folder. Skills, MRI tools and endpoints are unchanged.
+
 ## [1.2.0] - 2026-11-06
 
 Add the Page check skill: render a site from its own sitemap at phone, tablet and desktop widths in light and dark, and report broken layout, unreadable text, raw values printed to readers, broken links and images, and gaps in what AI engines read. The same code runs as a GitHub Action an organization can require on every pull request. MRI tools, endpoints and the existing skills are unchanged.
