@@ -53,6 +53,14 @@ async function sitemapUrls(root) {
   return urls;
 }
 function onRoot(u, root) { try { const x = new URL(u); return root + x.pathname + x.search; } catch { return u; } }
+// The site's own URL moved onto the deployment being read; another host (a CDN, a storage bucket) stays where it is.
+function onSite(u, root) {
+  try {
+    const host = new URL(u).host.replace(/^www\./, '');
+    const own = [root, BASE].filter(Boolean).map((r) => new URL(r).host.replace(/^www\./, ''));
+    return own.includes(host) ? onRoot(u, root) : u;
+  } catch { return onRoot(u, root); }
+}
 function typeOf(p) {
   const segs = p.split('/').filter(Boolean);
   if (!segs.length) return '/';
@@ -158,7 +166,7 @@ async function machineChecks(root, pages) {
     const ogUrl = og && og[0].match(/content=["']([^"']+)/i)?.[1];
     if (!ogUrl) defects.push({ kind: 'og-image', detail: 'no og:image', where });
     else if (!pg.ogChecked) {
-      const ogAt = onRoot(ogUrl.replace(/&amp;/g, '&'), root);
+      const ogAt = onSite(ogUrl.replace(/&amp;/g, '&'), root);
       const img = await fetch(ogAt, { headers: await access.forUrl(ogAt), signal: AbortSignal.timeout(20000) }).catch(() => null);
       if (!img || img.status !== 200 || !/image\//.test(img.headers.get('content-type') || '')) defects.push({ kind: 'og-image', detail: `og:image answered ${img ? img.status : 'nothing'}`, where });
     }
@@ -209,34 +217,60 @@ async function renderAll(browser, root, pages, { shots = true } = {}) {
         if (v.name === 'wide') {
           const text = await page.evaluate(() => { const c = document.body.cloneNode(true); c.querySelectorAll('pre,script,style,noscript,[aria-hidden=true]').forEach((n) => n.remove()); c.querySelectorAll('code,kbd,samp').forEach((n) => n.replaceWith('`code`')); document.body.appendChild(c); c.style.cssText = 'position:absolute;left:-99999px;top:0;width:1200px'; const t = c.innerText; c.remove(); return t; });
           for (const w of scanWords(text)) (w.hard ? r.defects : r.notes).push({ kind: w.kind, detail: `"${w.match}": ${w.why} … ${w.context}` });
-          const ax = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).disableRules(['region']).analyze().catch(() => null);
+          const ax = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).disableRules(['region', 'color-contrast']).analyze().catch(() => null);
           for (const vi of ax?.violations || []) (['critical', 'serious'].includes(vi.impact) ? r.defects : r.notes).push({ kind: `a11y:${vi.id}`, detail: `${vi.help} (${vi.nodes.length})`, where: vi.nodes[0]?.target?.join(' ') });
           // Generated images: every same-site SVG is opened on its own and its text measured against its box.
           const svgs = await page.evaluate((origin) => [...document.images].map((i) => i.currentSrc || i.src).filter((s) => s.startsWith(origin) && /\.svg(\?|$)|\/badge|\/embed/.test(s)), new URL(root).origin);
           for (const s of svgs) if (!svgSeen.has(s.split('?')[0]) && svgSeen.size < 12) { svgSeen.add(s.split('?')[0]); r.defects.push(...await checkSvg(ctx, s)); }
         }
-        if (v.name.endsWith('-dark')) {
-          // Dark mode (axe already checks contrast in light): text that vanished into its background.
-          // Only judged where the background is a flat colour; over an image or gradient it can't be read from styles.
-          const ghost = await page.evaluate(() => {
-            const parse = (c) => { const n = (c.match(/[\d.]+/g) || []).map(Number); return /^color\(srgb/.test(c) ? [n[0] * 255, n[1] * 255, n[2] * 255, n[3]] : n; };
-            let bad = 0; let first = '';
-            for (const el of document.querySelectorAll('h1,h2,h3,p,li,a,span,td')) {
-              if (!el.childNodes.length || ![...el.childNodes].some((n) => n.nodeType === 3 && /[\p{L}\p{N}]/u.test(n.textContent))) continue;
+        if (v.name === 'wide' || v.name === 'wide-dark') {
+          // Text contrast in light and dark, measured from styles rather than by axe: axe gives up ("incomplete") on any text
+          // above a CSS gradient, and most of these sites paint a dot grid on the page, so axe judged almost nothing.
+          // A gradient with a see-through stop (a pattern or a fade) is decoration over the colour beneath it; a solid
+          // gradient is judged against its kindest stop, so only text that fails on every part of it counts. Text over a
+          // photo or other image is skipped: its contrast can't be read from styles.
+          const low = await page.evaluate(() => {
+            const parse = (c) => { const n = (c.match(/[\d.]+/g) || []).map(Number); return /^color\(srgb/.test(c) ? [n[0] * 255, n[1] * 255, n[2] * 255, n[3] ?? 1] : [n[0], n[1], n[2], n[3] ?? 1]; };
+            const lum = (c) => { const [r1, g, b] = c.slice(0, 3).map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r1 + 0.7152 * g + 0.0722 * b; };
+            const ratio = (a, b) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05);
+            const over = (fg, bg) => (fg[3] < 1 ? fg.slice(0, 3).map((x, i) => x * fg[3] + bg[i] * (1 - fg[3])).concat(1) : fg);
+            const hex = (c) => '#' + c.slice(0, 3).map((x) => Math.round(x).toString(16).padStart(2, '0')).join('');
+            const stops = (img) => (img.match(/(rgba?|color)\([^)]*\)/g) || []).map(parse);
+            const pairs = new Map();
+            for (const el of document.querySelectorAll('body *')) {
+              if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'SVG', 'svg'].includes(el.tagName)) continue;
+              if (![...el.childNodes].some((n) => n.nodeType === 3 && /[\p{L}\p{N}]/u.test(n.textContent))) continue;
               const r = el.getBoundingClientRect(); if (r.width < 4 || r.height < 4) continue;
               if (el.checkVisibility && !el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) continue;
-              let p = el; let bg = [0, 0, 0, 0]; let painted = false;
-              while (p) { const cs = getComputedStyle(p); if (cs.backgroundImage !== 'none') { painted = true; break; } const c = parse(cs.backgroundColor); if (c.length >= 3 && (c[3] === undefined || c[3] > 0.5)) { bg = c; break; } p = p.parentElement; }
-              if (!p || painted) continue;
-              let fg = parse(getComputedStyle(el).color);
-              if (fg[3] !== undefined && fg[3] < 1) fg = fg.slice(0, 3).map((x, i) => x * fg[3] + bg[i] * (1 - fg[3])); // see-through text is read over its background
-              const lum = (c) => { const [r1, g, b] = c.slice(0, 3).map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r1 + 0.7152 * g + 0.0722 * b; };
-              const ratio = (Math.max(lum(fg), lum(bg)) + 0.05) / (Math.min(lum(fg), lum(bg)) + 0.05);
-              if (ratio < 1.6 && getComputedStyle(el).opacity !== '0') { bad += 1; if (!first) first = el.tagName.toLowerCase() + ' "' + el.textContent.trim().slice(0, 40) + '"'; }
+              if (el.closest('[aria-hidden=true],[inert],[disabled],:disabled')) continue;
+              let p = el; let bgs = null; let skip = false; let alpha = 1;
+              for (let q = el; q; q = q.parentElement) alpha *= Number(getComputedStyle(q).opacity);
+              while (p) {
+                const cs = getComputedStyle(p); const c = parse(cs.backgroundColor);
+                if (cs.backgroundImage !== 'none') {
+                  if (/url\(/.test(cs.backgroundImage)) { skip = true; break; }
+                  const st = stops(cs.backgroundImage);
+                  if (st.length && st.every((x) => x[3] > 0.5)) { bgs = st; break; }
+                }
+                if (c[3] > 0.5) { bgs = [c]; break; }
+                p = p.parentElement;
+              }
+              if (skip) continue;
+              if (!bgs) bgs = [[255, 255, 255, 1]];
+              const cs = getComputedStyle(el); const size = parseFloat(cs.fontSize); const bold = Number(cs.fontWeight) >= 700;
+              const need = size >= 24 || (size >= 18.66 && bold) ? 3 : 4.5;
+              let fg = parse(cs.color); fg = [fg[0], fg[1], fg[2], fg[3] * alpha];
+              let best = 0; let bgUsed = bgs[0];
+              for (const b of bgs) { const k = ratio(over(fg, b), b); if (k > best) { best = k; bgUsed = b; } }
+              if (best >= need) continue;
+              const key = hex(over(fg, bgUsed)) + ' on ' + hex(bgUsed);
+              const e = pairs.get(key) || { n: 0, ratio: best, need, where: el.tagName.toLowerCase() + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/).slice(0, 2).join('.') : '') + ' "' + el.textContent.trim().slice(0, 40) + '"' };
+              e.n += 1; pairs.set(key, e);
             }
-            return { bad, first };
+            return [...pairs].map(([key, e]) => ({ key, ...e }));
           });
-          if (ghost.bad) r.defects.push({ kind: 'invisible-text', detail: `${ghost.bad} text element(s) nearly the same colour as their background`, where: ghost.first });
+          // One finding per colour pair: one token or rule causes all of its hits, so one fix clears it.
+          for (const x of low) r.defects.push({ kind: 'contrast', detail: `${x.n} text element(s) at ${x.ratio.toFixed(2)}:1, ${x.key}; needs ${x.need}:1`, where: x.where, pair: x.key });
         }
         if (errors.length) r.notes.push({ kind: 'script-error', detail: errors.slice(0, 2).join(' | ') });
         if (shots) { const f = `${slug(pg.path)}--${v.name}.png`; await page.screenshot({ path: path.join(OUT, 'shots', f), fullPage: false }); r.shot = f; }
@@ -248,6 +282,10 @@ async function renderAll(browser, root, pages, { shots = true } = {}) {
     }
   }
   await Promise.all(Array.from({ length: Number(args.workers || 4) }, worker));
+  // A dark-view contrast pair the light view of the same page also reported is text dark mode leaves unchanged
+  // (a site with no dark theme): one problem, reported once.
+  const light = new Map(results.filter((r) => r.view === 'wide').map((r) => [r.path, new Set(r.defects.filter((d) => d.kind === 'contrast').map((d) => d.pair))]));
+  for (const r of results) if (r.view === 'wide-dark') r.defects = r.defects.filter((d) => d.kind !== 'contrast' || !light.get(r.path)?.has(d.pair));
   return results;
 }
 
@@ -294,7 +332,8 @@ async function links(root, pages) {
 }
 
 const slug = (p) => (p === '/' ? 'home' : p.replace(/^\//, '').replace(/[^\w.-]+/g, '_').slice(0, 80));
-const sig = (d, r) => `${r?.type ?? ''}|${r?.view ?? ''}|${d.kind}|${(d.where || '').replace(/"[^"]*"/, '')}|${d.kind.startsWith('a11y') || d.kind === 'small-text' || d.kind === 'small-target' ? '' : d.detail.replace(/\d+/g, '#')}`;
+// A contrast finding is its colour pair: which element shows it first changes with content, the pair only with design.
+const sig = (d, r) => d.kind === 'contrast' ? `${r?.type ?? ''}|${r?.view ?? ''}|contrast|${d.pair}` : `${r?.type ?? ''}|${r?.view ?? ''}|${d.kind}|${(d.where || '').replace(/"[^"]*"/, '')}|${d.kind.startsWith('a11y') || d.kind === 'small-text' || d.kind === 'small-target' ? '' : d.detail.replace(/\d+/g, '#')}`;
 
 // ---------- run ----------
 const t0 = Date.now();

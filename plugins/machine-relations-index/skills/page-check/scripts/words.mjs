@@ -44,6 +44,8 @@ export function scanWords(text) {
       if (rule.kind === 'raw-value' && m[0] === 'null' && /^ [a-z]{3,}/.test(text.slice(m.index + 4, m.index + 9)) && !LEAK_BEFORE.test(text.slice(Math.max(0, m.index - 10), m.index))) continue;
       // An id inside a link (a file or page address) is the address, not an id shown to people.
       if (rule.kind === 'raw-id' && (/^(@|\.[a-z])/i.test(text.slice(m.index + m[0].length, m.index + m[0].length + 2)) || /[/=%@]/.test(text.slice(text.lastIndexOf(' ', m.index) + 1, m.index)))) continue;
+      // An error code named after its HTTP status ("returns 409 release_unavailable") is API documentation, not a leak.
+      if (rule.kind === 'raw-id' && /\b[1-5]\d\d\s+$/.test(text.slice(Math.max(0, m.index - 6), m.index))) continue;
       found.push({ kind: rule.kind, hard: rule.hard, match: m[0], why: rule.why, context });
       if (found.filter((f) => f.kind === rule.kind).length > 5) break;
     }
