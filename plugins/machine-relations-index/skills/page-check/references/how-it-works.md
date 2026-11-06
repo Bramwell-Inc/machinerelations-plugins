@@ -16,7 +16,7 @@ Requiring this workflow blocks a merge when the result is blocking. It does not 
 - Bramwell-Inc/machinerelations.ai: `index-report.yml`, `hub-evidence.yml`, `mri-dataset-publish.yml`
 - Bramwell-Inc/paralax.ai: `engine-changes.yml`, `mri-engine-measures.yml`
 
-Each site's merge gate has to treat a skipped Page check as unfinished. The comment from this repository cannot do that. On the shared gate, a skipped check still counts as passed, and Page check is not in the list of checks that must be present. jaxonparrott.com pins that gate to a commit, so a change to the shared gate reaches that site only when the pin moves. Until those gates require this check to be present and not skipped, a skipped job can still merge.
+The shared merge gate counts a skipped Page check as passed. Page check is not one of the checks that gate requires to be present. jaxonparrott.com pins that gate to a commit, so a note in this repository does not change what that site requires. A skipped or absent Page check can merge.
 
 Preview access for a protected deployment is a setting on each Vercel project. Another project's setting does not cover a new one. The bramwell.ai project is separate from the seven sites this check already runs for, and a refusal there is not judged. The installed skill does not include the checker. The public checker reads only public pages. Taste notes stay optional: they appear when the caller passes an API key, they never block, and the check does not fetch a design document on its own.
 

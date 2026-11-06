@@ -74,10 +74,11 @@ jobs:
   # A merged version bump becomes one release. A push that does not change the
   # package version, including a recovery of this workflow, does not run the publisher.
   # The open 1.2.3 deposit is draft 24020018. Do not resume it by rerunning
-  # workflow 42274178672 or by publishing from a later commit. The tested files
-  # are that run's package artifact, built at 9a3357a. Clear inherited files one
-  # at a time with the zenodo-draft job, then publish only after a fresh GET
-  # shows no files and the same reserved DOI.
+  # workflow 42274178672 or by publishing from this branch: its version is 1.2.4,
+  # and a publish would retarget that draft. The tested files are the package
+  # artifact from that run, built at 9a3357a. Inherited files are removed one at
+  # a time by the zenodo-draft job. The resume dispatch is the 1.2.3 line's
+  # resume-reviewed choice, and it refuses to upload while those files remain.
   release:
     needs: package
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

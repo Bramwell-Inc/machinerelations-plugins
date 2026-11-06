@@ -4,7 +4,7 @@ Every released version of the Machine Relations skills and plugin. The newest en
 
 ## [1.2.4] - 2026-11-06
 
-The installed Page check skill no longer contains the checker. The checker stays public source next to the GitHub Action in this repository, and the skill tells you to run that source or the Action. The directory package is the skill text, the reference and the other Machine Relations skills. What the check measures is unchanged. MRI tools and endpoints are unchanged.
+The installed Page check skill no longer contains the checker. The checker stays public source next to the GitHub Action in this repository, and the skill tells you to run that source or the Action. The directory package is the skill text, the reference and the other Machine Relations skills. What the check measures is unchanged. The page-check reference describes the shared merge gate as it works today: a skipped Page check counts as passed, and the gate does not require that check to be present. MRI tools and endpoints are unchanged.
 
 ## [1.2.3] - 2026-11-06
 
