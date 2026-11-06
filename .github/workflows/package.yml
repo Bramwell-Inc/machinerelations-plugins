@@ -3,10 +3,41 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      draft_id:
+        description: Existing Zenodo deposition id to read
+        required: true
+        type: string
+      expect_version:
+        description: Version that draft must already carry
+        required: true
+        type: string
+      expect_concept:
+        description: conceptrecid the draft must already carry
+        required: true
+        type: string
+      expect_doi:
+        description: prereserved DOI the draft must already carry
+        required: true
+        type: string
+      action:
+        description: inspect reads only. delete-one removes one listed draft file after the checks pass, and stops if Zenodo returns 500.
+        required: true
+        default: inspect
+        type: choice
+        options:
+          - inspect
+          - delete-one
+      file_id:
+        description: File id on that draft. Used only when action is delete-one.
+        required: false
+        type: string
 permissions:
   contents: read
 jobs:
   package:
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     outputs:
       artifact: ${{ steps.package.outputs.name }}
@@ -17,7 +48,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test scripts/release.test.mjs plugins/machine-relations-index/skills/*/scripts/*.test.mjs actions/*/*.test.mjs
+      - run: node --test scripts/release.test.mjs scripts/zenodo-draft.test.mjs plugins/machine-relations-index/skills/*/scripts/*.test.mjs actions/*/*.test.mjs
       - run: node scripts/validate-package.mjs
         env:
           PACKAGE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -80,3 +111,26 @@ jobs:
           VERCEL_DEPLOY_HOOKS: |
             ${{ secrets.VERCEL_DEPLOY_HOOK_JAXONPARROTT }}
             ${{ secrets.VERCEL_DEPLOY_HOOK_MACHINERELATIONS }}
+
+  # Read an existing Zenodo draft with the release credential. inspect is the
+  # default and performs no write. delete-one is a single documented file
+  # delete after the id, version, concept and reserved DOI match, and it stops
+  # on HTTP 500. It does not delete the deposition or publish.
+  zenodo-draft:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read the existing draft
+        run: node scripts/zenodo-draft.mjs
+        env:
+          ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
+          DRAFT_ID: ${{ inputs.draft_id }}
+          EXPECT_VERSION: ${{ inputs.expect_version }}
+          EXPECT_CONCEPT: ${{ inputs.expect_concept }}
+          EXPECT_DOI: ${{ inputs.expect_doi }}
+          ACTION: ${{ inputs.action }}
+          FILE_ID: ${{ inputs.file_id }}
