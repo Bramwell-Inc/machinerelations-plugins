@@ -2,8 +2,8 @@
 // One check for every site: reads the site's own sitemap, renders one page per page type
 // (its fullest and its longest-named page) as people see it and as machines read it, and fails only on hard defects.
 // Usage: node page-check.mjs --url <preview> [--base <production>] [--out dir] [--changed files.txt] [--sweep 1500]
-// It reads only public pages and holds no credentials. A caller that can reach a protected preview
-// (the CI action beside this repository's plugin) passes --access <module> to add its own request headers.
+// It reads only public pages and holds no credentials. The Action in the parent folder
+// passes --access <module> when it can reach a protected preview.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';

@@ -9,13 +9,13 @@ import { sha256 } from './build-release.mjs';
 import { readRelease } from './library.mjs';
 import { verifyDist } from './publish-release.mjs';
 import {
-  PRESERVED, REVIEWED_COMMIT, REVIEWED_DOI, decideResume, finalizeReviewedDist, inspectReviewedDist, resumeReviewed, tagIsAbsent,
+  PRESERVED, REVIEWED_COMMIT, REVIEWED_DOI, REVIEWED_VERSION, decideResume, finalizeReviewedDist, inspectReviewedDist, resumeReviewed, tagIsAbsent,
 } from './resume-reviewed.mjs';
 
 const TOKEN = 'zenodo-test-token-not-real';
 const FIXTURE = fileURLToPath(new URL('./fixtures/reviewed-1.2.3/', import.meta.url));
 const API = 'https://zenodo.org/api';
-const release = () => readRelease();
+const release = () => ({ ...readRelease(), version: REVIEWED_VERSION });
 
 function originalDist() {
   const dist = mkdtempSync(join(tmpdir(), 'mr-original-'));
@@ -83,6 +83,17 @@ function githubFor(dir, { draft = false, commit = REVIEWED_COMMIT, assets = null
   const readAsset = async (name) => (name === 'library.json' && libraryBytes ? libraryBytes : readFileSync(join(dir, name)));
   return { gh, readAsset, calls, created: () => created };
 }
+
+test('this 1.2.4 checkout cannot run the 1.2.3 resume', async () => {
+  assert.equal(readRelease().version, '1.2.4');
+  const dist = originalDist();
+  const result = await resumeReviewed({
+    dist, release: readRelease(), token: TOKEN, fetch: () => { throw new Error('zenodo was called'); },
+  });
+  assert.equal(result.stopped, 'wrong-package-version');
+  assert.equal(result.mutation, 'not-attempted');
+  rmSync(dist, { recursive: true, force: true });
+});
 
 test('the original artifact has null DOIs and finalizing keeps the tested bytes', () => {
   const dist = originalDist();

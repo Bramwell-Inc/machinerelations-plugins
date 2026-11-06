@@ -30,6 +30,8 @@ test('AuthorityTech website caller is not vendored here', () => {
   const doc = readFileSync(path.join(ROOT, 'plugins/machine-relations-index/skills/page-check/references/how-it-works.md'), 'utf8');
   assert.match(doc, /AuthorityTech keeps its own copy/);
   assert.match(doc, /not coverage of it/);
+  assert.match(doc, /counts a skipped Page check as passed/);
+  assert.doesNotMatch(doc, /has to treat a skipped|Until those gates require/);
 });
 
 test('AuthorityTech website caller runs on drafts when this environment can read it', (t) => {

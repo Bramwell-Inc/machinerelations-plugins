@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "machine-relations-index",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Build evidence-backed Machine Relations briefs for AI visibility, GEO/AEO, SEO content discovery and digital PR; research cited sources with the Machine Relations Index.",
   "author": {
     "name": "Jaxon Parrott",
@@ -105,7 +105,7 @@
         "demo_recording_url": "https://raw.githubusercontent.com/Bramwell-Inc/machinerelations-plugins/2d2e7ffd1659af660fa657e60646596fd96d4454/review/mri-review-walkthrough.mp4"
       },
       "publication": {
-        "release_notes": "The Page check names three results on the pull request. Clean means the sampled pages were read and this change adds nothing that blocks. Blocking means it does, and the check fails. Not judged means the pages were not read: the preview refused this run, the preview did not build, production could not be identified, the repository is not a site, or the checker did not finish. The job still passes when the pages were not read, so a broken check does not stop every merge. A push straight to the default branch is still unchecked. Sampling is still the site's own sitemap rather than every template."
+        "release_notes": "The installed Page check skill no longer contains the checker. The checker stays public source next to the GitHub Action in this repository, and the skill tells you to run that source or the Action. The directory package is the skill text, the reference and the other Machine Relations skills. What the check measures is unchanged. The page-check reference describes the shared merge gate as it works today: a skipped Page check counts as passed, and the gate does not require that check to be present. MRI tools and endpoints are unchanged."
       }
     }
   }

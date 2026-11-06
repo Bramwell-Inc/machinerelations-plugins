@@ -2,6 +2,10 @@
 
 Every released version of the Machine Relations skills and plugin. The newest entry's text is the release note for the GitHub release, the Zenodo record and the directory listings, so it is written for practitioners. Versions follow semver: a minor version adds or graduates a method, a patch corrects wording or metadata, and a major version changes a tool or endpoint.
 
+## [1.2.4] - 2026-11-06
+
+The installed Page check skill no longer contains the checker. The checker stays public source next to the GitHub Action in this repository, and the skill tells you to run that source or the Action. The directory package is the skill text, the reference and the other Machine Relations skills. What the check measures is unchanged. The page-check reference describes the shared merge gate as it works today: a skipped Page check counts as passed, and the gate does not require that check to be present. MRI tools and endpoints are unchanged.
+
 ## [1.2.3] - 2026-11-06
 
 The Page check names three results on the pull request. Clean means the sampled pages were read and this change adds nothing that blocks. Blocking means it does, and the check fails. Not judged means the pages were not read: the preview refused this run, the preview did not build, production could not be identified, the repository is not a site, or the checker did not finish. The job still passes when the pages were not read, so a broken check does not stop every merge. A push straight to the default branch is still unchecked. Sampling is still the site's own sitemap rather than every template.

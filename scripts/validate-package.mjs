@@ -4,6 +4,7 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { resolve, relative } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { AUTHOR, CONCEPT_DOI, DESCRIPTOR, compareVersions, readCitation, readRelease } from './library.mjs';
+import { listPackageFiles, rejectedPackageFiles } from './package-files.mjs';
 
 const root = resolve('plugins/machine-relations-index');
 const read = (name) => JSON.parse(readFileSync(resolve(root, name), 'utf8'));
@@ -63,6 +64,8 @@ for (const name of skillNames) {
     assert.ok(existsSync(target), `Missing packaged skill reference: ${match[1]}`);
   }
 }
+const rejected = rejectedPackageFiles(listPackageFiles(root));
+assert.deepEqual(rejected, [], `Directory package files outside the allowed types: ${rejected.join(', ')}`);
 // One version everywhere a reader or citation can see it.
 const release = readRelease();
 const [latest, previous] = release.changelog;

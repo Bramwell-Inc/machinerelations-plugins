@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { listPackageFiles, rejectedPackageFiles } from './package-files.mjs';
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const expected = read('plugins/machine-relations-index/plugin.json');
@@ -21,6 +22,8 @@ for (const [host, installed] of [['Codex', codex], ['Claude Code', claudeEntry]]
       `${host} installed the exact ${name} skill`,
     );
   }
+  const rejected = rejectedPackageFiles(listPackageFiles(root));
+  assert.deepEqual(rejected, [], `${host} installed files outside the allowed types: ${rejected.join(', ')}`);
   console.log(`${host}: candidate ${installed.version}, all ${skills.length} exact skills installed`);
 }
 

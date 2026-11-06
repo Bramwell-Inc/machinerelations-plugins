@@ -37,7 +37,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test scripts/release.test.mjs scripts/release-trigger.test.mjs scripts/zenodo-draft.test.mjs scripts/resume-reviewed.test.mjs plugins/machine-relations-index/skills/*/scripts/*.test.mjs actions/*/*.test.mjs
+      # Filename discovery. Recovery, package and action tests are included without editing this line.
+      - run: node --test $(find scripts actions -name '*.test.mjs' -not -path '*/node_modules/*')
       - run: node scripts/validate-package.mjs
         env:
           PACKAGE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -72,7 +73,8 @@ jobs:
           if-no-files-found: error
 
   # A merged version bump becomes one release. A push that does not change the
-  # package version, including a recovery of this workflow, does not run the publisher.
+  # package version does not run the publisher. 1.2.3 is already published.
+  # This branch is 1.2.4, so merging it to main runs the ordinary publisher.
   release:
     needs: package
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

@@ -5,7 +5,7 @@
 # preview not built, no production to compare, or the checker did not finish) passes the job and is a
 # separate result from clean. Only blocking fails the job. Requiring this workflow does not judge a push
 # straight to the default branch, and it does not make a not-judged run into a reading of the pages.
-# A site merge gate still has to treat a skipped Page check as unfinished. Preview trust is per Vercel project.
+# The shared merge gate counts a skipped Page check as passed and does not require this check to be present. Preview trust is per Vercel project.
 # Sampling limits are in the page-check reference, plugins/machine-relations-index/skills/page-check/references/how-it-works.md.
 # No stored secret: GitHub's own token finds the preview, and the run's OIDC identity gets past preview
 # protection on Vercel projects that trust the org's GitHub Actions. ANTHROPIC_API_KEY is optional (taste notes).
