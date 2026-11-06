@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { cpSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -261,6 +261,89 @@ test('a published record is adopted only when the files, release bytes and tag c
   assert.equal(draft.stopped, 'github-draft');
   assert.equal(draftRelease.calls.some((args) => args.includes('delete')), false);
   rmSync(finalized, { recursive: true, force: true });
+});
+
+test('a wrong existing tag is refused before a release is created', async () => {
+  const finalized = originalDist();
+  finalizeReviewedDist(finalized);
+  const listed = ['library.json', 'SHA256SUMS', ...PRESERVED].map((name) => ({
+    filename: name,
+    checksum: createHash('md5').update(readFileSync(join(finalized, name))).digest('hex'),
+  }));
+  const published = record(listed, { submitted: true, doi: REVIEWED_DOI, state: 'done' });
+  const zen = client(async () => ({ body: published }));
+  const wrongTag = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+  const github = githubFor(finalized, { missing: true, commit: wrongTag });
+  const result = await resumeReviewed({
+    dist: originalDist(), release: release(), token: TOKEN, fetch: zen.fetch, gh: github.gh, readAsset: github.readAsset,
+  });
+  assert.equal(result.stopped, 'github-commit');
+  assert.equal(result.commit, wrongTag);
+  assert.equal(result.created, false);
+  assert.equal(result.mutation, 'not-attempted');
+  assert.equal(github.created(), false);
+  assert.deepEqual(zen.calls.map((call) => call.method), ['GET']);
+  rmSync(finalized, { recursive: true, force: true });
+});
+
+test('a release created during recovery stays an unknown mutation when its tag check fails', async () => {
+  const finalized = originalDist();
+  finalizeReviewedDist(finalized);
+  const listed = ['library.json', 'SHA256SUMS', ...PRESERVED].map((name) => ({
+    filename: name,
+    checksum: createHash('md5').update(readFileSync(join(finalized, name))).digest('hex'),
+  }));
+  const published = record(listed, { submitted: true, doi: REVIEWED_DOI, state: 'done' });
+  const zen = client(async () => ({ body: published }));
+  let created = false;
+  let apiCalls = 0;
+  const calls = [];
+  const gh = (args) => {
+    calls.push(args);
+    if (args.includes('delete')) throw new Error('release delete is outside this recovery');
+    if (args[0] === 'api') {
+      apiCalls += 1;
+      if (apiCalls === 1) {
+        const error = new Error('missing tag');
+        error.stderr = 'Not Found';
+        throw error;
+      }
+      return JSON.stringify({ sha: 'cccccccccccccccccccccccccccccccccccccccc' });
+    }
+    if (args[1] === 'view') {
+      if (!created) {
+        const error = new Error('missing');
+        error.stderr = 'release not found';
+        throw error;
+      }
+      return JSON.stringify({ isDraft: false, tagName: 'v1.2.3', assets: [] });
+    }
+    if (args[1] === 'create') {
+      created = true;
+      return '';
+    }
+    throw new Error(args.join(' '));
+  };
+  const result = await resumeReviewed({
+    dist: originalDist(), release: release(), token: TOKEN, fetch: zen.fetch, gh, readAsset: async () => Buffer.from('unused'),
+  });
+  assert.equal(created, true);
+  assert.equal(result.created, true);
+  assert.equal(result.stopped, 'github-commit');
+  assert.equal(result.mutation, 'unknown');
+  assert.deepEqual(zen.calls.map((call) => call.method), ['GET']);
+  assert.equal(calls.some((args) => args.includes('delete')), false);
+  rmSync(finalized, { recursive: true, force: true });
+});
+
+test('a citation names a DOI only when its last token is that doi.org URL', () => {
+  const dist = originalDist();
+  const path = join(dist, 'library.json');
+  const library = JSON.parse(readFileSync(path, 'utf8'));
+  library.citation = 'Machine Relations Research. https://evil.example/10.5281/zenodo.1';
+  writeFileSync(path, `${JSON.stringify(library, null, 2)}\n`);
+  assert.throws(() => finalizeReviewedDist(dist), /already names a DOI/);
+  rmSync(dist, { recursive: true, force: true });
 });
 
 test('the workflow keeps recovery jobs and will not resume from a push', () => {

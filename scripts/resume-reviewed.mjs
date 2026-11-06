@@ -40,11 +40,29 @@ export function reviewedExpect() {
   return { draftId: REVIEWED_DRAFT, version: REVIEWED_VERSION, concept: REVIEWED_CONCEPT, doi: REVIEWED_DOI };
 }
 
+function citationUrl(existing) {
+  const token = existing.slice(existing.lastIndexOf(' ') + 1);
+  try {
+    return new URL(token);
+  } catch {
+    return null;
+  }
+}
+
 function cite(existing, id) {
-  const url = doiUrl(id);
-  if (existing.includes(url)) return existing;
-  if (existing.includes('https://doi.org/')) throw new Error('library citation already names a DOI');
-  return `${existing} ${url}`;
+  const expected = new URL(doiUrl(id));
+  const present = citationUrl(existing);
+  if (present === null) return `${existing} ${expected.href}`;
+  const same = present.protocol === expected.protocol
+    && present.hostname === expected.hostname
+    && present.pathname === expected.pathname
+    && present.search === ''
+    && present.hash === ''
+    && present.username === ''
+    && present.password === ''
+    && present.port === '';
+  if (!same) throw new Error('library citation already names a DOI');
+  return existing;
 }
 
 export function preservedHashes(dist) {
@@ -244,6 +262,17 @@ function previewFinal(dist) {
   return scratch;
 }
 
+function tagCommit(tag, gh) {
+  try {
+    const body = JSON.parse(gh(['api', `repos/${REPO}/commits/${tag}`], { stdio: ['ignore', 'pipe', 'pipe'] }));
+    return { sha: body.sha ?? null };
+  } catch (error) {
+    const text = String(error.stderr ?? error.message ?? '');
+    if (/\b404\b|not found/i.test(text)) return { sha: null };
+    return { error };
+  }
+}
+
 async function matchGithub({ tag, required, gh, readAsset }) {
   let commit;
   try {
@@ -277,10 +306,15 @@ async function ensureGithub({ dist, gh, readAsset }) {
   } catch (error) {
     if (!/release not found/i.test(String(error.stderr ?? error.message ?? ''))) return { ok: false, stopped: 'github', message: error.message };
   }
-  if (view?.isDraft) return { ok: false, stopped: 'github-draft' };
+  if (view?.isDraft) return { ok: false, stopped: 'github-draft', created: false };
   if (view) {
     const matched = await matchGithub({ tag, required, gh, readAsset });
-    return matched.ok ? { ok: true, created: false } : matched;
+    return matched.ok ? { ok: true, created: false } : { ...matched, created: false };
+  }
+  const tagged = tagCommit(tag, gh);
+  if (tagged.error) return { ok: false, stopped: 'github', message: tagged.error.message, created: false };
+  if (tagged.sha && tagged.sha !== REVIEWED_COMMIT) {
+    return { ok: false, stopped: 'github-commit', commit: tagged.sha, created: false };
   }
   const notes = resolve(dist, '..', 'release-notes.md');
   writeFileSync(notes, releaseNotes(JSON.parse(readFileSync(resolve(dist, LIBRARY_FILE), 'utf8')), dist));
@@ -348,7 +382,19 @@ export async function resumeReviewed({
     }
     if (!gh) return { ok: false, stopped: 'no-github', mutation: 'unknown' };
     const github = await ensureGithub({ dist: scratch, gh, readAsset });
-    if (!github.ok) return { ok: false, ...github, mutation: decision.action === 'github-only' ? 'not-attempted' : 'unknown' };
+    if (!github.ok) {
+      const created = github.created === true;
+      return {
+        ok: false,
+        stopped: github.stopped,
+        commit: github.commit,
+        missing: github.missing,
+        mismatch: github.mismatch,
+        message: github.message,
+        created,
+        mutation: created || decision.action !== 'github-only' ? 'unknown' : 'not-attempted',
+      };
+    }
     try {
       await notifySites(REVIEWED_VERSION, hooks);
     } catch (error) {
