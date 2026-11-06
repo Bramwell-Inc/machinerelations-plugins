@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test scripts/release.test.mjs
+      - run: node --test scripts/release.test.mjs plugins/machine-relations-index/skills/*/scripts/*.test.mjs
       - run: node scripts/validate-package.mjs
         env:
           PACKAGE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}

@@ -166,6 +166,9 @@ function hookServer() {
 
 const listen = (server) => new Promise((ok) => server.listen(0, '127.0.0.1', ok));
 
+// Any date after every real release: a test bump must not depend on when the last release happened.
+const BUMP_DATE = '2099-01-01';
+
 /** A throwaway git copy of the tracked tree, so a test can bump the version. */
 function treeCopy(dir) {
   const tree = join(dir, 'tree');
@@ -183,12 +186,12 @@ function treeCopy(dir) {
     for (const file of ['plugins/machine-relations-index/plugin.json', 'plugins/machine-relations-index/.claude-plugin/plugin.json', 'CITATION.cff',
       ...readdirSync(join(tree, 'plugins/machine-relations-index/skills')).map((s) => `plugins/machine-relations-index/skills/${s}/SKILL.md`)]) {
       const path = join(tree, file);
-      writeFileSync(path, readFileSync(path, 'utf8').replaceAll(`"${from}"`, `"${to}"`).replace('date-released: "2026-10-29"', 'date-released: "2026-11-02"'));
+      writeFileSync(path, readFileSync(path, 'utf8').replaceAll(`"${from}"`, `"${to}"`).replace(/^date-released: "[^"]+"$/m, `date-released: "${BUMP_DATE}"`));
     }
     const changelog = join(tree, 'CHANGELOG.md');
     const text = readFileSync(changelog, 'utf8');
     const at = text.indexOf('## [');
-    writeFileSync(changelog, `${text.slice(0, at)}## [${to}] - 2026-11-02\n\nA test patch release that changes nothing a practitioner would notice at all.\n\n${text.slice(at)}`);
+    writeFileSync(changelog, `${text.slice(0, at)}## [${to}] - ${BUMP_DATE}\n\nA test patch release that changes nothing a practitioner would notice at all.\n\n${text.slice(at)}`);
     const manifest = join(tree, 'plugins/machine-relations-index/plugin.json');
     const json = JSON.parse(readFileSync(manifest, 'utf8'));
     json.extensions['com.openai'].publication.release_notes = 'A test patch release that changes nothing a practitioner would notice at all.';

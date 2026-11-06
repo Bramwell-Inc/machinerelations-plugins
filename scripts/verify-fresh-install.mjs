@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const expected = read('plugins/machine-relations-index/plugin.json');
+const skills = readdirSync('plugins/machine-relations-index/skills', { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
 const codex = read(join(process.env.RUNNER_TEMP, 'mr-codex-install.json'));
 const claude = read(join(process.env.RUNNER_TEMP, 'mr-claude-install.json'));
 const claudeEntry = claude.find((entry) => entry.id === 'machine-relations-index@machinerelations');
@@ -13,14 +14,14 @@ for (const [host, installed] of [['Codex', codex], ['Claude Code', claudeEntry]]
   assert.equal(installed.version, expected.version, `${host} installed the candidate version`);
   const root = installed.installedPath ?? installed.installPath;
   assert.equal(typeof root, 'string', `${host} returns an installed path`);
-  for (const name of ['machine-relations', 'machine-relations-index']) {
+  for (const name of skills) {
     assert.equal(
       readFileSync(join(root, `skills/${name}/SKILL.md`), 'utf8'),
       readFileSync(`plugins/machine-relations-index/skills/${name}/SKILL.md`, 'utf8'),
       `${host} installed the exact ${name} skill`,
     );
   }
-  console.log(`${host}: candidate ${installed.version}, both exact skills installed`);
+  console.log(`${host}: candidate ${installed.version}, all ${skills.length} exact skills installed`);
 }
 
 const endpoint = read(join(codex.installedPath, 'mcp.json')).mcpServers['machine-relations-index'].url;
