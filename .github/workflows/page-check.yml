@@ -18,7 +18,9 @@ concurrency:
 jobs:
   page-check:
     # The skills repo is not a site, and on the pull request that adds this file the action is not on main yet.
-    if: github.event.pull_request.draft == false && github.repository != 'Bramwell-Inc/machinerelations-plugins'
+    # Runs on drafts too: the org ruleset never delivers ready_for_review, so a draft-only head would
+    # otherwise reach the merge gate with nothing but a skipped page check.
+    if: github.repository != 'Bramwell-Inc/machinerelations-plugins'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
