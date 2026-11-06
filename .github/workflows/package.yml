@@ -17,7 +17,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test scripts/release.test.mjs plugins/machine-relations-index/skills/*/scripts/*.test.mjs actions/*/*.test.mjs
+      # Filename discovery, so a new skill or action test is included without editing this workflow.
+      - run: node --test $(find scripts actions -name '*.test.mjs' -not -path '*/node_modules/*')
       - run: node scripts/validate-package.mjs
         env:
           PACKAGE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}

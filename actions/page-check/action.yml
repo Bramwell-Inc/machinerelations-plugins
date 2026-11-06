@@ -26,7 +26,7 @@ runs:
         key: page-check-chromium-1.49.1
     - if: steps.resolve.outputs.skip == ''
       shell: bash
-      working-directory: ${{ github.action_path }}/../../plugins/machine-relations-index/skills/page-check/scripts
+      working-directory: ${{ github.action_path }}/runtime
       run: |
         for i in 1 2 3; do npm ci --no-audit --no-fund && npx playwright install --with-deps chromium && break; sleep $((i * 10)); done
     - if: steps.resolve.outputs.skip == ''
@@ -38,11 +38,11 @@ runs:
       run: |
         node "$GITHUB_ACTION_PATH/outcome.mjs" --reset page-check-report
         set +e
-        SKILL="$GITHUB_ACTION_PATH/../../plugins/machine-relations-index/skills/page-check/scripts"
+        RUNTIME="$GITHUB_ACTION_PATH/runtime"
         # Files this pull request edits: their pages are always read, and the first few rendered.
         : > page-check-changed.txt
         if [ -n "$PR" ]; then gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/files" --jq '.[].filename' > page-check-changed.txt 2>/dev/null; fi
-        node "$SKILL/page-check.mjs" --access "$GITHUB_ACTION_PATH/access.mjs" --changed page-check-changed.txt --url "${{ steps.resolve.outputs.url }}" --base "${{ steps.resolve.outputs.base }}" --out page-check-report
+        node "$RUNTIME/page-check.mjs" --access "$GITHUB_ACTION_PATH/access.mjs" --changed page-check-changed.txt --url "${{ steps.resolve.outputs.url }}" --base "${{ steps.resolve.outputs.base }}" --out page-check-report
         echo "checker_exit=$?" >> "$GITHUB_OUTPUT"
         exit 0
     - if: steps.resolve.outputs.skip == '' && hashFiles('page-check-report/report.json') != ''
