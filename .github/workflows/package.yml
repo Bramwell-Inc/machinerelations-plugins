@@ -9,18 +9,6 @@ on:
         description: Existing Zenodo deposition id to read
         required: true
         type: string
-      expect_version:
-        description: Version that draft must already carry
-        required: true
-        type: string
-      expect_concept:
-        description: conceptrecid the draft must already carry
-        required: true
-        type: string
-      expect_doi:
-        description: prereserved DOI the draft must already carry
-        required: true
-        type: string
       action:
         description: inspect reads only. delete-one removes one listed draft file after the checks pass, and stops if Zenodo returns 500.
         required: true
@@ -48,7 +36,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test scripts/release.test.mjs scripts/zenodo-draft.test.mjs plugins/machine-relations-index/skills/*/scripts/*.test.mjs actions/*/*.test.mjs
+      - run: node --test scripts/release.test.mjs scripts/release-trigger.test.mjs scripts/zenodo-draft.test.mjs plugins/machine-relations-index/skills/*/scripts/*.test.mjs actions/*/*.test.mjs
       - run: node scripts/validate-package.mjs
         env:
           PACKAGE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -82,9 +70,8 @@ jobs:
           path: dist/
           if-no-files-found: error
 
-  # A merged version bump becomes one release: Zenodo DOI, GitHub release with
-  # the exact files tested above, then both sites rebuild from it. A version
-  # that is already released ends the job at its first check.
+  # A merged version bump becomes one release. A push that does not change the
+  # package version, including a recovery of this workflow, does not run the publisher.
   release:
     needs: package
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -96,6 +83,8 @@ jobs:
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -103,7 +92,14 @@ jobs:
         with:
           name: ${{ needs.package.outputs.artifact }}
           path: dist
+      - id: trigger
+        name: Release only a changed package version
+        run: node scripts/release-trigger.mjs
+        env:
+          RELEASE_EVENT: ${{ github.event_name }}
+          RELEASE_REF: ${{ github.ref }}
       - name: Publish the release
+        if: steps.trigger.outputs.publish == 'true'
         run: node scripts/publish-release.mjs --dist dist
         env:
           GH_TOKEN: ${{ github.token }}
@@ -112,10 +108,12 @@ jobs:
             ${{ secrets.VERCEL_DEPLOY_HOOK_JAXONPARROTT }}
             ${{ secrets.VERCEL_DEPLOY_HOOK_MACHINERELATIONS }}
 
-  # Read an existing Zenodo draft with the release credential. inspect is the
-  # default and performs no write. delete-one is a single documented file
-  # delete after the id, version, concept and reserved DOI match, and it stops
-  # on HTTP 500. It does not delete the deposition or publish.
+  # Read an existing Zenodo draft with the release credential. Version and
+  # concept come from this checkout; the reserved DOI must be 10.5281/zenodo/<draft id>.
+  # inspect is the default and performs no write. delete-one removes one listed
+  # draft file after that check. A 500 or a dropped response leaves the result
+  # unknown and stops; the next write has to read the draft again. It does not
+  # delete the deposition or publish.
   zenodo-draft:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -129,8 +127,5 @@ jobs:
         env:
           ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
           DRAFT_ID: ${{ inputs.draft_id }}
-          EXPECT_VERSION: ${{ inputs.expect_version }}
-          EXPECT_CONCEPT: ${{ inputs.expect_concept }}
-          EXPECT_DOI: ${{ inputs.expect_doi }}
           ACTION: ${{ inputs.action }}
           FILE_ID: ${{ inputs.file_id }}

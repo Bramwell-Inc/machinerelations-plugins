@@ -2,6 +2,7 @@
 // Inspect is the only default. A 500 stops the run. This never deletes the
 // deposition, never calls newversion or publish, and never follows a file
 // link that is not the documented draft-file URL.
+import { CONCEPT_DOI, readRelease } from './library.mjs';
 import { CONCEPT_MARKER } from './publish-release.mjs';
 
 const FILE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -55,6 +56,7 @@ async function call(doFetch, api, token, method, path) {
   const response = await doFetch(`${api}${path}`, {
     method,
     redirect: 'manual',
+    signal: AbortSignal.timeout(20_000),
     headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'User-Agent': 'machinerelations-skills-release' },
   });
   const text = await response.text();
@@ -85,29 +87,51 @@ export async function recoverDraft({
   const problems = assessDraft(read.json, { draftId, version, concept, doi });
   if (action === 'inspect') return { ok: problems.length === 0, action, view, problems };
   if (action !== 'delete-one') return { ok: false, stopped: 'unknown-action', action, view, problems };
-  if (problems.length) return { ok: false, stopped: 'not-validated', action, view, problems, deleted: false };
+  if (problems.length) return { ok: false, stopped: 'not-validated', action, view, problems, mutation: 'not-attempted' };
   let expectedPath;
-  try { expectedPath = fileDeletePath(draftId, fileId); } catch { return { ok: false, stopped: 'file-not-on-draft', action, view, deleted: false }; }
+  try { expectedPath = fileDeletePath(draftId, fileId); } catch { return { ok: false, stopped: 'file-not-on-draft', action, view, mutation: 'not-attempted' }; }
   const listed = (read.json.files ?? []).find((file) => file.id === fileId);
   if (!listed || listed.links?.self !== `${api}${expectedPath}`) {
-    return { ok: false, stopped: 'file-not-on-draft', action, view, deleted: false };
+    return { ok: false, stopped: 'file-not-on-draft', action, view, mutation: 'not-attempted' };
   }
-  const removed = await call(doFetch, api, token, 'DELETE', expectedPath);
-  if (removed.status === 500) {
-    return { ok: false, stopped: 'zenodo-500', action, request: 'DELETE', status: 500, error_id: removed.error_id, message: removed.message, view, deleted: false };
+  let removed;
+  try {
+    removed = await call(doFetch, api, token, 'DELETE', expectedPath);
+  } catch {
+    return { ok: false, stopped: 'uncertain', action, request: 'DELETE', mutation: 'unknown', view };
   }
-  if (removed.status !== 204) return { ok: false, stopped: 'delete-failed', action, status: removed.status, view, deleted: false };
-  return { ok: true, action, view, deleted: fileId };
+  if (removed.status === 204) return { ok: true, action, view, mutation: 'deleted', deleted: fileId };
+  return {
+    ok: false,
+    stopped: removed.status === 500 ? 'zenodo-500' : 'uncertain',
+    action,
+    request: 'DELETE',
+    status: removed.status,
+    error_id: removed.error_id,
+    message: removed.message,
+    view,
+    mutation: 'unknown',
+  };
+}
+
+export function expectedFromCheckout(draftId, root = process.cwd()) {
+  return {
+    version: readRelease(root).version,
+    concept: CONCEPT_DOI.slice(CONCEPT_DOI.lastIndexOf('.') + 1),
+    doi: `10.5281/zenodo.${draftId}`,
+  };
 }
 
 function fromEnv(env) {
+  const draftId = env.DRAFT_ID ?? '';
+  const expected = expectedFromCheckout(draftId);
   return {
     token: env.ZENODO_TOKEN ?? '',
     api: env.ZENODO_API || 'https://zenodo.org/api',
-    draftId: env.DRAFT_ID ?? '',
-    version: env.EXPECT_VERSION ?? '',
-    concept: env.EXPECT_CONCEPT ?? '',
-    doi: env.EXPECT_DOI ?? '',
+    draftId,
+    version: expected.version,
+    concept: expected.concept,
+    doi: expected.doi,
     action: env.ACTION || 'inspect',
     fileId: env.FILE_ID ?? '',
   };

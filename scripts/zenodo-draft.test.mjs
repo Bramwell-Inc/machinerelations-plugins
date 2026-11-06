@@ -1,7 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
+import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { recoverDraft, fileDeletePath } from './zenodo-draft.mjs';
 import { CONCEPT_MARKER } from './publish-release.mjs';
 
@@ -27,12 +29,8 @@ const draft = () => ({
 function serve(handler) {
   const calls = [];
   const server = createServer((req, res) => {
-    let body = '';
-    req.on('data', (chunk) => { body += chunk; });
-    req.on('end', () => {
-      calls.push({ method: req.method, url: req.url, authorization: req.headers.authorization ?? '' });
-      handler(req, res, body);
-    });
+    calls.push({ method: req.method, url: req.url, authorization: req.headers.authorization ?? '' });
+    try { handler(req, res, ''); } catch (error) { if (!res.headersSent) res.writeHead(500); res.end(String(error)); }
   });
   return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve({
     server,
@@ -76,7 +74,8 @@ test('a draft that is not the reserved unsubmitted version is not deleted', asyn
   });
   assert.equal(result.ok, false);
   assert.equal(result.stopped, 'not-validated');
-  assert.equal(result.deleted, false);
+  assert.equal(result.mutation, 'not-attempted');
+  assert.equal(Object.hasOwn(result, 'deleted'), false);
   assert.deepEqual(zen.calls.map((call) => call.method), ['GET']);
   await zen.close();
 });
@@ -93,7 +92,8 @@ test('delete-one removes only the named draft file and stops on 500', async () =
   });
   const result = await recoverDraft({ ...base, api: zen.api, action: 'delete-one', fileId, fetch: fetch });
   assert.equal(result.stopped, 'zenodo-500');
-  assert.equal(result.deleted, false);
+  assert.equal(result.mutation, 'unknown');
+  assert.equal(Object.hasOwn(result, 'deleted'), false);
   assert.equal(result.error_id, '28ec60e7c35a4383880f063fa24efb41');
   assert.deepEqual(zen.calls.map((call) => `${call.method} ${call.url}`), [
     'GET /api/deposit/depositions/24020018',
@@ -129,9 +129,103 @@ test('the package workflow dispatches a dry-run inspect and cannot publish from 
   const yaml = readFileSync(new URL('../.github/workflows/package.yml', import.meta.url), 'utf8');
   assert.match(yaml, /default:\s*inspect/);
   assert.match(yaml, /- inspect\n\s+- delete-one/);
-  assert.match(yaml, /ZENODO_TOKEN: \$\{\{ secrets\.ZENODO_TOKEN \}\}/);
-  assert.doesNotMatch(yaml, /ZENODO_TOKEN: \$\{\{ secrets\.(?!ZENODO_TOKEN)/);
-  assert.match(yaml, /github\.event_name == 'push' && github\.ref == 'refs\/heads\/main'/);
-  assert.match(yaml, /github\.event_name == 'workflow_dispatch'/);
-  assert.doesNotMatch(yaml, /actions\/newversion|actions\/publish|depositions\/\$\{\{[^}]*\}\}"?\s*$/m);
+  assert.doesNotMatch(yaml, /expect_version|expect_concept|expect_doi/);
+  assert.match(yaml, /steps\.trigger\.outputs\.publish == 'true'/);
+  const publishAt = yaml.indexOf('node scripts/publish-release.mjs');
+  const triggerAt = yaml.indexOf('node scripts/release-trigger.mjs');
+  assert.ok(triggerAt !== -1 && publishAt !== -1 && triggerAt < publishAt);
+});
+
+test('a transport failure after delete is unknown and is not retried', async () => {
+  const fileId = '52ab3369-23f4-48e2-979e-6d0e71c0c677';
+  let deletes = 0;
+  const zen = await serve((req, res) => res.end(JSON.stringify(expectOf(zen.api))));
+  const result = await recoverDraft({
+    ...base,
+    api: zen.api,
+    action: 'delete-one',
+    fileId,
+    fetch: async (url, init) => {
+      if (init?.method === 'DELETE') {
+        deletes += 1;
+        throw new Error('socket hang up');
+      }
+      return fetch(url, init);
+    },
+  });
+  assert.equal(result.stopped, 'uncertain');
+  assert.equal(result.mutation, 'unknown');
+  assert.equal(Object.hasOwn(result, 'deleted'), false);
+  assert.equal(deletes, 1);
+  await zen.close();
+});
+
+function cli(api, env) {
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, [fileURLToPath(new URL('./zenodo-draft.mjs', import.meta.url))], {
+      cwd: fileURLToPath(new URL('..', import.meta.url)),
+      env: { ...process.env, ZENODO_TOKEN: TOKEN, ZENODO_API: api, DRAFT_ID: '24020018', ...env },
+    });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', (chunk) => { stdout += chunk; });
+    child.stderr.on('data', (chunk) => { stderr += chunk; });
+    child.on('close', (status) => resolve({ status, stdout, stderr }));
+  });
+}
+
+test('the cli reports a version mismatch without writing or printing the token', { timeout: 8000 }, async () => {
+  const zen = await serve((req, res) => res.end(JSON.stringify({ ...expectOf(zen.api), metadata: { ...expectOf(zen.api).metadata, version: '1.2.2' } })));
+  const ran = await cli(zen.api, { ACTION: 'delete-one', FILE_ID: '52ab3369-23f4-48e2-979e-6d0e71c0c677' });
+  assert.equal(ran.status, 1);
+  assert.match(ran.stdout, /version/);
+  assert.equal(ran.stdout.includes(TOKEN) || ran.stderr.includes(TOKEN), false);
+  assert.deepEqual(zen.calls.map((call) => call.method), ['GET']);
+  await zen.close();
+});
+
+test('the cli refuses a file link that is not this draft and does not follow a redirect', { timeout: 8000 }, async () => {
+  const linked = await serve((req, res) => {
+    const body = expectOf(zenApi(req));
+    body.files[0].links.self = 'https://zenodo.org/api/records/24001297/files/SOURCE_COMMIT/content';
+    res.end(JSON.stringify(body));
+  });
+  const refused = await cli(linked.api, { ACTION: 'delete-one', FILE_ID: '52ab3369-23f4-48e2-979e-6d0e71c0c677' });
+  assert.equal(refused.status, 1);
+  assert.match(refused.stdout, /file-not-on-draft/);
+  assert.deepEqual(linked.calls.map((call) => call.method), ['GET']);
+  await linked.close();
+
+  const redirected = await serve((req, res) => {
+    res.writeHead(302, { location: 'https://zenodo.org/api/deposit/depositions/24001297' });
+    res.end(TOKEN);
+  });
+  const stopped = await cli(redirected.api, { ACTION: 'inspect' });
+  assert.equal(stopped.status, 1);
+  assert.match(stopped.stdout, /read-failed/);
+  assert.equal(stopped.stdout.includes(TOKEN) || stopped.stderr.includes(TOKEN), false);
+  assert.deepEqual(redirected.calls.map((call) => call.method), ['GET']);
+  await redirected.close();
+});
+
+function zenApi(req) {
+  return `http://127.0.0.1:${req.socket.localPort}/api`;
+}
+
+test('the cli suppresses a token echoed by a 500', { timeout: 8000 }, async () => {
+  const zen = await serve((req, res) => {
+    if (req.method === 'DELETE') {
+      res.writeHead(500, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ status: 500, error_id: 'abc', message: `leaked ${TOKEN}` }));
+      return;
+    }
+    res.end(JSON.stringify(expectOf(zen.api)));
+  });
+  const ran = await cli(zen.api, { ACTION: 'delete-one', FILE_ID: '52ab3369-23f4-48e2-979e-6d0e71c0c677' });
+  assert.equal(ran.status, 1);
+  assert.match(ran.stderr, /refusing to print/);
+  assert.equal(ran.stdout.includes(TOKEN), false);
+  assert.equal(ran.stderr.includes(TOKEN), false);
+  assert.deepEqual(zen.calls.map((call) => call.method), ['GET', 'DELETE']);
+  await zen.close();
 });
