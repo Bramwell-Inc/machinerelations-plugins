@@ -8,7 +8,7 @@ authors:
     given-names: Jaxon
     orcid: "https://orcid.org/0009-0004-0039-3913"
     website: "https://jaxonparrott.com"
-version: "1.2.2"
+version: "1.2.3"
 date-released: "2026-11-06"
 doi: "10.5281/zenodo.23749768"
 license: MIT

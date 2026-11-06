@@ -1,11 +1,11 @@
 name: Machine Relations page check
-description: Renders every page type of this commit's Vercel preview as people see it and as machines read it. Fails only on hard defects this change adds; taste notes never block.
+description: Renders every page type of this commit's Vercel preview as people see it and as machines read it. The pull request comment says clean, blocking, or not judged. Only blocking fails the job.
 inputs:
   anthropic-api-key:
     description: Optional. Adds non-blocking taste notes to the PR comment.
     required: false
   design-layer:
-    description: Optional text of the site's design intent for taste notes.
+    description: Optional text of the site's design intent for taste notes. Never blocking.
     required: false
 runs:
   using: composite
@@ -42,25 +42,22 @@ runs:
         : > page-check-changed.txt
         if [ -n "$PR" ]; then gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/files" --jq '.[].filename' > page-check-changed.txt 2>/dev/null; fi
         node "$SKILL/page-check.mjs" --access "$GITHUB_ACTION_PATH/access.mjs" --changed page-check-changed.txt --url "${{ steps.resolve.outputs.url }}" --base "${{ steps.resolve.outputs.base }}" --out page-check-report
-        code=$?
-        # Only a finished report with blocking problems fails the check. If the checker itself broke
-        # (no report), say so loudly and pass: a broken tool must never hold up every site's merges.
-        if [ ! -f page-check-report/report.json ]; then echo "::warning::Page check could not finish (exit $code), so it did not judge this change. See the log above."; code=0;
-        elif [ "$(node -e "console.log(require('./page-check-report/report.json').blocking.length)")" != "0" ]; then code=1; else code=0; fi
-        echo "code=$code" >> "$GITHUB_OUTPUT"
-        if [ -f page-check-report/summary.md ]; then cat page-check-report/summary.md >> "$GITHUB_STEP_SUMMARY"; fi
-    - if: steps.resolve.outputs.skip == ''
+        echo "checker_exit=$?" >> "$GITHUB_OUTPUT"
+        exit 0
+    - if: steps.resolve.outputs.skip == '' && hashFiles('page-check-report/report.json') != ''
       shell: bash
       env:
         ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
         DESIGN_LAYER: ${{ inputs.design-layer }}
       run: node "$GITHUB_ACTION_PATH/taste.mjs" page-check-report || true
-    - if: steps.resolve.outputs.skip == '' && github.event_name == 'pull_request' && hashFiles('page-check-report/report.json') != ''
+    - if: github.event_name == 'pull_request' && steps.resolve.outcome == 'success'
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
         PR: ${{ github.event.pull_request.number }}
-        CODE: ${{ steps.check.outputs.code }}
+        SKIP: ${{ steps.resolve.outputs.skip }}
+        SKIP_DETAIL: ${{ steps.resolve.outputs.detail }}
+        CHECKER_EXIT: ${{ steps.check.outputs.checker_exit }}
       run: node "$GITHUB_ACTION_PATH/comment.mjs" page-check-report
     - if: steps.resolve.outputs.skip == ''
       uses: actions/upload-artifact@v4
@@ -68,8 +65,11 @@ runs:
         name: page-check-report
         path: page-check-report
         retention-days: 14
-    - if: steps.resolve.outputs.skip == '' && steps.check.outputs.code != '0'
+        if-no-files-found: ignore
+    - if: steps.resolve.outcome == 'success'
       shell: bash
-      run: |
-        echo "::error::Page check found problems this change adds. The PR comment lists each one, where it is, and the fix."
-        exit 1
+      env:
+        SKIP: ${{ steps.resolve.outputs.skip }}
+        SKIP_DETAIL: ${{ steps.resolve.outputs.detail }}
+        CHECKER_EXIT: ${{ steps.check.outputs.checker_exit }}
+      run: node "$GITHUB_ACTION_PATH/gate.mjs" page-check-report
