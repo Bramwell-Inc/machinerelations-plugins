@@ -2,10 +2,11 @@
 
 The official Machine Relations plugin helps practitioners turn a brand's authority objective into an evidence-backed intervention brief: a chosen move, usable pitch or work draft, and separate execution and outcome checks. Use it for AI visibility, GEO/AEO, SEO content discovery and digital PR planning, for your brand or clients.
 
-Two skills are included:
+Three skills are included:
 
 - **Machine Relations:** inspect permitted evidence, choose whether to publish, improve, substantiate or pitch, produce the work, and define the next decision. It can work from supplied material without MRI coverage.
 - **Machine Relations Index:** research measured source-domain citations by category and question shape. Look up domains directly, explore engine citations, or discover categories and question shapes.
+- **Page check:** before a change ships, render a site from its own sitemap at phone, tablet and desktop widths in light and dark, and report what people or AI engines can't read: broken layout, unreadable text, raw values printed to readers, broken links and images, and missing llms.txt, Markdown twins, JSON-LD or og:image.
 
 Try: “Use Machine Relations for this brand and authority objective. Choose a supported intervention, draft the work and explain how to verify execution separately from its intended outcome.” See the [skill and worked example](https://machinerelations.ai/skill).
 
@@ -32,7 +33,7 @@ Six read-only tools are available:
 
 ## Data handling
 
-MRI tool arguments are sent over HTTPS to the declared Machine Relations Index server. The plugin has no additional service destination and no local commands or hooks. Broader research uses only the host tools and access the user authorizes; their processing and costs are separate. Do not send private client documents, questions, credentials or personal information to public MRI endpoints. The skill drafts work; sending outreach, publishing and paid measurement require authorization for those actions. See the service’s privacy policy for processing and operational logging details.
+MRI tool arguments are sent over HTTPS to the declared Machine Relations Index server. The plugin has no hooks. The Page check skill runs local Node scripts in its own folder only when the agent is asked to check a site: it installs two pinned npm packages (Playwright and axe-core) and one headless Chromium, then fetches only the site URL it is given and that site's own sitemap, pages, links and images. It sends nothing anywhere else and writes its report to a local folder. In GitHub Actions it can also read the run's own GitHub token and identity to find the preview and post one pull request comment, and an optional Anthropic API key, if the repository sets one, sends screenshots to the Anthropic API for non-blocking design notes. Broader research uses only the host tools and access the user authorizes; their processing and costs are separate. Do not send private client documents, questions, credentials or personal information to public MRI endpoints. The skill drafts work; sending outreach, publishing and paid measurement require authorization for those actions. See the service’s privacy policy for processing and operational logging details.
 
 ## Documentation and support
 

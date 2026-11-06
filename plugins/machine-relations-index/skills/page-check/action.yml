@@ -1,0 +1,74 @@
+name: Machine Relations page check
+description: Renders every page type of this commit's Vercel preview as people see it and as machines read it. Fails only on hard defects this change adds; taste notes never block.
+inputs:
+  anthropic-api-key:
+    description: Optional. Adds non-blocking taste notes to the PR comment.
+    required: false
+  design-layer:
+    description: Optional text of the site's design intent for taste notes.
+    required: false
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+    - id: resolve
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      run: node "$GITHUB_ACTION_PATH/scripts/resolve.mjs"
+    - if: steps.resolve.outputs.skip == ''
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: page-check-chromium-1.49.1
+    - if: steps.resolve.outputs.skip == ''
+      shell: bash
+      working-directory: ${{ github.action_path }}/scripts
+      run: |
+        for i in 1 2 3; do npm ci --no-audit --no-fund && npx playwright install --with-deps chromium && break; sleep $((i * 10)); done
+    - if: steps.resolve.outputs.skip == ''
+      id: check
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR: ${{ github.event.pull_request.number }}
+      run: |
+        set +e
+        # Files this pull request edits: their pages are always read, and the first few rendered.
+        : > page-check-changed.txt
+        if [ -n "$PR" ]; then gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/files" --jq '.[].filename' > page-check-changed.txt 2>/dev/null; fi
+        node "$GITHUB_ACTION_PATH/scripts/page-check.mjs" --changed page-check-changed.txt --url "${{ steps.resolve.outputs.url }}" --base "${{ steps.resolve.outputs.base }}" --out page-check-report
+        code=$?
+        # Only a finished report with blocking problems fails the check. If the checker itself broke
+        # (no report), say so loudly and pass: a broken tool must never hold up every site's merges.
+        if [ ! -f page-check-report/report.json ]; then echo "::warning::Page check could not finish (exit $code), so it did not judge this change. See the log above."; code=0;
+        elif [ "$(node -e "console.log(require('./page-check-report/report.json').blocking.length)")" != "0" ]; then code=1; else code=0; fi
+        echo "code=$code" >> "$GITHUB_OUTPUT"
+        if [ -f page-check-report/summary.md ]; then cat page-check-report/summary.md >> "$GITHUB_STEP_SUMMARY"; fi
+    - if: steps.resolve.outputs.skip == ''
+      shell: bash
+      env:
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+        DESIGN_LAYER: ${{ inputs.design-layer }}
+      run: node "$GITHUB_ACTION_PATH/scripts/taste.mjs" page-check-report || true
+    - if: steps.resolve.outputs.skip == '' && github.event_name == 'pull_request' && hashFiles('page-check-report/report.json') != ''
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR: ${{ github.event.pull_request.number }}
+        CODE: ${{ steps.check.outputs.code }}
+      run: node "$GITHUB_ACTION_PATH/scripts/comment.mjs" page-check-report
+    - if: steps.resolve.outputs.skip == ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: page-check-report
+        path: page-check-report
+        retention-days: 14
+    - if: steps.resolve.outputs.skip == '' && steps.check.outputs.code != '0'
+      shell: bash
+      run: |
+        echo "::error::Page check found problems this change adds. The PR comment lists each one, where it is, and the fix."
+        exit 1

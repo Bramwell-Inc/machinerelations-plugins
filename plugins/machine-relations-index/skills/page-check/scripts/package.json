@@ -1,0 +1,11 @@
+{
+  "name": "machine-relations-page-check",
+  "private": true,
+  "type": "module",
+  "description": "Renders every page type of a site preview as people see it and as machines read it; fails only on hard defects this change adds.",
+  "scripts": { "check": "node page-check.mjs" },
+  "dependencies": {
+    "@axe-core/playwright": "4.10.1",
+    "playwright": "1.49.1"
+  }
+}

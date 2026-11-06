@@ -2,6 +2,10 @@
 
 Every released version of the Machine Relations skills and plugin. The newest entry's text is the release note for the GitHub release, the Zenodo record and the directory listings, so it is written for practitioners. Versions follow semver: a minor version adds or graduates a method, a patch corrects wording or metadata, and a major version changes a tool or endpoint.
 
+## [1.2.0] - 2026-11-06
+
+Add the Page check skill: render a site from its own sitemap at phone, tablet and desktop widths in light and dark, and report broken layout, unreadable text, raw values printed to readers, broken links and images, and gaps in what AI engines read. The same code runs as a GitHub Action an organization can require on every pull request. MRI tools, endpoints and the existing skills are unchanged.
+
 ## [1.1.6] - 2026-11-02
 
 Describe all six read-only MRI tools and route research by intent: look up domains directly, discover engines for engine leaderboards, and discover categories and question shapes for topic research. Live interpretation guidance, measurement and endpoints are unchanged.

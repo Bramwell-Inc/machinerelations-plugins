@@ -1,6 +1,6 @@
 // Cross-client invariants that a directory ZIP must satisfy. No network or deps.
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { resolve, relative } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { AUTHOR, CONCEPT_DOI, DESCRIPTOR, compareVersions, readCitation, readRelease } from './library.mjs';
@@ -50,7 +50,10 @@ for (const path of ['/developers', '/contact', '/privacy', '/terms']) {
 }
 const skill = readFileSync(resolve(root, 'skills/machine-relations-index/SKILL.md'), 'utf8');
 assert.ok(skill.includes('source.guidance'), 'The installed skill must read the live interpretation owner');
-for (const name of ['machine-relations', 'machine-relations-index']) {
+// Every skill folder is checked; adding a skill is adding its folder.
+const skillNames = readdirSync(resolve(root, 'skills'), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
+for (const name of ['machine-relations', 'machine-relations-index']) assert.ok(skillNames.includes(name), `Missing skill: ${name}`);
+for (const name of skillNames) {
   const content = readFileSync(resolve(root, `skills/${name}/SKILL.md`), 'utf8');
   assert.ok(content.startsWith(`---\nname: ${name}\n`), `Discoverable skill identity: ${name}`);
   assert.match(content, /\ndescription: .+/);

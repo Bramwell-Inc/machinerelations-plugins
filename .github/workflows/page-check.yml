@@ -1,0 +1,27 @@
+# The org-required page check. An org ruleset ("Require workflows to pass") points at this file, so it runs
+# on every pull request of every repo in the org and passes untouched in a repo Vercel never deploys.
+# Another org requires a copy of this file kept in one of its own repos; the code always comes from here.
+# No stored secret: GitHub's own token finds the preview, and the run's OIDC identity gets past preview
+# protection on Vercel projects that trust the org's GitHub Actions. ANTHROPIC_API_KEY is optional (taste notes).
+name: Page check
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+  pull-requests: write
+  deployments: read
+  id-token: write
+concurrency:
+  group: page-check-${{ github.repository }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  page-check:
+    # The skills repo is not a site, and on the pull request that adds this file the action is not on main yet.
+    if: github.event.pull_request.draft == false && github.repository != 'Bramwell-Inc/machinerelations-plugins'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: Bramwell-Inc/machinerelations-plugins/plugins/machine-relations-index/skills/page-check@main
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
