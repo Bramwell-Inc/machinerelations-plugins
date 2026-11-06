@@ -53,6 +53,14 @@ async function sitemapUrls(root) {
   return urls;
 }
 function onRoot(u, root) { try { const x = new URL(u); return root + x.pathname + x.search; } catch { return u; } }
+// The site's own URL moved onto the deployment being read; another host (a CDN, a storage bucket) stays where it is.
+function onSite(u, root) {
+  try {
+    const host = new URL(u).host.replace(/^www\./, '');
+    const own = [root, BASE].filter(Boolean).map((r) => new URL(r).host.replace(/^www\./, ''));
+    return own.includes(host) ? onRoot(u, root) : u;
+  } catch { return onRoot(u, root); }
+}
 function typeOf(p) {
   const segs = p.split('/').filter(Boolean);
   if (!segs.length) return '/';
@@ -158,7 +166,7 @@ async function machineChecks(root, pages) {
     const ogUrl = og && og[0].match(/content=["']([^"']+)/i)?.[1];
     if (!ogUrl) defects.push({ kind: 'og-image', detail: 'no og:image', where });
     else if (!pg.ogChecked) {
-      const ogAt = onRoot(ogUrl.replace(/&amp;/g, '&'), root);
+      const ogAt = onSite(ogUrl.replace(/&amp;/g, '&'), root);
       const img = await fetch(ogAt, { headers: await access.forUrl(ogAt), signal: AbortSignal.timeout(20000) }).catch(() => null);
       if (!img || img.status !== 200 || !/image\//.test(img.headers.get('content-type') || '')) defects.push({ kind: 'og-image', detail: `og:image answered ${img ? img.status : 'nothing'}`, where });
     }

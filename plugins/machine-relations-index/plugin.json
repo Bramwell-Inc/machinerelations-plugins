@@ -105,7 +105,7 @@
         "demo_recording_url": "https://raw.githubusercontent.com/Bramwell-Inc/machinerelations-plugins/2d2e7ffd1659af660fa657e60646596fd96d4454/review/mri-review-walkthrough.mp4"
       },
       "publication": {
-        "release_notes": "Stop the Page check flagging what is set small or coded on purpose: footnote marks, short capitalised labels such as kickers, table heads and datelines, and bare numbers such as steps and counts no longer count as small text, and an error code written after its HTTP status (\"returns 409 release_unavailable\") no longer counts as a leaked value. Running text at 10px and raw values printed in prose are still flagged. Text contrast is now measured on every page in light and dark, including text above the dot-grid and other gradient backgrounds that the accessibility engine skipped, and each failing colour pair is reported once. Skills, MRI tools and endpoints are unchanged."
+        "release_notes": "Stop the Page check flagging what is set small or coded on purpose: footnote marks, short capitalised labels such as kickers, table heads and datelines, and bare numbers such as steps and counts no longer count as small text, and an error code written after its HTTP status (\"returns 409 release_unavailable\") no longer counts as a leaked value. Running text at 10px and raw values printed in prose are still flagged. Text contrast is now measured on every page in light and dark, including text above the dot-grid and other gradient backgrounds that the accessibility engine skipped, and each failing colour pair is reported once. A share image on another host, such as a storage bucket, is fetched where it is instead of on the site being checked. Skills, MRI tools and endpoints are unchanged."
       }
     }
   }
