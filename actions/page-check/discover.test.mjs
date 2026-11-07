@@ -5,7 +5,9 @@ import { planDiscovery, previewFromStatus, resolveStatusPreview, responseProvesD
 const INSPECTOR = 'https://vercel.com/at-725437ca/bramwell-ai/5FcpK5wvrWyZSyPugpysj5v5BrGk';
 const ALIAS = 'https://bramwell-ai-git-codeops-vendor-fonts-at-725437ca.vercel.app';
 const SHA = '61423645984687c69afa87acb82473ef28ee86b3';
-const bot = (state, target = INSPECTOR, context = 'Vercel') => ({ context, state, target_url: target, creator: { login: 'vercel[bot]' } });
+const bot = (state, target = INSPECTOR, context = 'Vercel', created_at = '2026-11-07T03:20:51Z') => ({
+  context, state, target_url: target, created_at, creator: { login: 'vercel[bot]', id: 35613825 },
+});
 
 test('an authentic inspector status and the pull request branch are the branch alias', () => {
   const plan = planDiscovery({ statuses: [bot('success')], branch: 'codeops/vendor-fonts' });
@@ -16,10 +18,13 @@ test('an authentic inspector status and the pull request branch are the branch a
 });
 
 test('a status whose context says Vercel but whose publisher is not the Vercel app is not a destination', () => {
-  const forged = { context: 'Vercel', state: 'success', target_url: 'https://evil.vercel.app', creator: { login: 'octocat' } };
-  const plan = planDiscovery({ statuses: [forged], branch: 'codeops/vendor-fonts' });
-  assert.equal(plan.action, 'not-a-site');
-  assert.equal(plan.url, undefined);
+  const forged = { context: 'Vercel', state: 'success', target_url: 'https://evil.vercel.app', creator: { login: 'octocat', id: 1 } };
+  const impersonated = { context: 'Vercel', state: 'success', target_url: INSPECTOR, creator: { login: 'vercel[bot]', id: 1 } };
+  for (const status of [forged, impersonated]) {
+    const plan = planDiscovery({ statuses: [status], branch: 'codeops/vendor-fonts' });
+    assert.equal(plan.action, 'not-a-site');
+    assert.equal(plan.url, undefined);
+  }
 });
 
 test('http, another host, and a vercel.app host we did not derive are not fetched', () => {
@@ -107,13 +112,54 @@ test('a long branch is cut to a 63-character label', () => {
   assert.match(label, /^bramwell-ai-git-.+-at-725437ca$/);
 });
 
-test('a branch alias is this commit only when the response carries the sha or the deployment id', () => {
+test('the status list keeps history, and only the latest row of each context counts', async () => {
+  const older = '2026-11-07T03:10:00Z';
+  const newer = '2026-11-07T03:20:51Z';
+  const successThenPending = planDiscovery({
+    statuses: [bot('pending', INSPECTOR, 'Vercel', older), bot('success', INSPECTOR, 'Vercel', newer)],
+    branch: 'codeops/vendor-fonts',
+  });
+  assert.equal(successThenPending.action, 'use');
+  assert.equal(successThenPending.url, ALIAS);
+
+  let slept = 0;
+  const failed = await resolveStatusPreview({
+    readStatuses: async () => [bot('pending', INSPECTOR, 'Vercel', older), bot('failure', INSPECTOR, 'Vercel', newer)],
+    branch: 'codeops/vendor-fonts',
+    sleep: async () => { slept += 1; },
+    now: () => 0,
+    deadline: 25 * 60 * 1000,
+  });
+  assert.equal(failed.action, 'finished');
+  assert.equal(failed.state, 'failure');
+  assert.equal(slept, 0);
+
+  const repeated = planDiscovery({
+    statuses: [bot('success', INSPECTOR, 'Vercel', older), bot('success', INSPECTOR, 'Vercel', newer)],
+    branch: 'codeops/vendor-fonts',
+  });
+  assert.equal(repeated.action, 'use');
+  assert.equal(repeated.deploymentId, '5FcpK5wvrWyZSyPugpysj5v5BrGk');
+
+  const pendingNow = planDiscovery({
+    statuses: [bot('success', INSPECTOR, 'Vercel', older), bot('pending', INSPECTOR, 'Vercel', newer)],
+    branch: 'codeops/vendor-fonts',
+  });
+  assert.equal(pendingNow.action, 'wait');
+});
+
+test('the document element deployment id is the proof, and a quoted id is not', () => {
   const id = '5FcpK5wvrWyZSyPugpysj5v5BrGk';
-  assert.equal(responseProvesDeployment({ headers: [], body: `<html>${SHA}</html>`, sha: SHA, deploymentId: id }), true);
-  assert.equal(responseProvesDeployment({ headers: [['x-deployment-id', `dpl_${id}`]], body: '', sha: SHA, deploymentId: id }), true);
-  assert.equal(responseProvesDeployment({ headers: [], body: '<html>other commit</html>', sha: SHA, deploymentId: id }), false);
-  assert.equal(responseProvesDeployment({ headers: [], body: id, sha: SHA, deploymentId: 'short' }), false);
-  assert.equal(responseProvesDeployment({ headers: [], body: '', sha: SHA, deploymentId: id }), false);
+  const served = `<!DOCTYPE html><html data-dpl-id="dpl_${id}" lang="en"><body>ok</body></html>`;
+  assert.equal(responseProvesDeployment({ body: served, deploymentId: id }), true);
+  const quoted = `<html lang="en"><body>see dpl_${id} and ${SHA}</body></html>`;
+  assert.equal(responseProvesDeployment({ body: quoted, deploymentId: id }), false);
+  const nested = `<html lang="en"><body><div data-dpl-id="dpl_${id}"></div></body></html>`;
+  assert.equal(responseProvesDeployment({ body: nested, deploymentId: id }), false);
+  const other = `<html data-dpl-id="dpl_GGrnJSaPVsdRXUZfqWs1tvCDYjxR" lang="en"></html>`;
+  assert.equal(responseProvesDeployment({ body: other, deploymentId: id }), false);
+  const headerish = `<html data-comment="dpl_${id}" lang="en"></html>`;
+  assert.equal(responseProvesDeployment({ body: headerish, deploymentId: id }), false);
 });
 
 test('a sign-in redirect is protection, and any other redirect is not', () => {
