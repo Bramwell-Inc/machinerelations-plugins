@@ -37,7 +37,7 @@ test('each resolve skip is not judged and does not fail', () => {
     ['not-a-site', '', /not treated as a site/, /Vercel GitHub app/],
     ['no-preview-url', '', /no single HTTPS preview/],
     ['preview-alias-missing', '', /latest preview of the branch/],
-    ['preview-head-unverified', '', /did not prove it is this commit/, /No clean or blocking verdict/],
+    ['preview-head-unverified', '', /document did not carry this deployment id/, /no clean or blocking verdict/],
     ['preview-protected', '401', /HTTP 401/, /each Vercel project/],
     ['preview-protected', '403', /HTTP 403/],
     ['preview-protected', '', /refused this run/],
