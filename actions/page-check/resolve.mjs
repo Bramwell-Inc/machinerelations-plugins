@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 // Finds what to check for this commit, with nothing configured per site and no stored secret:
 // the Vercel preview of this commit. A GitHub deployment record pins it. When that list is empty, a
-// Vercel commit status still means the project is linked: its inspector URL plus the pull request
-// branch is the branch preview, which is the latest preview of the branch rather than this commit.
+// commit status from the Vercel GitHub app still means the project is linked. Its inspector URL
+// plus the pull request branch is the branch preview: the latest preview of the branch, not this
+// commit. The OIDC token is sent only to that derived HTTPS host. A clean or blocking verdict
+// waits until the response carries this commit or that deployment id.
 // The production domain is read from the preview's own sitemap.
-// Writes GitHub step outputs: skip, url, base. No Vercel record and no Vercel status is not a site.
+// Writes GitHub step outputs: skip, url, base. No Vercel record and no authentic Vercel status is not a site.
 // A green job with a skip did not render pages.
 import fs from 'node:fs';
 import { previewAccess } from './access.mjs';
-import { hasVercelDeployment, previewFromStatus, vercelStatus } from './discover.mjs';
+import { hasVercelDeployment, protectionStatus, resolveStatusPreview, responseProvesDeployment } from './discover.mjs';
 
 const { GITHUB_TOKEN, GITHUB_REPOSITORY, SHA, GITHUB_OUTPUT } = process.env;
 const out = (k, v) => { if (GITHUB_OUTPUT) fs.appendFileSync(GITHUB_OUTPUT, `${k}=${v}\n`); console.log(`${k}=${v}`); };
@@ -25,28 +27,37 @@ const isPreview = (d) => /preview/i.test(d.environment || '') || d.transient_env
 const any = await gh('/deployments?per_page=100');
 let url = '';
 let alias = false;
+let deploymentId = '';
 if (!hasVercelDeployment(any)) {
-  const status = await gh(`/commits/${SHA}/status?per_page=100`);
-  const vercel = vercelStatus(status.statuses);
-  if (!vercel) {
-    console.log(`page-check: not judged. No Vercel deployment record and no Vercel commit status for ${GITHUB_REPOSITORY}. This is not treated as a site. A green job did not render pages.`);
+  const decision = await resolveStatusPreview({
+    readStatuses: async () => {
+      const body = await gh(`/commits/${SHA}/statuses?per_page=100`);
+      return Array.isArray(body) ? body : (body.statuses || []);
+    },
+    branch: process.env.GITHUB_HEAD_REF || '',
+    sleep: wait,
+    now: () => Date.now(),
+    deadline: Date.now() + 25 * 60 * 1000,
+  });
+  if (decision.action === 'not-a-site') {
+    console.log(`page-check: not judged. No Vercel deployment record and no commit status from the Vercel GitHub app for ${GITHUB_REPOSITORY}. This is not treated as a site. A green job did not render pages.`);
     out('skip', 'not-a-site');
     process.exit(0);
   }
-  if (vercel.state !== 'success') {
-    console.log(`page-check: not judged. Vercel status for ${SHA.slice(0, 7)} is ${vercel.state || 'missing'}, and GitHub has no deployment record. A green job did not render pages.`);
-    out('skip', `deployment-${vercel.state || 'missing'}`);
+  if (decision.action === 'finished') {
+    console.log(`page-check: not judged. Vercel status for ${SHA.slice(0, 7)} is ${decision.state}, and GitHub has no deployment record. A green job did not render pages.`);
+    out('skip', `deployment-${decision.state || 'missing'}`);
     process.exit(0);
   }
-  const found = previewFromStatus(vercel.target_url, process.env.GITHUB_HEAD_REF || '');
-  if (!found.url) {
-    console.log(`page-check: not judged. Vercel completed a deployment of ${SHA.slice(0, 7)}, but GitHub recorded no preview address (${found.limit}). A green job did not render pages.`);
+  if (decision.action !== 'use') {
+    console.log(`page-check: not judged. Vercel completed a deployment of ${SHA.slice(0, 7)}, but there is no single HTTPS preview bound to that status (${decision.limit}). A green job did not render pages.`);
     out('skip', 'no-preview-url');
     process.exit(0);
   }
-  url = found.url;
-  alias = found.limit === 'branch-alias';
-  if (alias) console.log(`page-check: GitHub has no deployment record for ${GITHUB_REPOSITORY}. Using the branch preview ${url}. That address is the latest preview of this branch, not a URL pinned to ${SHA.slice(0, 7)}.`);
+  url = decision.url;
+  alias = decision.limit === 'branch-alias';
+  deploymentId = decision.deploymentId || '';
+  if (alias) console.log(`page-check: GitHub has no deployment record for ${GITHUB_REPOSITORY}. The Vercel app's status names inspector deployment ${deploymentId}. The host ${url} is the latest preview of this branch, not ${SHA.slice(0, 7)}, until the response proves that deployment.`);
 }
 
 // The preview of this exact commit, when a deployment record exists. Vercel starts it on push; wait until it reports.
@@ -74,10 +85,20 @@ if (!url) { console.log(`page-check: not judged. Vercel preview of ${SHA.slice(0
     out('skip', 'preview-alias-missing');
     process.exit(0);
   }
-  if (r && [401, 403].includes(r.status)) {
+  if (r && protectionStatus(r.status, r.headers.get('location'))) {
     console.log(`::warning::page-check: not judged. The preview refused this run (${r.status}). Trusted preview access is a setting on this Vercel project for GitHub Actions of this org (Settings, Deployment Protection).`);
     out('detail', String(r.status));
     out('skip', 'preview-protected'); process.exit(0);
+  }
+  if (alias) {
+    const headers = [];
+    if (r) r.headers.forEach((value, key) => headers.push([key, value]));
+    const body = r && r.status >= 200 && r.status < 300 ? await r.text() : '';
+    if (!responseProvesDeployment({ headers, body, sha: SHA, deploymentId })) {
+      console.log(`::warning::page-check: not judged. ${url} is the latest preview of this branch, and the response did not contain ${SHA.slice(0, 7)} or deployment ${deploymentId}. No clean or blocking verdict was given.`);
+      out('skip', 'preview-head-unverified');
+      process.exit(0);
+    }
   }
 }
 
