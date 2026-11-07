@@ -134,8 +134,8 @@ test('a stale empty report plus a crash is not judged, and blocking findings sti
   const env = { ...process.env, SKIP: '', SKIP_DETAIL: '', CHECKER_EXIT: '2', GITHUB_TOKEN: CANARY, PR: '', GITHUB_REPOSITORY: '', GITHUB_STEP_SUMMARY: '' };
   const comment = spawnSync(process.execPath, [path.join(HERE, 'comment.mjs'), dir], { env, encoding: 'utf8' });
   assert.equal(comment.status, 0);
-  assert.match(comment.stdout, /\\*\\*Page check: not judged\\.\\*\\*/);
-  assert.doesNotMatch(comment.stdout, /\\*\\*Page check: clean\\.\\*\\*/);
+  assert.match(comment.stdout, /\*\*Page check: not judged\.\*\*/);
+  assert.doesNotMatch(comment.stdout, /\*\*Page check: clean\.\*\*/);
   assert.doesNotMatch(`${comment.stdout}${comment.stderr}`, /CANARY/);
   const gate = spawnSync(process.execPath, [path.join(HERE, 'gate.mjs'), dir], { env, encoding: 'utf8' });
   assert.equal(gate.status, 0);
@@ -196,9 +196,9 @@ test('gate and comment stay quiet about credentials and fail only on defects', (
 
 test('the action fails the job only through the gate, and taste still needs a finished report', () => {
   const action = readFileSync(path.join(HERE, 'action.yml'), 'utf8');
-  assert.match(action, /gate\\.mjs/);
-  assert.match(action, /comment\\.mjs/);
+  assert.match(action, /gate\.mjs/);
+  assert.match(action, /comment\.mjs/);
   assert.doesNotMatch(action, /draft/);
-  assert.doesNotMatch(action, /\\bexit 1\\b/);
-  assert.match(action, /hashFiles\\('page-check-report\\/report\\.json'\\) != ''/);
+  assert.doesNotMatch(action, /\bexit 1\b/);
+  assert.match(action, /hashFiles\('page-check-report\/report\.json'\) != ''/);
 });
