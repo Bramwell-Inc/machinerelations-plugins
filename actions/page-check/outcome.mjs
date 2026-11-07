@@ -38,7 +38,7 @@ export function reasonForSkip(skip, detail = '') {
   if (code === 'not-a-site') return 'No Vercel deployment record and no commit status from the Vercel GitHub app, so this is not treated as a site.';
   if (code === 'no-preview-url') return 'Vercel completed a deployment, but there is no single HTTPS preview bound to that status. Another host was not used.';
   if (code === 'preview-alias-missing') return 'The branch preview derived from the Vercel status did not answer. That address is the latest preview of the branch, not a URL pinned to the commit.';
-  if (code === 'preview-head-unverified') return 'The branch preview is the latest deployment of the branch, and the response did not prove it is this commit. No clean or blocking verdict was given.';
+  if (code === 'preview-head-unverified') return 'The branch preview is the latest deployment of the branch. Its document did not carry this deployment id, so no clean or blocking verdict was given.';
   if (code === 'preview-protected') {
     const status = /^\d{3}$/.test(detail) ? ` (HTTP ${detail})` : '';
     return `The preview refused this run${status}. Trusted preview access is a setting on each Vercel project for GitHub Actions of this org.`;
