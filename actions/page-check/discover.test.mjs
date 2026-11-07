@@ -92,7 +92,7 @@ test('a finished failure does not wait, and two successful projects are not gues
   assert.equal(failed.state, 'failure');
   assert.equal(slept, 0);
   const several = planDiscovery({
-    statuses: [bot('success', INSPECTOR, 'Vercel'), bot('success', 'https://vercel.com/team/other-proj/Abcdefghij1234567890', 'Vercel \u2013 other')],
+    statuses: [bot('success', INSPECTOR, 'Vercel'), bot('success', 'https://vercel.com/team/other-proj/Abcdefghij1234567890', 'Vercel - other')],
     branch: 'codeops/vendor-fonts',
   });
   assert.equal(several.action, 'no-preview');
