@@ -4,11 +4,13 @@
 // only over HTTPS, and the host we will ask for is the one derived from that status's inspector
 // URL (team, project, and the pull request branch). A host named by anyone else, an http URL, or
 // some other *.vercel.app host is not a destination, so the job's OIDC token is not sent there.
-// The derived host is the latest preview of the branch, not this commit. A clean or blocking
-// verdict is allowed only when the response itself contains this commit's SHA or that deployment id.
+// The derived host is the branch alias the deployment records, not a hostname guessed from the
+// deployment id. A clean or blocking verdict is allowed only when the document element carries
+// data-dpl-id for that exact deployment. Text elsewhere in the page does not count.
 // No Vercel token is read or required.
 
 const BOT = 'vercel[bot]';
+const BOT_ID = 35613825;
 
 export function hasVercelDeployment(deployments) {
   return Array.isArray(deployments) && deployments.some((d) => String(d?.creator?.login || '').startsWith('vercel'));
@@ -34,7 +36,25 @@ export function branchPreviewUrl(team, project, branch) {
 
 export function authenticVercelStatuses(statuses) {
   const list = Array.isArray(statuses) ? statuses : [];
-  return list.filter((s) => s?.creator?.login === BOT && /^Vercel\b/.test(String(s.context || '')));
+  return list.filter((s) => s?.creator?.login === BOT && Number(s.creator.id) === BOT_ID && /^Vercel\b/.test(String(s.context || '')));
+}
+
+// The statuses list keeps older rows for the same context. The latest row per context is the state.
+export function latestAuthenticStatuses(statuses) {
+  const ranked = authenticVercelStatuses(statuses).map((status, index) => {
+    const stamp = Date.parse(status.created_at || status.updated_at || '');
+    return { status, index, stamp: Number.isFinite(stamp) ? stamp : 0 };
+  });
+  ranked.sort((a, b) => b.stamp - a.stamp || a.index - b.index);
+  const seen = new Set();
+  const latest = [];
+  for (const row of ranked) {
+    const key = String(row.status.context || '');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    latest.push(row.status);
+  }
+  return latest;
 }
 
 export function previewFromStatus(targetUrl, branch) {
@@ -58,7 +78,7 @@ export function previewFromStatus(targetUrl, branch) {
 // One observation of the commit statuses. Absent and untrusted are not a site and do not wait.
 // Pending is the only state that waits. Several successful projects are not guessed between.
 export function planDiscovery({ statuses, branch }) {
-  const found = authenticVercelStatuses(statuses);
+  const found = latestAuthenticStatuses(statuses);
   if (!found.length) return { action: 'not-a-site' };
   const success = found.filter((s) => s.state === 'success');
   const pending = found.some((s) => s.state === 'pending');
@@ -82,19 +102,17 @@ export async function resolveStatusPreview({ readStatuses, branch, sleep, now, d
   }
 }
 
-export function responseProvesDeployment({ headers, body, sha, deploymentId }) {
+export function documentDeploymentId(body) {
+  const tag = String(body || '').match(/<html\b[^>]*>/i);
+  if (!tag) return '';
+  const attr = tag[0].match(/\bdata-dpl-id\s*=\s*(["'])(dpl_[A-Za-z0-9]+)\1/i);
+  return attr ? attr[2] : '';
+}
+
+export function responseProvesDeployment({ body, deploymentId } = {}) {
   const id = String(deploymentId || '');
   if (!/^[A-Za-z0-9]{8,}$/.test(id)) return false;
-  const commit = String(sha || '').toLowerCase();
-  const commitOk = /^[0-9a-f]{40}$/.test(commit) || /^[0-9a-f]{64}$/.test(commit);
-  const parts = [];
-  if (headers) {
-    for (const [key, value] of headers) parts.push(String(key), String(value));
-  }
-  if (body != null) parts.push(String(body).slice(0, 1_000_000));
-  const hay = parts.join('\n');
-  if (commitOk && hay.toLowerCase().includes(commit)) return true;
-  return hay.includes(id) || hay.includes(`dpl_${id}`);
+  return documentDeploymentId(body) === `dpl_${id}`;
 }
 
 export function protectionStatus(status, location) {
