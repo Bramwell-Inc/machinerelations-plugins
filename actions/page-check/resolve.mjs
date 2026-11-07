@@ -1,10 +1,16 @@
 #!/usr/bin/env node
 // Finds what to check for this commit, with nothing configured per site and no stored secret:
-// the Vercel preview of this exact commit, read from the GitHub Deployment that Vercel's Git integration
-// records on the repo, and the production domain to compare against, read from the preview's own sitemap.
-// Writes GitHub step outputs: skip, url, base. A repo Vercel never deploys is not a site and passes untouched.
+// the Vercel preview of this commit. A GitHub deployment record pins it. When that list is empty, a
+// commit status from the Vercel GitHub app still means the project is linked. Its inspector URL
+// plus the pull request branch is the branch preview: the latest preview of the branch, not this
+// commit. The OIDC token is sent only to that derived HTTPS host. A clean or blocking verdict
+// waits until the document element data-dpl-id is that deployment. A quoted id does not count.
+// The production domain is read from the preview's own sitemap.
+// Writes GitHub step outputs: skip, url, base. No Vercel record and no authentic Vercel status is not a site.
+// A green job with a skip did not render pages.
 import fs from 'node:fs';
 import { previewAccess } from './access.mjs';
+import { hasVercelDeployment, protectionStatus, resolveStatusPreview, responseProvesDeployment } from './discover.mjs';
 
 const { GITHUB_TOKEN, GITHUB_REPOSITORY, SHA, GITHUB_OUTPUT } = process.env;
 const out = (k, v) => { if (GITHUB_OUTPUT) fs.appendFileSync(GITHUB_OUTPUT, `${k}=${v}\n`); console.log(`${k}=${v}`); };
@@ -16,13 +22,47 @@ const gh = async (path) => {
 const wait = (ms) => new Promise((ok) => setTimeout(ok, ms));
 const isPreview = (d) => /preview/i.test(d.environment || '') || d.transient_environment;
 
-// A repo Vercel has never deployed is not a site: nothing to check.
+// GitHub deployment records are the pinned preview. An empty list is not, by itself, proof
+// that Vercel has never deployed the repo: some linked projects only post a commit status.
 const any = await gh('/deployments?per_page=100');
-if (!any.some((d) => d.creator?.login?.startsWith('vercel'))) { console.log(`page-check: not judged. Vercel has never deployed ${GITHUB_REPOSITORY}, so it is not a site.`); out('skip', 'not-a-site'); process.exit(0); }
+let url = '';
+let alias = false;
+let deploymentId = '';
+if (!hasVercelDeployment(any)) {
+  const decision = await resolveStatusPreview({
+    readStatuses: async () => {
+      const body = await gh(`/commits/${SHA}/statuses?per_page=100`);
+      return Array.isArray(body) ? body : (body.statuses || []);
+    },
+    branch: process.env.GITHUB_HEAD_REF || '',
+    sleep: wait,
+    now: () => Date.now(),
+    deadline: Date.now() + 25 * 60 * 1000,
+  });
+  if (decision.action === 'not-a-site') {
+    console.log(`page-check: not judged. No Vercel deployment record and no commit status from the Vercel GitHub app for ${GITHUB_REPOSITORY}. This is not treated as a site. A green job did not render pages.`);
+    out('skip', 'not-a-site');
+    process.exit(0);
+  }
+  if (decision.action === 'finished') {
+    console.log(`page-check: not judged. Vercel status for ${SHA.slice(0, 7)} is ${decision.state}, and GitHub has no deployment record. A green job did not render pages.`);
+    out('skip', `deployment-${decision.state || 'missing'}`);
+    process.exit(0);
+  }
+  if (decision.action !== 'use') {
+    console.log(`page-check: not judged. Vercel completed a deployment of ${SHA.slice(0, 7)}, but there is no single HTTPS preview bound to that status (${decision.limit}). A green job did not render pages.`);
+    out('skip', 'no-preview-url');
+    process.exit(0);
+  }
+  url = decision.url;
+  alias = decision.limit === 'branch-alias';
+  deploymentId = decision.deploymentId || '';
+  if (alias) console.log(`page-check: GitHub has no deployment record for ${GITHUB_REPOSITORY}. The Vercel app's status names inspector deployment ${deploymentId}. The host ${url} is the latest preview of this branch, not ${SHA.slice(0, 7)}, until the response proves that deployment.`);
+}
 
-// The preview of this exact commit. Vercel starts it on push; wait until it reports.
-let url = ''; let last = 'missing'; const until = Date.now() + 25 * 60 * 1000;
-while (Date.now() < until && !url) {
+// The preview of this exact commit, when a deployment record exists. Vercel starts it on push; wait until it reports.
+let last = 'missing'; const until = Date.now() + 25 * 60 * 1000;
+while (!url && Date.now() < until) {
   const deps = (await gh(`/deployments?sha=${SHA}&per_page=20`)).filter((d) => d.creator?.login?.startsWith('vercel') && isPreview(d));
   for (const d of deps) {
     const [s] = await gh(`/deployments/${d.id}/statuses?per_page=1`);
@@ -40,10 +80,23 @@ if (!url) { console.log(`page-check: not judged. Vercel preview of ${SHA.slice(0
 {
   const access = previewAccess({ previewUrl: url });
   const r = await fetch(url + '/', { headers: await access.forUrl(url + '/'), redirect: 'manual', signal: AbortSignal.timeout(20000) }).catch(() => null);
-  if (r && [401, 403].includes(r.status)) {
+  if (alias && r && r.status === 404) {
+    console.log(`::warning::page-check: not judged. The branch preview ${url} did not answer. A green job did not render pages.`);
+    out('skip', 'preview-alias-missing');
+    process.exit(0);
+  }
+  if (r && protectionStatus(r.status, r.headers.get('location'))) {
     console.log(`::warning::page-check: not judged. The preview refused this run (${r.status}). Trusted preview access is a setting on this Vercel project for GitHub Actions of this org (Settings, Deployment Protection).`);
     out('detail', String(r.status));
     out('skip', 'preview-protected'); process.exit(0);
+  }
+  if (alias) {
+    const body = r && r.status >= 200 && r.status < 300 ? await r.text() : '';
+    if (!responseProvesDeployment({ body, deploymentId })) {
+      console.log(`::warning::page-check: not judged. ${url} is the latest preview of this branch, and its document data-dpl-id is not dpl_${deploymentId}. No clean or blocking verdict was given.`);
+      out('skip', 'preview-head-unverified');
+      process.exit(0);
+    }
   }
 }
 
