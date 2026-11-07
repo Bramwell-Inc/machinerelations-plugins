@@ -4,7 +4,7 @@
 // commit status from the Vercel GitHub app still means the project is linked. Its inspector URL
 // plus the pull request branch is the branch preview: the latest preview of the branch, not this
 // commit. The OIDC token is sent only to that derived HTTPS host. A clean or blocking verdict
-// waits until the response carries this commit or that deployment id.
+// waits until the document element data-dpl-id is that deployment. A quoted id does not count.
 // The production domain is read from the preview's own sitemap.
 // Writes GitHub step outputs: skip, url, base. No Vercel record and no authentic Vercel status is not a site.
 // A green job with a skip did not render pages.
@@ -91,11 +91,9 @@ if (!url) { console.log(`page-check: not judged. Vercel preview of ${SHA.slice(0
     out('skip', 'preview-protected'); process.exit(0);
   }
   if (alias) {
-    const headers = [];
-    if (r) r.headers.forEach((value, key) => headers.push([key, value]));
     const body = r && r.status >= 200 && r.status < 300 ? await r.text() : '';
-    if (!responseProvesDeployment({ headers, body, sha: SHA, deploymentId })) {
-      console.log(`::warning::page-check: not judged. ${url} is the latest preview of this branch, and the response did not contain ${SHA.slice(0, 7)} or deployment ${deploymentId}. No clean or blocking verdict was given.`);
+    if (!responseProvesDeployment({ body, deploymentId })) {
+      console.log(`::warning::page-check: not judged. ${url} is the latest preview of this branch, and its document data-dpl-id is not dpl_${deploymentId}. No clean or blocking verdict was given.`);
       out('skip', 'preview-head-unverified');
       process.exit(0);
     }
