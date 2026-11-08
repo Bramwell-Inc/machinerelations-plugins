@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { verifyPublicDiscovery } from './verify-public-discovery.mjs';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { listPackageFiles, rejectedPackageFiles } from './package-files.mjs';
@@ -54,3 +55,6 @@ const result = await rpc('tools/call', { name: 'mri_list_categories', arguments:
 assert.ok(!result.isError, 'The installed endpoint must answer category discovery');
 assert.ok(result.content.some((part) => part.type === 'text' && part.text.length > 0));
 console.log('Fresh installed endpoint: initialization, tool schemas and live category discovery passed');
+
+await verifyPublicDiscovery();
+console.log('Public skill discovery: both sites and aliases accept standard machine clients');

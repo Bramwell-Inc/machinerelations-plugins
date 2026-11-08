@@ -112,6 +112,16 @@ the ZIP from a newer checkout.
    before editing. The item's DOI (P356) is the concept DOI and stays unchanged;
    version DOIs live on Zenodo and in `library.doi.version`.
 
+The existing fresh-install check also reads both public discovery aliases on both
+sites with a named agent and Python's standard-library user agent. Run
+`node scripts/verify-public-discovery.mjs` after changing their edge rules. This
+checks the currently published catalog, not candidate-version propagation or
+archive bytes. A working browser or MCP connection alone does not prove skill
+discovery works. Where Browser Integrity Check rejects these public reads, use a
+host/path/method-scoped configuration rule for GET/HEAD on
+`/.well-known/agent-skills` and `/.well-known/agent-skills/index.json`; do not
+turn off zone-wide protection or skip unrelated security products.
+
 If authorized publishing access is absent, stop at the verified artifact handoff
 and name the missing access. Do not extract another browser's cookies, bypass an
 access refusal, or call a draft, scan approval or local plan a published update.
