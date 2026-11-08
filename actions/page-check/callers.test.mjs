@@ -15,9 +15,23 @@ function assertCallerRunsOnDrafts(yaml, label) {
   assert.match(yaml, /opened,\s*synchronize,\s*reopened/, `${label} does not run when a draft is opened or updated`);
 }
 
+function assertCallerCanReadCommitStatuses(yaml, label) {
+  const block = yaml.match(/^permissions:\n(?:[ \t].*\n)*/m);
+  assert.ok(block, `${label} does not set token permissions`);
+  assert.match(block[0], /^[ \t]+statuses:[ \t]+read[ \t]*$/m, `${label} does not grant statuses: read`);
+  assert.doesNotMatch(block[0], /statuses:[ \t]+write/, `${label} grants statuses write`);
+  assert.match(block[0], /^[ \t]+contents:[ \t]+read[ \t]*$/m);
+  assert.match(block[0], /^[ \t]+pull-requests:[ \t]+write[ \t]*$/m);
+  assert.match(block[0], /^[ \t]+deployments:[ \t]+read[ \t]*$/m);
+  assert.match(block[0], /^[ \t]+id-token:[ \t]+write[ \t]*$/m);
+  const writes = [...block[0].matchAll(/^[ \t]+([a-z-]+):[ \t]+write[ \t]*$/gm)].map((match) => match[1]).sort();
+  assert.deepEqual(writes, ['id-token', 'pull-requests'], `${label} write scopes changed`);
+}
+
 test('this repository caller runs on draft heads', () => {
   const yaml = readFileSync(path.join(ROOT, '.github/workflows/page-check.yml'), 'utf8');
   assertCallerRunsOnDrafts(yaml, 'Bramwell-Inc/machinerelations-plugins');
+  assertCallerCanReadCommitStatuses(yaml, 'Bramwell-Inc/machinerelations-plugins');
   assert.match(yaml, /if:\s*github\.repository\s*!=\s*'Bramwell-Inc\/machinerelations-plugins'/);
   assert.match(yaml, /not judged/);
   assert.doesNotMatch(yaml, /passes untouched/);
@@ -44,4 +58,5 @@ test('AuthorityTech website caller runs on drafts when this environment can read
     return;
   }
   assertCallerRunsOnDrafts(remote.stdout, WEBSITE_CALLER);
+  assertCallerCanReadCommitStatuses(remote.stdout, WEBSITE_CALLER);
 });
