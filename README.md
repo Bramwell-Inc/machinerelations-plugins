@@ -15,6 +15,23 @@ The plugin retains the package identifier `machine-relations-index` and remote M
 | `mri_list_engines` | Which engines have observations and published evidence |
 | `mri_get_engine` | One engine’s cited-source leaderboard over the observed window, optionally limited to sources with a published segment in a category |
 
+### Production machine access is separate from PR regression
+
+When `--base` supplies a production origin, Page check also makes credential-free
+GET and HEAD requests to robots.txt, llms.txt, the bounded sitemap-index closure,
+and up to 40 sampled canonical HTML pages. It compares its named user-agent with
+a Python-urllib user-agent header using Node fetch; this is not an actual Python
+transport test or a census of all content. A missing production origin is reported
+as not tested. Challenges, child-map failures, unsupported HEAD and exhausted
+bounds are findings, not silently reduced coverage.
+
+The report and PR comment carry **Production machine access: passed / failed /
+not tested** separately. A clean PR comparison does not mean production access
+passed. Existing production failures do not newly block an unrelated PR; only
+introduced defects keep that authority. No new schedule, credentials or provider
+API calls are introduced. Real Python-client acceptance and advertised non-sitemap
+catalogs remain separate checks at the production edge owner.
+
 ## Install
 
 **Codex**

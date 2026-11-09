@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { scanWords } from './words.mjs';
+import { publicAccess, publicAccessSummary } from './public-access.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MEASURE = fs.readFileSync(path.join(HERE, 'measure.js'), 'utf8');
@@ -399,8 +400,10 @@ if (BASE) {
 const notes = [...rendered.flatMap((r) => r.notes.map((n) => ({ ...n, path: r.path, view: r.view }))), ...machine.notes, ...hard.filter((d) => d.flaky).map((d) => ({ ...d, kind: `unsteady:${d.kind}`, detail: `${d.detail} (seen once, not on a second render)` }))];
 for (let i = hard.length - 1; i >= 0; i -= 1) if (hard[i].flaky) hard.splice(i, 1);
 const blocking = hard.filter((d) => !d.known);
+// Public production reads never use the protected-preview access module.
+const productionAccess = await publicAccess(BASE, picks);
 const seconds = Math.round((Date.now() - t0) / 1000);
-const report = { url: URL0, base: BASE || null, seconds, urlCount, typeCount, swept: swept.size, changed: changed.length, sampled: picks.length, renders: rendered.length, linksChecked: linkCheck.checked, blocking, known: hard.filter((d) => d.known), notes };
+const report = { productionAccess, url: URL0, base: BASE || null, seconds, urlCount, typeCount, swept: swept.size, changed: changed.length, sampled: picks.length, renders: rendered.length, linksChecked: linkCheck.checked, blocking, known: hard.filter((d) => d.known), notes };
 fs.writeFileSync(path.join(OUT, 'report.json'), JSON.stringify(report, null, 2));
 
 // Markdown for the pull request: what blocks, grouped so one template bug reads as one line.
@@ -411,6 +414,8 @@ function group(list) {
 }
 const lines = [];
 lines.push(blocking.length ? `**Page check: blocking.** ${group(blocking).length} problem(s) this change adds. Fix these before merging.` : `**Page check: clean.** ${swept.size} pages read, ${picks.length} rendered across ${typeCount} page types (${rendered.length} renders), ${linkCheck.checked} links, in ${seconds}s.`);
+lines.push('', publicAccessSummary(productionAccess));
+for (const d of productionAccess.findings.slice(0, 12)) lines.push(`- Production access: ${d.method || ''} ${d.url || ''} (${d.client || d.kind}): ${d.detail}`);
 for (const d of group(blocking).slice(0, 25)) lines.push(`- **${d.kind}** on \`${[...d.paths][0] || '/'}\`${d.paths.size > 1 ? ` and ${d.paths.size - 1} more page(s)` : ''} (${[...d.views].join(', ')}): ${d.detail}${d.where ? ` at \`${String(d.where).slice(0, 120)}\`` : ''}`);
 const known = group(hard.filter((d) => d.known));
 if (known.length) { lines.push('', `<details><summary>${known.length} problem(s) production already has (not blocking)</summary>`, ''); for (const d of known.slice(0, 30)) lines.push(`- ${d.kind} on \`${[...d.paths][0] || '/'}\` (${[...d.views].join(', ')}): ${d.detail}`); lines.push('', '</details>'); }
