@@ -70,3 +70,8 @@ test('findings group duplicate methods and explicitly count omitted groups',()=>
  findings.push({...findings[0],method:'HEAD'});
  const lines=publicAccessDetails({findings});assert.equal(lines.length,13);assert.match(lines[0],/standardUa\/GET, standardUa\/HEAD/);assert.match(lines.at(-1),/2 more grouped/);
 });
+test('per-request timeout is failed access, distinct from the whole-check time bound',async()=>{
+ const reader=fixture();
+ const r=await publicAccess(root,[],{fetcher:async(u,o)=>{if(o.headers['user-agent'].startsWith('Python'))throw new DOMException('request timed out','TimeoutError');return reader(u,o)}});
+ assert.equal(r.status,'failed');assert.equal(r.findings.length,10);assert.ok(r.findings.every(x=>!x.incomplete));
+});

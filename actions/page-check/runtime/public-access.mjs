@@ -43,7 +43,7 @@ export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40 
         if (kind === 'xml' && !(/<sitemapindex\b[\s\S]*<\/sitemapindex>\s*$/i.test(body) || /<urlset\b[\s\S]*<\/urlset>\s*$/i.test(body))) throw Error('incomplete or unrecognized sitemap');
       }
       record.ok = true; checks.push(record); return body;
-    } catch (error) { await res?.body?.cancel().catch(() => {}); record.ok = false; if (deadline.aborted || error.name === 'TimeoutError') record.incomplete = true; record.detail = String(error.message || error); checks.push(record); findings.push(record); return null; }
+    } catch (error) { await res?.body?.cancel().catch(() => {}); record.ok = false; if (deadline.aborted) record.incomplete = true; record.detail = String(error.message || error); checks.push(record); findings.push(record); return null; }
   }
   async function probe(url, kind) {
     const rows = await Promise.all(Object.keys(clients).flatMap(client => ['GET', 'HEAD'].map(method => request(url, method, client, kind))));
@@ -93,7 +93,7 @@ export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40 
 
 export function publicAccessSummary(result) {
   if (result.status === 'not-tested') return `**Production machine access: not tested.** ${result.reason}`;
-  return `**Production machine access: ${result.status}.** ${result.checks.filter(c => c.ok).length}/${result.checks.length} HTTP checks passed; ${result.findings.length} finding(s); ${result.sitemapDocuments} sitemap documents and ${result.sampledPages} sampled pages. ${result.omittedPreviewPaths.length} preview sample(s) absent from production's sitemap were not probed. This is separate from whether this PR introduces a defect. ${result.scope}`;
+  return `**Production machine access: ${result.status}.** ${result.checks.filter(c => c.ok).length}/${result.checks.length} HTTP checks passed; ${result.findings.length} finding(s); ${result.sitemapDocuments} sitemap documents and ${result.sampledPages} sampled pages. ${result.omittedPreviewPaths.length} preview sample(s) not found in the inspected production sitemap coverage were not probed. This is separate from whether this PR introduces a defect. ${result.scope}`;
 }
 
 export function publicAccessDetails(result) {
