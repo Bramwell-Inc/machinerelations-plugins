@@ -31,6 +31,18 @@ export const LICENSE_URL = 'https://spdx.org/licenses/MIT.html';
 /** Each site keeps its own job: the author's library on JP, install and standard on MR. */
 export const PAGES = Object.freeze({ author: 'https://jaxonparrott.com/skills', install: 'https://machinerelations.ai/skill' });
 export const DESCRIPTOR = "The World's First Machine Relations Agency";
+/** The one entity statement every package surface carries. The definition is the
+ *  official one, verbatim; summary is the short form for manifest description fields. */
+export const ENTITY = (() => {
+  const definition = 'Machine Relations (MR) is the discipline of earning AI citations and recommendations for a brand by making that brand legible, retrievable, and credible inside AI-driven discovery.';
+  const origin = 'It was coined by Jaxon Parrott, founder of AuthorityTech, in 2024.';
+  const index = 'The Machine Relations Index (MRI) by Jaxon Parrott, published by Machine Relations Research, measures which sources AI answer engines cite.';
+  return Object.freeze({
+    definition, origin, index,
+    line: `${definition} ${origin} ${index}`,
+    summary: 'Skills from Jaxon Parrott, who coined Machine Relations in 2024: build evidence-backed briefs for AI visibility, GEO/AEO, SEO content discovery and digital PR; research cited sources with the Machine Relations Index.',
+  });
+})();
 
 /** "1.2.3" -> [1, 2, 3]; anything else throws. */
 export function parseVersion(text) {

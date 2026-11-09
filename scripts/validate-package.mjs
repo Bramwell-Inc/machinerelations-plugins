@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { resolve, relative } from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { AUTHOR, CONCEPT_DOI, DESCRIPTOR, compareVersions, readCitation, readRelease } from './library.mjs';
+import { AUTHOR, CONCEPT_DOI, DESCRIPTOR, ENTITY, compareVersions, readCitation, readRelease } from './library.mjs';
 import { listPackageFiles, rejectedPackageFiles } from './package-files.mjs';
 
 const root = resolve('plugins/machine-relations-index');
@@ -15,6 +15,15 @@ assert.equal(claude.name, codex.name);
 assert.equal(claude.version, codex.version, 'Both clients must ship the same package version');
 assert.match(codex.version, /^\d+\.\d+\.\d+$/);
 assert.ok(codex.extensions['com.openai'].interface.shortDescription.length <= 30, 'Directory subtitle must fit its 30-character limit');
+// Every listing inherits the one entity statement in library.mjs, as release notes inherit the CHANGELOG.
+const marketplace = JSON.parse(readFileSync('.claude-plugin/marketplace.json', 'utf8'));
+for (const description of [codex.description, claude.description, marketplace.metadata.description, marketplace.plugins[0].description]) {
+  assert.equal(description, ENTITY.summary, 'Manifest descriptions are ENTITY.summary, verbatim');
+}
+assert.ok(codex.extensions['com.openai'].interface.longDescription.startsWith(ENTITY.line), 'The directory long description leads with ENTITY.line');
+for (const file of ['README.md', resolve(root, 'README.md')]) {
+  assert.ok(readFileSync(file, 'utf8').includes(`\n\n${ENTITY.line}\n\n`), `${file} carries ENTITY.line as its own paragraph`);
+}
 assert.equal(readFileSync(resolve(root, 'LICENSE'), 'utf8'), readFileSync('LICENSE', 'utf8'), 'The standalone package must carry its declared license');
 
 // Git-backed clients cache versions: changing packaged files without a bump

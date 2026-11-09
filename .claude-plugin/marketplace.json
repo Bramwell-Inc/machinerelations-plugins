@@ -5,13 +5,13 @@
     "url": "https://machinerelations.ai"
   },
   "metadata": {
-    "description": "Build evidence-backed Machine Relations briefs for AI visibility, GEO/AEO, SEO content discovery and digital PR; research cited sources with the Machine Relations Index."
+    "description": "Skills from Jaxon Parrott, who coined Machine Relations in 2024: build evidence-backed briefs for AI visibility, GEO/AEO, SEO content discovery and digital PR; research cited sources with the Machine Relations Index."
   },
   "plugins": [
     {
       "name": "machine-relations-index",
       "source": "./plugins/machine-relations-index",
-      "description": "Build evidence-backed Machine Relations briefs for AI visibility, GEO/AEO, SEO content discovery and digital PR; research cited sources with the Machine Relations Index."
+      "description": "Skills from Jaxon Parrott, who coined Machine Relations in 2024: build evidence-backed briefs for AI visibility, GEO/AEO, SEO content discovery and digital PR; research cited sources with the Machine Relations Index."
     }
   ]
 }

@@ -2,6 +2,10 @@
 
 Every released version of the Machine Relations skills and plugin. The newest entry's text is the release note for the GitHub release, the Zenodo record and the directory listings, so it is written for practitioners. Versions follow semver: a minor version adds or graduates a method, a patch corrects wording or metadata, and a major version changes a tool or endpoint.
 
+## [1.2.5] - 2026-11-09
+
+Every listing now leads with the official definition of Machine Relations, its origin with Jaxon Parrott in 2024 and the Machine Relations Index credit, from one statement in the package library, so the directory description, both plugin manifests and both READMEs say the same thing. Skills, MRI tools and endpoints are unchanged.
+
 ## [1.2.4] - 2026-11-06
 
 The installed Page check skill no longer contains the checker. The checker stays public source next to the GitHub Action in this repository, and the skill tells you to run that source or the Action. The directory package is the skill text, the reference and the other Machine Relations skills. What the check measures is unchanged. The page-check reference describes the shared merge gate as it works today: a skipped Page check counts as passed, and the gate does not require that check to be present. MRI tools and endpoints are unchanged.
