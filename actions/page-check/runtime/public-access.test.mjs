@@ -76,7 +76,7 @@ test('per-request timeout is failed access, distinct from the whole-check time b
  assert.equal(r.status,'failed');assert.equal(r.findings.length,10);assert.ok(r.findings.every(x=>!x.incomplete));
 });
 test('sitemap data documents are not falsely treated as HTML pages',async()=>{
- const calls=[];const reader=fixture((u,o)=>u.endsWith('/sitemap.xml')?new Response(o.method==='HEAD'?null:'<urlset><url><loc>https://example.test/measurement/data.json</loc></url><url><loc>https://example.test/index/domains/reddit.com</loc></url></urlset>',{headers:{'content-type':'application/xml'}}):null);
- const r=await publicAccess(root,[],{fetcher:async(u,o)=>{calls.push(u);return reader(u,o)}});
- assert.equal(r.status,'passed');assert.ok(!calls.some(u=>u.endsWith('/data.json')));assert.ok(calls.some(u=>u.endsWith('/reddit.com')));
+ const calls=[];const reader=fixture((u,o)=>u.endsWith('/sitemap.xml')?new Response(o.method==='HEAD'?null:'<urlset><url><loc>https://example.test/measurement/data.json</loc></url><url><loc>https://example.test/index/domains/reddit.com</loc></url><url><loc>https://example.test/index/domains/visible.md</loc></url></urlset>',{headers:{'content-type':'application/xml'}}):null);
+ const r=await publicAccess(root,[{path:'/index/domains/visible.md'}],{fetcher:async(u,o)=>{calls.push(u);return reader(u,o)}});
+ assert.equal(r.status,'passed');assert.ok(calls.some(u=>u.endsWith('/visible.md')));assert.ok(!calls.some(u=>u.endsWith('/data.json')));assert.ok(calls.some(u=>u.endsWith('/reddit.com')));
 });

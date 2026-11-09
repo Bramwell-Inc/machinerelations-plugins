@@ -72,7 +72,7 @@ export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40 
           if (page.origin !== origin || page.username || page.password) continue;
           const p = page.pathname.replace(/\/$/, '') || '/';
           // A sitemap can also advertise data documents; this sample tests canonical HTML only.
-          if (/\.(?:json|xml|txt|md|csv|pdf|png|jpe?g|svg|webp|gz)$/i.test(p)) continue;
+          if (/\.(?:json|xml|txt|csv|pdf|png|jpe?g|svg|webp|gz)$/i.test(p)) continue;
           published.add(p);
           const parts = p.split('/').filter(Boolean); const type = '/' + parts.map((x, i) => i ? '*' : x).join('/');
           if (!representatives.has(type)) representatives.set(type, p);
