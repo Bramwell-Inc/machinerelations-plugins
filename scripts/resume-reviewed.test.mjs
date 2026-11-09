@@ -84,8 +84,8 @@ function githubFor(dir, { draft = false, commit = REVIEWED_COMMIT, assets = null
   return { gh, readAsset, calls, created: () => created };
 }
 
-test('this 1.2.4 checkout cannot run the 1.2.3 resume', async () => {
-  assert.equal(readRelease().version, '1.2.4');
+test('a later checkout cannot run the 1.2.3 resume', async () => {
+  assert.notEqual(readRelease().version, '1.2.3');
   const dist = originalDist();
   const result = await resumeReviewed({
     dist, release: readRelease(), token: TOKEN, fetch: () => { throw new Error('zenodo was called'); },

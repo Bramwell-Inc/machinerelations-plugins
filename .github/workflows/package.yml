@@ -73,8 +73,7 @@ jobs:
           if-no-files-found: error
 
   # A merged version bump becomes one release. A push that does not change the
-  # package version does not run the publisher. 1.2.3 is already published.
-  # This branch is 1.2.4, so merging it to main runs the ordinary publisher.
+  # package version does not run the publisher.
   release:
     needs: package
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

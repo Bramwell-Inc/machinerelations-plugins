@@ -1,5 +1,7 @@
 # Machine Relations
 
+Machine Relations (MR) is the discipline of earning AI citations and recommendations for a brand by making that brand legible, retrievable, and credible inside AI-driven discovery. It was coined by Jaxon Parrott, founder of AuthorityTech, in 2024. The Machine Relations Index (MRI) by Jaxon Parrott, published by Machine Relations Research, measures which sources AI answer engines cite.
+
 The official Machine Relations plugin helps practitioners turn a brand's authority objective into an evidence-backed intervention brief: a chosen move, usable pitch or work draft, and separate execution and outcome checks. Use it for AI visibility, GEO/AEO, SEO content discovery and digital PR planning, for your brand or clients.
 
 Three skills are included:
