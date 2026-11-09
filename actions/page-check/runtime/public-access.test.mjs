@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { publicAccess, publicAccessSummary } from './public-access.mjs';
+import { publicAccess, publicAccessSummary, publicAccessDetails } from './public-access.mjs';
 const root = 'https://example.test';
 function fixture(change = () => null) {
   return async (url, options) => {
@@ -17,7 +17,7 @@ test('checks both clients and methods; leaves production acceptance separate', a
 });
 test('exposes UA-only denial', async () => {
   const r=await publicAccess(root,[],{fetcher:fixture((u,o)=>o.headers['user-agent'].startsWith('Python')?new Response('blocked',{status:403}):null)});
-  assert.equal(r.status,'failed');assert.equal(r.findings.length,8);assert.ok(r.findings.every(x=>x.client==='standardUa'));
+  assert.equal(r.status,'failed');assert.equal(r.findings.length,10);assert.ok(r.findings.every(x=>x.client==='standardUa'));
 });
 test('HTML challenge with HTTP 200 is not success',async()=>{
  const r=await publicAccess(root,[],{fetcher:fixture((u,o)=>u.endsWith('llms.txt')?new Response(o.method==='HEAD'?null:'<html><title>Just a moment</title></html>',{headers:{'content-type':'text/plain'}}):null)});
@@ -25,7 +25,7 @@ test('HTML challenge with HTTP 200 is not success',async()=>{
 });
 test('HEAD-only failure is surfaced',async()=>{
  const r=await publicAccess(root,[],{fetcher:fixture((u,o)=>o.method==='HEAD'?new Response(null,{status:405}):null)});
- assert.equal(r.findings.length,8);
+ assert.equal(r.findings.length,10);
 });
 test('child-map failure cannot silently shrink coverage',async()=>{
  const r=await publicAccess(root,[],{fetcher:fixture((u,o)=>u.endsWith('/sitemap.xml')?new Response(o.method==='HEAD'?null:'<sitemapindex><sitemap><loc>https://example.test/child.xml</loc></sitemap></sitemapindex>',{headers:{'content-type':'application/xml'}}):u.endsWith('/child.xml')?new Response('missing',{status:404}):null)});
@@ -33,7 +33,7 @@ test('child-map failure cannot silently shrink coverage',async()=>{
 });
 test('bounded traversal is explicitly incomplete',async()=>{
  const r=await publicAccess(root,[],{maxMaps:1,fetcher:fixture((u,o)=>u.endsWith('/sitemap.xml')?new Response(o.method==='HEAD'?null:'<sitemapindex><sitemap><loc>https://example.test/child.xml</loc></sitemap></sitemapindex>',{headers:{'content-type':'application/xml'}}):null)});
- assert.ok(r.findings.some(x=>/bound exhausted/.test(x.detail)));
+ assert.ok(r.findings.some(x=>/bound exhausted/.test(x.detail)));assert.equal(r.status,'incomplete');
 });
 test('does not send credentials or follow foreign sitemap redirects',async()=>{
  const r=await publicAccess(root,[],{fetcher:fixture((u,o)=>u.endsWith('/sitemap.xml')?new Response(null,{status:302,headers:{location:'https://other.test/map.xml'}}):null)});
@@ -49,4 +49,24 @@ test('failed production acceptance stays visible without blocking an unrelated P
 test('an empty sitemap index is not complete coverage',async()=>{
  const r=await publicAccess(root,[],{fetcher:fixture((u,o)=>u.endsWith('/sitemap.xml')?new Response(o.method==='HEAD'?null:'<sitemapindex></sitemapindex>',{headers:{'content-type':'application/xml'}}):null)});
  assert.equal(r.status,'failed');assert.ok(r.findings.some(x=>/no child locations/.test(x.detail)));
+});
+test('new preview pages are omitted; production supplies its own representative',async()=>{
+ const calls=[];const reader=fixture();
+ const r=await publicAccess(root,[{path:'/new-preview-page'}],{fetcher:async(u,o)=>{calls.push(u);return reader(u,o)}});
+ assert.equal(r.status,'passed');assert.deepEqual(r.omittedPreviewPaths,['/new-preview-page']);assert.equal(r.sampledPages,2);
+ assert.ok(calls.includes(root+'/article'));assert.ok(!calls.includes(root+'/new-preview-page'));
+});
+test('redirect without Location is rejected rather than requesting /null',async()=>{
+ const calls=[];const reader=fixture(u=>u.endsWith('/sitemap.xml')?new Response(null,{status:302}):null);
+ const r=await publicAccess(root,[],{fetcher:async(u,o)=>{calls.push(u);return reader(u,o)}});
+ assert.equal(r.status,'failed');assert.ok(r.findings.some(f=>/no Location/.test(f.detail)));assert.ok(!calls.some(u=>u.endsWith('/null')));
+});
+test('unsupported compressed sitemap is incomplete, not a claimed content failure',async()=>{
+ const r=await publicAccess(root,[],{fetcher:fixture((u,o)=>u.endsWith('/sitemap.xml')?new Response(o.method==='HEAD'?null:'gzip',{headers:{'content-type':'application/gzip'}}):null)});
+ assert.equal(r.status,'incomplete');
+});
+test('findings group duplicate methods and explicitly count omitted groups',()=>{
+ const findings=Array.from({length:14},(_,i)=>({url:root+'/'+i,detail:'HTTP 403',client:'standardUa',method:'GET'}));
+ findings.push({...findings[0],method:'HEAD'});
+ const lines=publicAccessDetails({findings});assert.equal(lines.length,13);assert.match(lines[0],/standardUa\/GET, standardUa\/HEAD/);assert.match(lines.at(-1),/2 more grouped/);
 });
