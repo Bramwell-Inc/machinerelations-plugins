@@ -108,3 +108,22 @@ test('advertised JSON coverage is bounded and exhaustion is not a pass', async (
   assert.equal(r.sampledDataDocuments,1);assert.equal(r.status,'incomplete');
   assert.ok(r.findings.some(f=>/JSON access bound exhausted/.test(f.detail)));
 });
+
+
+test('JSON redirects cannot turn credential-free checks into authenticated reads', async () => {
+ for (const location of ['/private.json?token=secret','https://user:pass@example.test/private.json','https://other.test/private.json']) {
+  const calls=[]; const reader=fixture((u,o)=>u.endsWith('/llms.txt')?new Response(o.method==='HEAD'?null:'[Data](/data.json)',{headers:{'content-type':'text/plain'}}):u.endsWith('/data.json')?new Response(null,{status:302,headers:{location}}):null);
+  const r=await publicAccess(root,[],{fetcher:async(u,o)=>{calls.push(u);return reader(u,o)}});
+  assert.equal(r.status,'failed'); assert.equal(r.findings.length,4);
+  assert.ok(!calls.some(u=>u.includes('private.json')));
+ }
+});
+test('relative JSON links resolve against the served page, not the origin root', async () => {
+ const r=await publicAccess(root,[],{fetcher:fixture((u,o)=>u.endsWith('/article')?new Response(null,{status:302,headers:{location:'/research/article/'}}):u.endsWith('/research/article/')?new Response(o.method==='HEAD'?null:'<html><a href="data.json">Data</a></html>',{headers:{'content-type':'text/html'}}):null)});
+ assert.equal(r.status,'passed'); assert.equal(r.sampledDataDocuments,1);
+ assert.ok(r.checks.filter(c=>c.kind==='json').every(c=>c.url===root+'/research/article/data.json'));
+});
+test('JSON content may legitimately quote HTML and challenge names', async () => {
+ const r=await publicAccess(root,[],{fetcher:fixture((u,o)=>u.endsWith('/llms.txt')?new Response(o.method==='HEAD'?null:'[Data](/data.json)',{headers:{'content-type':'text/plain'}}):u.endsWith('/data.json')?new Response(o.method==='HEAD'?null:JSON.stringify({example:'<html>cf-chl- error code: 1010</html>'}),{headers:{'content-type':'application/json'}}):null)});
+ assert.equal(r.status,'passed'); assert.equal(r.sampledDataDocuments,1);
+});

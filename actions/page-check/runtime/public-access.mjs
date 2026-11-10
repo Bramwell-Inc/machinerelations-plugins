@@ -30,6 +30,7 @@ export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40,
         const next = new URL(location, at);
         await res.body?.cancel();
         if (next.origin !== origin) throw Error('redirect left production origin');
+        if (next.username || next.password || (kind === 'json' && next.search)) throw Error('redirect requires credentials or a JSON query');
         at = next.href;
       }
       record.status = res.status; record.type = res.headers.get('content-type') || '';
