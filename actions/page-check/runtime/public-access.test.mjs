@@ -4,11 +4,11 @@ import { publicAccess, publicAccessSummary, publicAccessDetails } from './public
 const root = 'https://example.test';
 function fixture(change = () => null) {
   return async (url, options) => {
-    assert.deepEqual(Object.keys(options.headers), ['user-agent']);
+    assert.deepEqual(Object.keys(options.headers), url.endsWith('.json') && options.method === 'GET' ? ['user-agent', 'range'] : ['user-agent']);
     assert.equal(options.redirect, 'manual');
     const override = change(url, options); if (override) return override;
-    const xml = url.endsWith('.xml'); const text = url.endsWith('.txt');
-    return new Response(options.method === 'HEAD' ? null : xml ? '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://example.test/article</loc></url></urlset>' : text ? 'Public discovery document' : '<!doctype html><html><title>Public article</title></html>', { headers: { 'content-type': xml ? 'application/xml' : text ? 'text/plain' : 'text/html' } });
+    const xml = url.endsWith('.xml'); const text = url.endsWith('.txt'); const json = url.endsWith('.json');
+    return new Response(options.method === 'HEAD' ? null : xml ? '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://example.test/article</loc></url></urlset>' : text ? 'Public discovery document' : json ? '{"public":true}' : '<!doctype html><html><title>Public article</title></html>', { headers: { 'content-type': xml ? 'application/xml' : text ? 'text/plain' : json ? 'application/json' : 'text/html' } });
   };
 }
 test('checks both clients and methods; leaves production acceptance separate', async () => {
@@ -78,5 +78,52 @@ test('per-request timeout is failed access, distinct from the whole-check time b
 test('sitemap data documents are not falsely treated as HTML pages',async()=>{
  const calls=[];const reader=fixture((u,o)=>u.endsWith('/sitemap.xml')?new Response(o.method==='HEAD'?null:'<urlset><url><loc>https://example.test/measurement/data.json</loc></url><url><loc>https://example.test/index/domains/reddit.com</loc></url><url><loc>https://example.test/index/domains/visible.md</loc></url></urlset>',{headers:{'content-type':'application/xml'}}):null);
  const r=await publicAccess(root,[{path:'/index/domains/visible.md'}],{fetcher:async(u,o)=>{calls.push(u);return reader(u,o)}});
- assert.equal(r.status,'passed');assert.ok(calls.some(u=>u.endsWith('/visible.md')));assert.ok(!calls.some(u=>u.endsWith('/data.json')));assert.ok(calls.some(u=>u.endsWith('/reddit.com')));
+ assert.equal(r.status,'passed');assert.ok(calls.some(u=>u.endsWith('/visible.md')));assert.ok(calls.some(u=>u.endsWith('/data.json')));assert.equal(r.sampledDataDocuments,1);assert.ok(calls.some(u=>u.endsWith('/reddit.com')));
+});
+
+
+test('advertised JSON is probed for both clients and methods, including UA-only denials', async () => {
+  const r = await publicAccess(root, [], { fetcher: fixture((u,o) => {
+    if (u.endsWith('/llms.txt')) return new Response(o.method === 'HEAD' ? null : '[Release](https://example.test/data/release.json)', {headers:{'content-type':'text/plain'}});
+    if (u.endsWith('/data/release.json') && o.headers['user-agent'].startsWith('Python')) return new Response(null, {status:403});
+  }) });
+  assert.equal(r.sampledDataDocuments, 1); assert.equal(r.status, 'failed');
+  assert.equal(r.checks.filter(c=>c.kind==='json').length,4);
+  assert.equal(r.findings.length,2); assert.ok(r.findings.every(f=>f.kind==='json'&&f.client==='standardUa'));
+});
+test('HTML links discover only same-origin JSON without credentials or query parameters', async () => {
+  const calls=[]; const reader=fixture((u,o)=>u===root+'/'?new Response(o.method==='HEAD'?null:'<html><a href="/data/release.json">Release</a><a href="https://outside.test/private.json">Other</a><a href="https://user:pass@example.test/private.json">Credentials</a><a href="/private.json?token=x">Query</a></html>',{headers:{'content-type':'text/html'}}):null);
+  const r=await publicAccess(root,[],{fetcher:async(u,o)=>{calls.push(u);return reader(u,o)}});
+  assert.equal(r.status,'passed');assert.equal(r.sampledDataDocuments,1);
+  assert.ok(!calls.some(u=>u.includes('private.json')));
+});
+test('JSON access accepts bounded partial reads but rejects HTML disguised as JSON', async () => {
+  for (const body of ['{"partial":', '<html>Login</html>', 'not JSON']) {
+    const r=await publicAccess(root,[],{fetcher:fixture((u,o)=>u.endsWith('/llms.txt')?new Response(o.method==='HEAD'?null:'[Data](/data.json)',{headers:{'content-type':'text/plain'}}):u.endsWith('/data.json')?new Response(o.method==='HEAD'?null:body,{status:o.method==='GET'?206:200,headers:{'content-type':'application/json'}}):null)});
+    assert.equal(r.status,body.startsWith('{')?'passed':'failed');
+  }
+});
+test('advertised JSON coverage is bounded and exhaustion is not a pass', async () => {
+  const r=await publicAccess(root,[],{maxDataDocuments:1,fetcher:fixture((u,o)=>u.endsWith('/llms.txt')?new Response(o.method==='HEAD'?null:'[One](/one.json) [Two](/two.json)',{headers:{'content-type':'text/plain'}}):null)});
+  assert.equal(r.sampledDataDocuments,1);assert.equal(r.status,'incomplete');
+  assert.ok(r.findings.some(f=>/JSON access bound exhausted/.test(f.detail)));
+});
+
+
+test('JSON redirects cannot turn credential-free checks into authenticated reads', async () => {
+ for (const location of ['/private.json?token=secret','https://user:pass@example.test/private.json','https://other.test/private.json']) {
+  const calls=[]; const reader=fixture((u,o)=>u.endsWith('/llms.txt')?new Response(o.method==='HEAD'?null:'[Data](/data.json)',{headers:{'content-type':'text/plain'}}):u.endsWith('/data.json')?new Response(null,{status:302,headers:{location}}):null);
+  const r=await publicAccess(root,[],{fetcher:async(u,o)=>{calls.push(u);return reader(u,o)}});
+  assert.equal(r.status,'failed'); assert.equal(r.findings.length,4);
+  assert.ok(!calls.some(u=>u.includes('private.json')));
+ }
+});
+test('relative JSON links resolve against the served page, not the origin root', async () => {
+ const r=await publicAccess(root,[],{fetcher:fixture((u,o)=>u.endsWith('/article')?new Response(null,{status:302,headers:{location:'/research/article/'}}):u.endsWith('/research/article/')?new Response(o.method==='HEAD'?null:'<html><a href="data.json">Data</a></html>',{headers:{'content-type':'text/html'}}):null)});
+ assert.equal(r.status,'passed'); assert.equal(r.sampledDataDocuments,1);
+ assert.ok(r.checks.filter(c=>c.kind==='json').every(c=>c.url===root+'/research/article/data.json'));
+});
+test('JSON content may legitimately quote HTML and challenge names', async () => {
+ const r=await publicAccess(root,[],{fetcher:fixture((u,o)=>u.endsWith('/llms.txt')?new Response(o.method==='HEAD'?null:'[Data](/data.json)',{headers:{'content-type':'text/plain'}}):u.endsWith('/data.json')?new Response(o.method==='HEAD'?null:JSON.stringify({example:'<html>cf-chl- error code: 1010</html>'}),{headers:{'content-type':'application/json'}}):null)});
+ assert.equal(r.status,'passed'); assert.equal(r.sampledDataDocuments,1);
 });
