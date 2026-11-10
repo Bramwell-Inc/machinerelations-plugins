@@ -1,8 +1,20 @@
 // Separate production acceptance: never subtract these findings against a preview baseline.
-export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40 } = {}) {
+export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40, maxDataDocuments = 10 } = {}) {
   if (!root) return { status: 'not-tested', reason: 'No production origin supplied.', checks: [], findings: [] };
   const origin = new URL(root).origin;
   const deadline = AbortSignal.timeout(120000);
+  const dataDocuments = new Set();
+  function discoverData(value, base = origin) {
+    try {
+      const url = new URL(value.replaceAll('&amp;', '&'), base);
+      if (url.origin === origin && !url.username && !url.password && /\.json$/i.test(url.pathname) && !url.search) {
+        url.hash = ''; dataDocuments.add(url.href);
+      }
+    } catch { /* Not a public same-origin JSON document. */ }
+  }
+  function discoverDataLinks(body, base) {
+    for (const match of body.matchAll(/(?:href=["']|\]\()([^"'\s)]+)["')]/g)) discoverData(match[1], base);
+  }
   const checks = []; const findings = []; const published = new Set(); const representatives = new Map(); const maps = new Set(); const queue = [origin + '/sitemap.xml'];
   const clients = { named: 'MachineRelationsPageCheck/1 (+https://machinerelations.ai)', standardUa: 'Python-urllib/3.11' };
   async function request(url, method, client, kind) {
@@ -11,7 +23,7 @@ export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40 
       deadline.throwIfAborted();
       let at = url;
       for (let n = 0; n < 6; n++) {
-        res = await fetcher(at, { method, headers: { 'user-agent': clients[client] }, redirect: 'manual', signal: AbortSignal.any([deadline, AbortSignal.timeout(20000)]) });
+        res = await fetcher(at, { method, headers: { 'user-agent': clients[client], ...(kind === 'json' && method === 'GET' ? { range: 'bytes=0-65535' } : {}) }, redirect: 'manual', signal: AbortSignal.any([deadline, AbortSignal.timeout(20000)]) });
         if (![301, 302, 303, 307, 308].includes(res.status)) break;
         const location = res.headers.get('location');
         if (!location) throw Error('redirect has no Location');
@@ -21,9 +33,9 @@ export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40 
         at = next.href;
       }
       record.status = res.status; record.type = res.headers.get('content-type') || '';
-      if (res.status !== 200) throw Error(`HTTP ${res.status}`);
+      if (res.status !== 200 && !(kind === 'json' && method === 'GET' && res.status === 206)) throw Error(`HTTP ${res.status}`);
       if (kind === 'xml' && /gzip|octet-stream/i.test(record.type)) { record.incomplete = true; throw Error('compressed or binary sitemap not inspected'); }
-      if (!(kind === 'xml' ? /(?:application|text)\/xml/i : kind === 'text' ? /text\/plain/i : /text\/html/i).test(record.type)) throw Error(`unexpected content type: ${record.type}`);
+      if (!(kind === 'xml' ? /(?:application|text)\/xml/i : kind === 'text' ? /text\/plain/i : kind === 'json' ? /application\/(?:[a-z0-9.-]+\+)?json\b/i : /text\/html/i).test(record.type)) throw Error(`unexpected content type: ${record.type}`);
       let body = '';
       if (method === 'GET') {
         const reader = res.body.getReader(); const decoder = new TextDecoder(); let size = 0;
@@ -38,8 +50,10 @@ export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40 
           }
           body += decoder.decode();
         } finally { await reader.cancel(); }
-        if (!body.trim() || /cf-chl-|<title>\s*(?:just a moment|attention required)|error code: 1010/i.test(body)) throw Error('empty body or challenge');
-        if (kind !== 'html' && /<(?:!doctype\s+html|html)\b/i.test(body)) throw Error('HTML instead of discovery document');
+        if (!body.trim() || (kind !== 'json' && /cf-chl-|<title>\s*(?:just a moment|attention required)|error code: 1010/i.test(body))) throw Error('empty body or challenge');
+        if (kind !== 'html' && kind !== 'json' && /<(?:!doctype\s+html|html)\b/i.test(body)) throw Error('HTML instead of discovery document');
+        if (kind === 'json' && !/^[\s]*[\[{]/.test(body)) throw Error('JSON document has no object or array prefix');
+        if (client === 'named' && (kind === 'html' || kind === 'text')) discoverDataLinks(body, at);
         if (kind === 'xml' && !(/<sitemapindex\b[\s\S]*<\/sitemapindex>\s*$/i.test(body) || /<urlset\b[\s\S]*<\/urlset>\s*$/i.test(body))) throw Error('incomplete or unrecognized sitemap');
       }
       record.ok = true; checks.push(record); return body;
@@ -71,7 +85,8 @@ export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40 
           const page = new URL(match[1].replaceAll('&amp;', '&'), url);
           if (page.origin !== origin || page.username || page.password) continue;
           const p = page.pathname.replace(/\/$/, '') || '/';
-          // A sitemap can also advertise data documents; this sample tests canonical HTML only.
+          if (/\.json$/i.test(p)) discoverData(page.href);
+          // Data documents are probed separately, never as HTML pages.
           if (/\.(?:json|xml|txt|csv|pdf|png|jpe?g|svg|webp|gz)$/i.test(p)) continue;
           published.add(p);
           const parts = p.split('/').filter(Boolean); const type = '/' + parts.map((x, i) => i ? '*' : x).join('/');
@@ -90,13 +105,20 @@ export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40 
     if (url.origin !== origin) { findings.push({ kind: 'page', detail: 'sample left production origin', ok: false }); continue; }
     sampledPages++; await probe(url.href, 'html');
   }
-  return { status: findings.length ? findings.every(f => f.incomplete) ? 'incomplete' : 'failed' : 'passed', origin, omittedPreviewPaths, sampledPages, sitemapDocuments: maps.size, checks, findings,
-    scope: 'Credential-free Node GET/HEAD with named and Python-urllib user-agent headers; not actual Python transport, all pages, or a crawler/indexing claim.' };
+  let sampledDataDocuments = 0;
+  for (const url of dataDocuments) {
+    if (deadline.aborted || sampledDataDocuments >= maxDataDocuments) {
+      findings.push({ kind: 'json', detail: 'advertised JSON access bound exhausted; coverage incomplete', incomplete: true, ok: false }); break;
+    }
+    sampledDataDocuments++; await probe(url, 'json');
+  }
+  return { status: findings.length ? findings.every(f => f.incomplete) ? 'incomplete' : 'failed' : 'passed', origin, omittedPreviewPaths, sampledPages, sampledDataDocuments, sitemapDocuments: maps.size, checks, findings,
+    scope: 'Credential-free Node GET/HEAD with named and Python-urllib user-agent headers; JSON GETs inspect at most 64 KiB of advertised same-origin documents, not complete JSON validity. Not actual Python transport, all pages/data, or a crawler/indexing claim.' };
 }
 
 export function publicAccessSummary(result) {
   if (result.status === 'not-tested') return `**Production machine access: not tested.** ${result.reason}`;
-  return `**Production machine access: ${result.status}.** ${result.checks.filter(c => c.ok).length}/${result.checks.length} HTTP checks passed; ${result.findings.length} finding(s); ${result.sitemapDocuments} sitemap documents and ${result.sampledPages} sampled pages. ${result.omittedPreviewPaths.length} preview sample(s) not found in the inspected production sitemap coverage were not probed. This is separate from whether this PR introduces a defect. ${result.scope}`;
+  return `**Production machine access: ${result.status}.** ${result.checks.filter(c => c.ok).length}/${result.checks.length} HTTP checks passed; ${result.findings.length} finding(s); ${result.sitemapDocuments} sitemap documents and ${result.sampledPages} sampled pages; ${result.sampledDataDocuments || 0} advertised JSON documents. ${result.omittedPreviewPaths.length} preview sample(s) not found in the inspected production sitemap coverage were not probed. This is separate from whether this PR introduces a defect. ${result.scope}`;
 }
 
 export function publicAccessDetails(result) {
