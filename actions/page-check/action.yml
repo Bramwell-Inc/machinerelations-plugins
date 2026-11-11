@@ -28,7 +28,14 @@ runs:
       shell: bash
       working-directory: ${{ github.action_path }}/runtime
       run: |
-        for i in 1 2 3; do npm ci --no-audit --no-fund && npx playwright install --with-deps chromium && break; sleep $((i * 10)); done
+        for i in 1 2 3; do npm ci --no-audit --no-fund && break; sleep $((i * 10)); done
+        # The browser comes from Playwright's CDN; the system libraries come from apt. They are separate
+        # steps so an apt outage can't cost the browser: on 2026-11-11 the runner's apt mirrors failed DNS,
+        # --with-deps spent three 10-minute attempts on apt, never downloaded Chromium, and every PR waited
+        # 30+ minutes for "not judged". GitHub's runner images ship Chrome, so its libraries are normally
+        # present; install-deps is bounded and best effort.
+        for i in 1 2 3; do npx playwright install chromium && break; sleep $((i * 10)); done
+        timeout 180 npx playwright install-deps chromium || echo "::warning::playwright install-deps did not finish in 180s; launching Chromium with the runner's own libraries"
     - if: steps.resolve.outputs.skip == ''
       id: check
       shell: bash
