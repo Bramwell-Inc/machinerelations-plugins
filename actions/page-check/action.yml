@@ -35,7 +35,7 @@ runs:
         # 30+ minutes for "not judged". GitHub's runner images ship Chrome, so its libraries are normally
         # present; install-deps is bounded and best effort.
         for i in 1 2 3; do npx playwright install chromium && break; sleep $((i * 10)); done
-        timeout 180 npx playwright install-deps chromium || echo "::warning::playwright install-deps did not finish in 180s; launching Chromium with the runner's own libraries"
+        timeout -k 10 180 npx playwright install-deps chromium || echo "::warning::playwright install-deps did not finish in 180s; launching Chromium with the runner's own libraries"
     - if: steps.resolve.outputs.skip == ''
       id: check
       shell: bash
