@@ -127,3 +127,47 @@ test('JSON content may legitimately quote HTML and challenge names', async () =>
  const r=await publicAccess(root,[],{fetcher:fixture((u,o)=>u.endsWith('/llms.txt')?new Response(o.method==='HEAD'?null:'[Data](/data.json)',{headers:{'content-type':'text/plain'}}):u.endsWith('/data.json')?new Response(o.method==='HEAD'?null:JSON.stringify({example:'<html>cf-chl- error code: 1010</html>'}),{headers:{'content-type':'application/json'}}):null)});
  assert.equal(r.status,'passed'); assert.equal(r.sampledDataDocuments,1);
 });
+
+
+test('homepage Link header documents are probed for both clients; presentation links are not', async () => {
+  const calls = []; const reader = fixture((u, o) => {
+    if (u === root + '/') return new Response(o.method === 'HEAD' ? null : '<!doctype html><html><title>Home</title></html>', { headers: { 'content-type': 'text/html', link: '</auth.md>; rel="describedby"; type="text/markdown", </.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", </api>; rel="service-doc"; type="text/html", </fonts/a.woff2>; rel="preload"; as="font", </style.css>; rel="stylesheet", <https://other.test/x.md>; rel="describedby"' } });
+    if (u.endsWith('/auth.md')) return o.headers['user-agent'].startsWith('Python') ? new Response('error code: 1010', { status: 403 }) : new Response(o.method === 'HEAD' ? null : '# Auth\nNo key.', { headers: { 'content-type': 'text/markdown' } });
+    if (u.endsWith('/.well-known/api-catalog')) return new Response(o.method === 'HEAD' ? null : '{"linkset":[]}', { headers: { 'content-type': 'application/linkset+json' } });
+    return null;
+  });
+  const r = await publicAccess(root, [], { fetcher: async (u, o) => { calls.push(u); return reader(u, o); } });
+  assert.equal(r.sampledLinkedDocuments, 3); assert.equal(r.status, 'failed');
+  assert.ok(!calls.some(u => /woff2|style\.css|other\.test/.test(u)));
+  assert.equal(r.checks.filter(c => c.url === root + '/api' && c.kind === 'html').length, 4);
+  assert.equal(r.findings.length, 2); assert.ok(r.findings.every(f => f.url === root + '/auth.md' && f.client === 'standardUa'));
+  assert.match(publicAccessSummary(r), /3 other advertised discovery documents/);
+});
+test('llms.txt root-level and well-known documents are probed; nested twins and pages are not', async () => {
+  const calls = []; const reader = fixture((u, o) => {
+    if (u.endsWith('/llms.txt')) return new Response(o.method === 'HEAD' ? null : '- [Cite](https://example.test/CITATION.cff)\n- [Feed](/feed.xml)\n- [Skills](/.well-known/agent-skills)\n- [Twin](/research/a.md)\n- [Page](/about)', { headers: { 'content-type': 'text/plain' } });
+    if (/CITATION\.cff|feed\.xml|agent-skills/.test(u)) return new Response(o.method === 'HEAD' ? null : 'cff-version: 1.2.0', { headers: { 'content-type': 'text/plain' } });
+    return null;
+  });
+  const r = await publicAccess(root, [], { fetcher: async (u, o) => { calls.push(u); return reader(u, o); } });
+  assert.equal(r.status, 'passed'); assert.equal(r.sampledLinkedDocuments, 3);
+  assert.ok(!calls.includes(root + '/research/a.md')); assert.ok(!calls.includes(root + '/about'));
+});
+test('a discovery document served as an HTML page fails; the bound is explicit', async () => {
+  const html = await publicAccess(root, [], { fetcher: fixture((u, o) => u.endsWith('/llms.txt') ? new Response(o.method === 'HEAD' ? null : '[Auth](/auth.md)', { headers: { 'content-type': 'text/plain' } }) : u.endsWith('/auth.md') ? new Response(o.method === 'HEAD' ? null : '<!doctype html><html>Not found</html>', { headers: { 'content-type': 'text/html' } }) : null) });
+  assert.equal(html.status, 'failed'); assert.ok(html.findings.every(f => /unexpected content type/.test(f.detail)));
+  const bounded = await publicAccess(root, [], { maxLinkedDocuments: 1, fetcher: fixture((u, o) => u.endsWith('/llms.txt') ? new Response(o.method === 'HEAD' ? null : '[A](/a.md) [B](/b.md)', { headers: { 'content-type': 'text/plain' } }) : /\/[ab]\.md$/.test(u) ? new Response(o.method === 'HEAD' ? null : '# Doc', { headers: { 'content-type': 'text/markdown' } }) : null) });
+  assert.equal(bounded.status, 'incomplete'); assert.ok(bounded.findings.some(f => /discovery document bound exhausted/.test(f.detail)));
+});
+test('an untyped Link target may be an HTML page; header targets outrank llms.txt documents at the bound', async () => {
+  const calls = []; const reader = fixture((u, o) => {
+    if (u === root + '/') return new Response(o.method === 'HEAD' ? null : '<!doctype html><html><title>Home</title></html>', { headers: { 'content-type': 'text/html', link: '</developers>; rel="service-doc"' } });
+    if (u.endsWith('/llms.txt')) return new Response(o.method === 'HEAD' ? null : '[A](/a.md) [B](/b.md)', { headers: { 'content-type': 'text/plain' } });
+    if (/\/[ab]\.md$/.test(u)) return new Response(o.method === 'HEAD' ? null : '# Doc', { headers: { 'content-type': 'text/markdown' } });
+    return null;
+  });
+  const r = await publicAccess(root, [], { maxLinkedDocuments: 1, fetcher: async (u, o) => { calls.push(u); return reader(u, o); } });
+  assert.ok(calls.includes(root + '/developers')); assert.ok(!calls.includes(root + '/a.md'));
+  assert.ok(r.checks.filter(c => c.url === root + '/developers').every(c => c.ok));
+  assert.equal(r.status, 'incomplete');
+});
