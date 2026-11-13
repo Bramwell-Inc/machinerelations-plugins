@@ -1,5 +1,5 @@
 // Separate production acceptance: never subtract these findings against a preview baseline.
-export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40, maxDataDocuments = 10 } = {}) {
+export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40, maxDataDocuments = 10, maxLinkedDocuments = 16 } = {}) {
   if (!root) return { status: 'not-tested', reason: 'No production origin supplied.', checks: [], findings: [] };
   const origin = new URL(root).origin;
   const deadline = AbortSignal.timeout(120000);
@@ -14,6 +14,37 @@ export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40,
   }
   function discoverDataLinks(body, base) {
     for (const match of body.matchAll(/(?:href=["']|\]\()([^"'\s)]+)["')]/g)) discoverData(match[1], base);
+  }
+  // Advertised machine documents that are not pages: the homepage's Link header and the root-level or
+  // /.well-known/ documents llms.txt links. A new route advertised here but denied at the edge is a finding.
+  const linkedDocuments = new Map();
+  const presentationRel = /^(?:preload|modulepreload|prefetch|preconnect|dns-prefetch|stylesheet|icon|apple-touch-icon|manifest|canonical)$/i;
+  // kind: 'html' for a declared text/html target, 'any' for an untyped Link target, otherwise 'doc' (never an HTML page).
+  // Header targets are probed first, then /.well-known/, then other llms.txt documents, so the bound drops the least specific.
+  function discoverDocument(value, base, kind = 'doc', rank = 2) {
+    try {
+      const url = new URL(value.replaceAll('&amp;', '&'), base);
+      if (url.origin !== origin || url.username || url.password || url.search) return;
+      url.hash = '';
+      if (/\.json$/i.test(url.pathname)) { dataDocuments.add(url.href); return; }
+      if (['/', '/robots.txt', '/llms.txt', '/sitemap.xml'].includes(url.pathname)) return;
+      if (/^\/\.well-known\//.test(url.pathname)) rank = Math.min(rank, 1);
+      if (!linkedDocuments.has(url.href) || linkedDocuments.get(url.href).rank > rank) linkedDocuments.set(url.href, { kind, rank });
+    } catch { /* Not a public same-origin document. */ }
+  }
+  function discoverLinkHeader(header, base) {
+    for (const match of (header || '').matchAll(/<([^>]+)>([^,<]*)/g)) {
+      const rels = (/\brel="?([^";]+)"?/i.exec(match[2])?.[1] || '').trim().split(/\s+/).filter(Boolean);
+      if (!rels.length || rels.every(rel => presentationRel.test(rel))) continue;
+      const type = (/\btype="?([^";]+)"?/i.exec(match[2])?.[1] || '').trim().toLowerCase();
+      discoverDocument(match[1], base, type === 'text/html' ? 'html' : type ? 'doc' : 'any', 0);
+    }
+  }
+  function discoverTextDocuments(body, base) {
+    for (const match of body.matchAll(/\]\(([^)\s]+)\)/g)) {
+      let path = ''; try { path = new URL(match[1], base).pathname; } catch { continue; }
+      if (/^\/\.well-known\//.test(path) || /^\/[^/]+\.(?:md|cff|xml|txt|ya?ml)$/i.test(path)) discoverDocument(match[1], base);
+    }
   }
   const checks = []; const findings = []; const published = new Set(); const representatives = new Map(); const maps = new Set(); const queue = [origin + '/sitemap.xml'];
   const clients = { named: 'MachineRelationsPageCheck/1 (+https://machinerelations.ai)', standardUa: 'Python-urllib/3.11' };
@@ -36,7 +67,7 @@ export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40,
       record.status = res.status; record.type = res.headers.get('content-type') || '';
       if (res.status !== 200 && !(kind === 'json' && method === 'GET' && res.status === 206)) throw Error(`HTTP ${res.status}`);
       if (kind === 'xml' && /gzip|octet-stream/i.test(record.type)) { record.incomplete = true; throw Error('compressed or binary sitemap not inspected'); }
-      if (!(kind === 'xml' ? /(?:application|text)\/xml/i : kind === 'text' ? /text\/plain/i : kind === 'json' ? /application\/(?:[a-z0-9.-]+\+)?json\b/i : /text\/html/i).test(record.type)) throw Error(`unexpected content type: ${record.type}`);
+      if (kind === 'any' ? false : kind === 'doc' ? /^\s*text\/html\b/i.test(record.type) : !(kind === 'xml' ? /(?:application|text)\/xml/i : kind === 'text' ? /text\/plain/i : kind === 'json' ? /application\/(?:[a-z0-9.-]+\+)?json\b/i : /text\/html/i).test(record.type)) throw Error(`unexpected content type: ${record.type}`);
       let body = '';
       if (method === 'GET') {
         const reader = res.body.getReader(); const decoder = new TextDecoder(); let size = 0;
@@ -52,9 +83,11 @@ export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40,
           body += decoder.decode();
         } finally { await reader.cancel(); }
         if (!body.trim() || (kind !== 'json' && /cf-chl-|<title>\s*(?:just a moment|attention required)|error code: 1010/i.test(body))) throw Error('empty body or challenge');
-        if (kind !== 'html' && kind !== 'json' && /<(?:!doctype\s+html|html)\b/i.test(body)) throw Error('HTML instead of discovery document');
+        if (kind !== 'html' && kind !== 'json' && kind !== 'any' && /<(?:!doctype\s+html|html)\b/i.test(body)) throw Error('HTML instead of discovery document');
         if (kind === 'json' && !/^[\s]*[\[{]/.test(body)) throw Error('JSON document has no object or array prefix');
         if (client === 'named' && (kind === 'html' || kind === 'text')) discoverDataLinks(body, at);
+        if (client === 'named' && kind === 'text' && new URL(at).pathname === '/llms.txt') discoverTextDocuments(body, at);
+        if (client === 'named' && kind === 'html' && new URL(at).pathname === '/') discoverLinkHeader(res.headers.get('link'), at);
         if (kind === 'xml' && !(/<sitemapindex\b[\s\S]*<\/sitemapindex>\s*$/i.test(body) || /<urlset\b[\s\S]*<\/urlset>\s*$/i.test(body))) throw Error('incomplete or unrecognized sitemap');
       }
       record.ok = true; checks.push(record); return body;
@@ -106,6 +139,13 @@ export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40,
     if (url.origin !== origin) { findings.push({ kind: 'page', detail: 'sample left production origin', ok: false }); continue; }
     sampledPages++; await probe(url.href, 'html');
   }
+  let sampledLinkedDocuments = 0;
+  for (const [url, { kind }] of [...linkedDocuments].sort((a, b) => a[1].rank - b[1].rank)) {
+    if (deadline.aborted || sampledLinkedDocuments >= maxLinkedDocuments) {
+      findings.push({ kind: 'doc', detail: 'advertised discovery document bound exhausted; coverage incomplete', incomplete: true, ok: false }); break;
+    }
+    sampledLinkedDocuments++; await probe(url, kind);
+  }
   let sampledDataDocuments = 0;
   for (const url of dataDocuments) {
     if (deadline.aborted || sampledDataDocuments >= maxDataDocuments) {
@@ -113,13 +153,13 @@ export async function publicAccess(root, pages, { fetcher = fetch, maxMaps = 40,
     }
     sampledDataDocuments++; await probe(url, 'json');
   }
-  return { status: findings.length ? findings.every(f => f.incomplete) ? 'incomplete' : 'failed' : 'passed', origin, omittedPreviewPaths, sampledPages, sampledDataDocuments, sitemapDocuments: maps.size, checks, findings,
-    scope: 'Credential-free Node GET/HEAD with named and Python-urllib user-agent headers; JSON GETs inspect at most 64 KiB of advertised same-origin documents, not complete JSON validity. Not actual Python transport, all pages/data, or a crawler/indexing claim.' };
+  return { status: findings.length ? findings.every(f => f.incomplete) ? 'incomplete' : 'failed' : 'passed', origin, omittedPreviewPaths, sampledPages, sampledDataDocuments, sampledLinkedDocuments, sitemapDocuments: maps.size, checks, findings,
+    scope: 'Credential-free Node GET/HEAD with named and Python-urllib user-agent headers; JSON GETs inspect at most 64 KiB of advertised same-origin documents, not complete JSON validity; other discovery documents are the homepage Link header targets and the root-level or /.well-known/ files llms.txt links. Not actual Python transport, all pages/data, or a crawler/indexing claim.' };
 }
 
 export function publicAccessSummary(result) {
   if (result.status === 'not-tested') return `**Production machine access: not tested.** ${result.reason}`;
-  return `**Production machine access: ${result.status}.** ${result.checks.filter(c => c.ok).length}/${result.checks.length} HTTP checks passed; ${result.findings.length} finding(s); ${result.sitemapDocuments} sitemap documents and ${result.sampledPages} sampled pages; ${result.sampledDataDocuments || 0} advertised JSON documents. ${result.omittedPreviewPaths.length} preview sample(s) not found in the inspected production sitemap coverage were not probed. This is separate from whether this PR introduces a defect. ${result.scope}`;
+  return `**Production machine access: ${result.status}.** ${result.checks.filter(c => c.ok).length}/${result.checks.length} HTTP checks passed; ${result.findings.length} finding(s); ${result.sitemapDocuments} sitemap documents and ${result.sampledPages} sampled pages; ${result.sampledDataDocuments || 0} advertised JSON documents; ${result.sampledLinkedDocuments || 0} other advertised discovery documents. ${result.omittedPreviewPaths.length} preview sample(s) not found in the inspected production sitemap coverage were not probed. This is separate from whether this PR introduces a defect. ${result.scope}`;
 }
 
 export function publicAccessDetails(result) {
