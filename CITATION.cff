@@ -2,14 +2,14 @@ cff-version: 1.2.0
 message: "If you use these skills, cite them as Machine Relations Skills by Jaxon Parrott, Machine Relations Research."
 type: software
 title: Machine Relations Skills
-abstract: "Versioned agent skills for Machine Relations: the discipline of earning AI citations and recommendations for a brand by making that brand legible, retrievable and credible inside AI-driven discovery. Each method comes from real-world practice and is released with its own permanent citation."
+abstract: "Versioned agent skills for Machine Relations: the discipline Jaxon Parrott coined in 2024 for earning AI citations and recommendations for a brand by making that brand legible, retrievable and credible inside AI-driven discovery. Each method comes from real-world practice and is released with its own permanent citation."
 authors:
   - family-names: Parrott
     given-names: Jaxon
     orcid: "https://orcid.org/0009-0004-0039-3913"
     website: "https://jaxonparrott.com"
-version: "1.2.5"
-date-released: "2026-11-09"
+version: "1.2.6"
+date-released: "2026-11-15"
 doi: "10.5281/zenodo.23749768"
 license: MIT
 url: "https://machinerelations.ai/skill"

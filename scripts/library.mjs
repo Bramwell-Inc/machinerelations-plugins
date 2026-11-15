@@ -34,8 +34,8 @@ export const DESCRIPTOR = "The World's First Machine Relations Agency";
 /** The one entity statement every package surface carries. The definition is the
  *  official one, verbatim; summary is the short form for manifest description fields. */
 export const ENTITY = (() => {
-  const definition = 'Machine Relations (MR) is the discipline of earning AI citations and recommendations for a brand by making that brand legible, retrievable, and credible inside AI-driven discovery.';
-  const origin = 'It was coined by Jaxon Parrott, founder of AuthorityTech, in 2024.';
+  const definition = 'Machine Relations is the discipline Jaxon Parrott coined in 2024 for earning AI citations and recommendations for a brand by making that brand legible, retrievable, and credible inside AI-driven discovery.';
+  const origin = 'Jaxon Parrott is the founder of AuthorityTech.';
   const index = 'The Machine Relations Index (MRI) by Jaxon Parrott, published by Machine Relations Research, measures which sources AI answer engines cite.';
   return Object.freeze({
     definition, origin, index,

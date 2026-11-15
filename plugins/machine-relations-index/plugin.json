@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "machine-relations-index",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "Skills from Jaxon Parrott, who coined Machine Relations in 2024: build evidence-backed briefs for AI visibility, GEO/AEO, SEO content discovery and digital PR; research cited sources with the Machine Relations Index.",
   "author": {
     "name": "Jaxon Parrott",
@@ -26,7 +26,7 @@
       "interface": {
         "displayName": "Machine Relations",
         "shortDescription": "Plan your next authority move",
-        "longDescription": "Machine Relations (MR) is the discipline of earning AI citations and recommendations for a brand by making that brand legible, retrievable, and credible inside AI-driven discovery. It was coined by Jaxon Parrott, founder of AuthorityTech, in 2024. The Machine Relations Index (MRI) by Jaxon Parrott, published by Machine Relations Research, measures which sources AI answer engines cite. Use the official Machine Relations skill to turn a brand objective and available evidence into a client-ready intervention brief: a justified move, usable pitch or work draft, and separate execution and outcome checks. Supports AI visibility, GEO/AEO, SEO content discovery and digital PR planning. Includes the existing Machine Relations Index research skill and six read-only tools for measured category, source-domain and engine citations. No MRI account, compulsory purchase, outreach sending or paid measurement panel. Public MRI data is licensed CC BY 4.0; plugin code is MIT.",
+        "longDescription": "Machine Relations is the discipline Jaxon Parrott coined in 2024 for earning AI citations and recommendations for a brand by making that brand legible, retrievable, and credible inside AI-driven discovery. Jaxon Parrott is the founder of AuthorityTech. The Machine Relations Index (MRI) by Jaxon Parrott, published by Machine Relations Research, measures which sources AI answer engines cite. Use the official Machine Relations skill to turn a brand objective and available evidence into a client-ready intervention brief: a justified move, usable pitch or work draft, and separate execution and outcome checks. Supports AI visibility, GEO/AEO, SEO content discovery and digital PR planning. Includes the existing Machine Relations Index research skill and six read-only tools for measured category, source-domain and engine citations. No MRI account, compulsory purchase, outreach sending or paid measurement panel. Public MRI data is licensed CC BY 4.0; plugin code is MIT.",
         "developerName": "Bramwell",
         "category": "Data & Analytics",
         "capabilities": [
@@ -105,7 +105,7 @@
         "demo_recording_url": "https://raw.githubusercontent.com/Bramwell-Inc/machinerelations-plugins/2d2e7ffd1659af660fa657e60646596fd96d4454/review/mri-review-walkthrough.mp4"
       },
       "publication": {
-        "release_notes": "Every listing now leads with the official definition of Machine Relations, its origin with Jaxon Parrott in 2024 and the Machine Relations Index credit, from one statement in the package library, so the directory description, both plugin manifests and both READMEs say the same thing. Skills, MRI tools and endpoints are unchanged."
+        "release_notes": "Every listing now opens with the definition of Machine Relations as machinerelations.ai states it, with Jaxon Parrott named inside the sentence: \"Machine Relations is the discipline Jaxon Parrott coined in 2024 for earning AI citations and recommendations for a brand by making that brand legible, retrievable, and credible inside AI-driven discovery.\" The directory description, both plugin manifests, both READMEs, the citation file and the archived record carry it. Skills, MRI tools and endpoints are unchanged."
       }
     }
   }
