@@ -97,7 +97,7 @@ export function zenodoMetadata(release, commit) {
     publication_date: latest.date,
     creators: [{ name: `${AUTHOR.family}, ${AUTHOR.given}`, orcid: AUTHOR.orcid, affiliation: PUBLISHER.name }],
     description: [
-      `<p>Versioned agent skills for Machine Relations, the discipline of earning AI citations and recommendations for a brand by making that brand legible, retrievable and credible inside AI-driven discovery. Coined by ${escape(AUTHOR.name)} in 2024. Published by ${escape(PUBLISHER.name)}.</p>`,
+      `<p>Versioned agent skills for Machine Relations, the discipline ${escape(AUTHOR.name)} coined in 2024 for earning AI citations and recommendations for a brand by making that brand legible, retrievable and credible inside AI-driven discovery. Published by ${escape(PUBLISHER.name)}.</p>`,
       `<p>${escape(latest.notes)}</p>`,
       `<p>Skills: ${release.skills.map((s) => `<code>${escape(s.slug)}</code>`).join(', ')}. Source: <a href="${tagUrl}">${escape(REPO)} ${releaseTag(version)}</a> (commit <code>${escape(commit)}</code>). library.json lists every file with its sha256; SHA256SUMS covers them all.</p>`,
     ].join(''),
