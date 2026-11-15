@@ -21,7 +21,10 @@ The plugin retains the package identifier `machine-relations-index` and remote M
 
 When `--base` supplies a production origin, Page check also makes credential-free
 GET and HEAD requests to robots.txt, llms.txt, the bounded sitemap-index closure,
-and up to 40 canonical HTML pages selected from production's own sitemap. Preview-only pages are not called production failures. It compares its named user-agent with
+and up to 40 canonical HTML pages selected from production's own sitemap. It also
+checks bounded same-origin JSON documents discovered from those reads, and machine
+documents advertised in the homepage's Link header or linked from llms.txt.
+Preview-only pages are not called production failures. It compares its named user-agent with
 a Python-urllib user-agent header using Node fetch; this is not an actual Python
 transport test or a census of all content. A missing production origin is reported
 as not tested. Challenges, child-map failures, unsupported HEAD and exhausted
@@ -31,8 +34,8 @@ The report and PR comment carry **Production machine access: passed / failed /
 incomplete / not tested** separately. A clean PR comparison does not mean production access
 passed. Existing production failures do not newly block an unrelated PR; only
 introduced defects keep that authority. No new schedule, credentials or provider
-API calls are introduced. Real Python-client acceptance and advertised non-sitemap
-catalogs remain separate checks at the production edge owner.
+API calls are introduced. This bounded discovery is not a complete catalog crawl;
+real Python-client transport acceptance remains separate at the production edge owner.
 
 ## Install
 
@@ -132,14 +135,14 @@ the ZIP from a newer checkout.
    version DOIs live on Zenodo and in `library.doi.version`.
 
 The existing fresh-install check also reads both public discovery aliases on both
-sites with a named agent and Python's standard-library user agent. Run
-`node scripts/verify-public-discovery.mjs` after changing their edge rules. This
-checks the currently published catalog, not candidate-version propagation or
-archive bytes. A working browser or MCP connection alone does not prove skill
-discovery works. Where Browser Integrity Check rejects these public reads, use a
-host/path/method-scoped configuration rule for GET/HEAD on
-`/.well-known/agent-skills` and `/.well-known/agent-skills/index.json`; do not
-turn off zone-wide protection or skip unrelated security products.
+sites using Node fetch with a named agent and a Python-urllib user-agent header.
+Run `node scripts/verify-public-discovery.mjs` after changing their edge rules.
+This checks the currently published catalog, not actual Python transport,
+candidate-version propagation or archive bytes. A working browser or MCP
+connection alone does not prove skill discovery works. Diagnose a user-agent-dependent
+denial at the production edge owner and its current public-read policy; do not
+recreate per-path exceptions from an old installation recipe. Preserve unrelated
+security products and origin authentication.
 
 If authorized publishing access is absent, stop at the verified artifact handoff
 and name the missing access. Do not extract another browser's cookies, bypass an
