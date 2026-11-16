@@ -96,6 +96,8 @@ export function zenodoMetadata(release, commit) {
     version,
     publication_date: latest.date,
     creators: [{ name: `${AUTHOR.family}, ${AUTHOR.given}`, orcid: AUTHOR.orcid, affiliation: PUBLISHER.name }],
+    // Zenodo's legacy API reads the DOI publisher from imprint_publisher and defaults it to "Zenodo".
+    imprint_publisher: PUBLISHER.name,
     description: [
       `<p>Versioned agent skills for Machine Relations, the discipline ${escape(AUTHOR.name)} coined in 2024 for earning AI citations and recommendations for a brand by making that brand legible, retrievable and credible inside AI-driven discovery. Published by ${escape(PUBLISHER.name)}.</p>`,
       `<p>${escape(latest.notes)}</p>`,

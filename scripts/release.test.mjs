@@ -11,7 +11,8 @@ import { chmodSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, w
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { parseChangelog, skillFrontmatter, readCitation } from './library.mjs';
-import { planZenodo, CONCEPT_MARKER } from './publish-release.mjs';
+import { planZenodo, zenodoMetadata, CONCEPT_MARKER } from './publish-release.mjs';
+import { PUBLISHER } from './library.mjs';
 
 test('changelog entries parse newest first with flattened notes', () => {
   const entries = parseChangelog('# C\n\n## [1.2.0] - 2026-11-01\n\nLine one\nline two.\n\n## [1.1.0] - 2026-10-01\n\nOld.\n');
@@ -364,4 +365,14 @@ test('validator: title and summary go together and the summary is not trigger te
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+// Zenodo's legacy API reads the DOI publisher from imprint_publisher and defaults it to "Zenodo",
+// which then replaces Machine Relations Research in every DOI-formatted citation of the library.
+test('Zenodo metadata names the publisher, not Zenodo', () => {
+  const release = { version: '9.9.9', latest: { date: '2026-11-16', notes: 'n' }, skills: [{ slug: 's' }] };
+  const metadata = zenodoMetadata(release, 'abc1234');
+  assert.equal(PUBLISHER.name, 'Machine Relations Research');
+  assert.equal(metadata.imprint_publisher, PUBLISHER.name);
+  assert.equal(metadata.creators[0].affiliation, PUBLISHER.name);
 });
