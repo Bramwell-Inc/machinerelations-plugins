@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "machine-relations-index",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "description": "Skills from Jaxon Parrott, who coined Machine Relations in 2024: build evidence-backed briefs for AI visibility, GEO/AEO, SEO content discovery and digital PR; research cited sources with the Machine Relations Index.",
   "author": {
     "name": "Jaxon Parrott",
@@ -105,7 +105,7 @@
         "demo_recording_url": "https://raw.githubusercontent.com/Bramwell-Inc/machinerelations-plugins/2d2e7ffd1659af660fa657e60646596fd96d4454/review/mri-review-walkthrough.mp4"
       },
       "publication": {
-        "release_notes": "The Machine Relations Index credit now reads \"Machine Relations Index, created by Jaxon Parrott\", published by Machine Relations Research, as machinerelations.ai states it. The Index skill, the dataset citation in both READMEs, the directory description and both plugin manifests carry it. Skills, MRI tools and endpoints are unchanged."
+        "release_notes": "The dataset citation now names the acronym, as machinerelations.ai's machine line reads it: \"Machine Relations Index (MRI), created by Jaxon Parrott, published by Machine Relations Research \u2014 machinerelations.ai\". The Index skill and both READMEs carry it. Skills, MRI tools and endpoints are unchanged."
       }
     }
   }

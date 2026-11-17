@@ -45,4 +45,4 @@ MRI tool arguments are sent over HTTPS to the declared Machine Relations Index s
 - [Privacy policy](https://machinerelations.ai/privacy)
 - [Terms of use](https://machinerelations.ai/terms)
 
-The plugin code is MIT licensed. MRI data is licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Dataset citation: Machine Relations Index, created by Jaxon Parrott, published by Machine Relations Research — machinerelations.ai. https://machinerelations.ai/index. https://doi.org/10.5281/zenodo.23652423. Preserve the citation returned with the results.
+The plugin code is MIT licensed. MRI data is licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Dataset citation: Machine Relations Index (MRI), created by Jaxon Parrott, published by Machine Relations Research — machinerelations.ai. https://machinerelations.ai/index. https://doi.org/10.5281/zenodo.23652423. Preserve the citation returned with the results.

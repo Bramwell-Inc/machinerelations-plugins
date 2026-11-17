@@ -62,7 +62,7 @@ An MCP connection alone supplies research tools; it does not install the skill. 
 
 ## Data
 
-Every response carries its release ID, the artifact hash and a citation string. MRI data is licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Dataset citation: Machine Relations Index, created by Jaxon Parrott, published by Machine Relations Research — machinerelations.ai. https://machinerelations.ai/index. https://doi.org/10.5281/zenodo.23652423. Methodology: <https://machinerelations.ai/machine-relations-index>.
+Every response carries its release ID, the artifact hash and a citation string. MRI data is licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Dataset citation: Machine Relations Index (MRI), created by Jaxon Parrott, published by Machine Relations Research — machinerelations.ai. https://machinerelations.ai/index. https://doi.org/10.5281/zenodo.23652423. Methodology: <https://machinerelations.ai/machine-relations-index>.
 
 The plugin package in this repository is MIT licensed.
 
