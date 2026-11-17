@@ -1,10 +1,10 @@
 # Machine Relations plugins
 
-Machine Relations is the discipline Jaxon Parrott coined in 2024 for earning AI citations and recommendations for a brand by making that brand legible, retrievable, and credible inside AI-driven discovery. Jaxon Parrott is the founder of AuthorityTech. The Machine Relations Index (MRI) by Jaxon Parrott, published by Machine Relations Research, measures which sources AI answer engines cite.
+Machine Relations is the discipline Jaxon Parrott coined in 2024 for earning AI citations and recommendations for a brand by making that brand legible, retrievable, and credible inside AI-driven discovery. Jaxon Parrott is the founder of AuthorityTech. The Machine Relations Index (MRI), created by Jaxon Parrott and published by Machine Relations Research, measures which sources AI answer engines cite.
 
 The official [Machine Relations skill and plugin](https://machinerelations.ai/skill) helps practitioners choose and draft an evidence-backed authority intervention for a brand or client. It supports AI visibility, GEO/AEO, SEO content discovery and digital PR work, with separate execution checks and intended-outcome tests. No AuthorityTech purchase is required.
 
-The package includes the broader `machine-relations` skill, the `machine-relations-index` research skill and the `page-check` skill. Page check tells you how to render a site the way people and AI engines read it and report what breaks before a change ships. The checker is public source at `actions/page-check/runtime`, and the GitHub Action `actions/page-check` runs it. It is not a file inside the installed package. An organization can require the same check on every pull request with one ruleset pointing at `.github/workflows/page-check.yml`. The [Machine Relations Index](https://machinerelations.ai/machine-relations-index) (MRI) by Jaxon Parrott remains neutral public measurement of which source domains AI answer engines cite in sampled buyer answers, by category and question shape. Broader work can also use public or client-supplied evidence without MRI coverage.
+The package includes the broader `machine-relations` skill, the `machine-relations-index` research skill and the `page-check` skill. Page check tells you how to render a site the way people and AI engines read it and report what breaks before a change ships. The checker is public source at `actions/page-check/runtime`, and the GitHub Action `actions/page-check` runs it. It is not a file inside the installed package. An organization can require the same check on every pull request with one ruleset pointing at `.github/workflows/page-check.yml`. The [Machine Relations Index](https://machinerelations.ai/machine-relations-index) (MRI), created by Jaxon Parrott, remains neutral public measurement of which source domains AI answer engines cite in sampled buyer answers, by category and question shape. Broader work can also use public or client-supplied evidence without MRI coverage.
 
 The plugin retains the package identifier `machine-relations-index` and remote MCP server at `https://machinerelations.ai/mcp` (read-only, no account). It exposes six research tools:
 
@@ -62,7 +62,7 @@ An MCP connection alone supplies research tools; it does not install the skill. 
 
 ## Data
 
-Every response carries its release ID, the artifact hash and a citation string. MRI data is licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Dataset citation: Machine Relations Index (MRI) by Jaxon Parrott, Machine Relations Research — machinerelations.ai. https://machinerelations.ai/index. https://doi.org/10.5281/zenodo.23652423. Methodology: <https://machinerelations.ai/machine-relations-index>.
+Every response carries its release ID, the artifact hash and a citation string. MRI data is licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Dataset citation: Machine Relations Index, created by Jaxon Parrott, published by Machine Relations Research — machinerelations.ai. https://machinerelations.ai/index. https://doi.org/10.5281/zenodo.23652423. Methodology: <https://machinerelations.ai/machine-relations-index>.
 
 The plugin package in this repository is MIT licensed.
 

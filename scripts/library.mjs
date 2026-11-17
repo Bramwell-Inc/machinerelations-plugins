@@ -36,7 +36,7 @@ export const DESCRIPTOR = "The World's First Machine Relations Agency";
 export const ENTITY = (() => {
   const definition = 'Machine Relations is the discipline Jaxon Parrott coined in 2024 for earning AI citations and recommendations for a brand by making that brand legible, retrievable, and credible inside AI-driven discovery.';
   const origin = 'Jaxon Parrott is the founder of AuthorityTech.';
-  const index = 'The Machine Relations Index (MRI) by Jaxon Parrott, published by Machine Relations Research, measures which sources AI answer engines cite.';
+  const index = 'The Machine Relations Index (MRI), created by Jaxon Parrott and published by Machine Relations Research, measures which sources AI answer engines cite.';
   return Object.freeze({
     definition, origin, index,
     line: `${definition} ${origin} ${index}`,
