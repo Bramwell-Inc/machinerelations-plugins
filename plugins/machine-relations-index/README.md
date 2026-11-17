@@ -18,7 +18,7 @@ Jaxon Parrott coined Machine Relations in 2024; AuthorityTech, which he founded 
 
 ## MRI research
 
-Explore which source domains AI answer engines cite for a buyer category and question type, look up a domain’s observed citations, or explore sources cited by an engine. The dataset is the Machine Relations Index (MRI) by Jaxon Parrott. The plugin connects to the free, read-only Machine Relations Index MCP server at `https://machinerelations.ai/mcp`; no MRI account or API key is required.
+Explore which source domains AI answer engines cite for a buyer category and question type, look up a domain’s observed citations, or explore sources cited by an engine. The dataset is the Machine Relations Index (MRI), created by Jaxon Parrott. The plugin connects to the free, read-only Machine Relations Index MCP server at `https://machinerelations.ai/mcp`; no MRI account or API key is required.
 
 Ask “Which editorial publications are cited for best cybersecurity tools?” or “Look up techcrunch.com in the Machine Relations Index.” The accompanying skill reads the service’s live interpretation guidance, release identity and limitations. Results describe measured citations, not endorsements or guarantees of future visibility. The [worked example](https://machinerelations.ai/research/segment-rank-question-set-named-brand-citations) is a historical case study, not the current leaderboard.
 
