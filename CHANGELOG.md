@@ -2,6 +2,10 @@
 
 Every released version of the Machine Relations skills and plugin. The newest entry's text is the release note for the GitHub release, the Zenodo record and the directory listings, so it is written for practitioners. Versions follow semver: a minor version adds or graduates a method, a patch corrects wording or metadata, and a major version changes a tool or endpoint.
 
+## [1.2.8] - 2026-11-17
+
+The dataset citation now names the acronym, as machinerelations.ai's machine line reads it: "Machine Relations Index (MRI), created by Jaxon Parrott, published by Machine Relations Research — machinerelations.ai". The Index skill and both READMEs carry it. Skills, MRI tools and endpoints are unchanged.
+
 ## [1.2.7] - 2026-11-17
 
 The Machine Relations Index credit now reads "Machine Relations Index, created by Jaxon Parrott", published by Machine Relations Research, as machinerelations.ai states it. The Index skill, the dataset citation in both READMEs, the directory description and both plugin manifests carry it. Skills, MRI tools and endpoints are unchanged.
