@@ -106,9 +106,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
-          VERCEL_DEPLOY_HOOKS: |
-            ${{ secrets.VERCEL_DEPLOY_HOOK_JAXONPARROTT }}
-            ${{ secrets.VERCEL_DEPLOY_HOOK_MACHINERELATIONS }}
+          VERCEL_DEPLOY_HOOKS: ${{ secrets.VERCEL_DEPLOY_HOOK_JAXONPARROTT }}
 
   # Read an existing Zenodo draft with the release credential. Version and
   # concept come from this checkout; the reserved DOI must be 10.5281/zenodo/<draft id>.
@@ -162,6 +160,25 @@ jobs:
         env:
           ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
           GH_TOKEN: ${{ github.token }}
-          VERCEL_DEPLOY_HOOKS: |
-            ${{ secrets.VERCEL_DEPLOY_HOOK_JAXONPARROTT }}
-            ${{ secrets.VERCEL_DEPLOY_HOOK_MACHINERELATIONS }}
+          VERCEL_DEPLOY_HOOKS: ${{ secrets.VERCEL_DEPLOY_HOOK_JAXONPARROTT }}
+
+  sync-mr-site:
+    needs: [release, resume-reviewed]
+    if: always() && github.ref == 'refs/heads/main' && (needs.release.result == 'success' || needs.resume-reviewed.result == 'success')
+    runs-on: ubuntu-latest
+    environment: machine-relations-site
+    concurrency:
+      group: sync-mr-site
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reconcile the published library with the site
+        run: node scripts/sync-mr-site.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MR_SITE_TOKEN: ${{ secrets.MR_SITE_TOKEN }}
