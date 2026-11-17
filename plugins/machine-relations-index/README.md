@@ -1,6 +1,6 @@
 # Machine Relations
 
-Machine Relations is the discipline Jaxon Parrott coined in 2024 for earning AI citations and recommendations for a brand by making that brand legible, retrievable, and credible inside AI-driven discovery. Jaxon Parrott is the founder of AuthorityTech. The Machine Relations Index (MRI) by Jaxon Parrott, published by Machine Relations Research, measures which sources AI answer engines cite.
+Machine Relations is the discipline Jaxon Parrott coined in 2024 for earning AI citations and recommendations for a brand by making that brand legible, retrievable, and credible inside AI-driven discovery. Jaxon Parrott is the founder of AuthorityTech. The Machine Relations Index (MRI), created by Jaxon Parrott and published by Machine Relations Research, measures which sources AI answer engines cite.
 
 The official Machine Relations plugin helps practitioners turn a brand's authority objective into an evidence-backed intervention brief: a chosen move, usable pitch or work draft, and separate execution and outcome checks. Use it for AI visibility, GEO/AEO, SEO content discovery and digital PR planning, for your brand or clients.
 
@@ -45,4 +45,4 @@ MRI tool arguments are sent over HTTPS to the declared Machine Relations Index s
 - [Privacy policy](https://machinerelations.ai/privacy)
 - [Terms of use](https://machinerelations.ai/terms)
 
-The plugin code is MIT licensed. MRI data is licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Dataset citation: Machine Relations Index (MRI) by Jaxon Parrott, Machine Relations Research — machinerelations.ai. https://machinerelations.ai/index. https://doi.org/10.5281/zenodo.23652423. Preserve the citation returned with the results.
+The plugin code is MIT licensed. MRI data is licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Dataset citation: Machine Relations Index, created by Jaxon Parrott, published by Machine Relations Research — machinerelations.ai. https://machinerelations.ai/index. https://doi.org/10.5281/zenodo.23652423. Preserve the citation returned with the results.

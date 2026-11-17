@@ -1,6 +1,6 @@
 # Machine Relations plugins
 
-Machine Relations is the discipline Jaxon Parrott coined in 2024 for earning AI citations and recommendations for a brand by making that brand legible, retrievable, and credible inside AI-driven discovery. Jaxon Parrott is the founder of AuthorityTech. The Machine Relations Index (MRI) by Jaxon Parrott, published by Machine Relations Research, measures which sources AI answer engines cite.
+Machine Relations is the discipline Jaxon Parrott coined in 2024 for earning AI citations and recommendations for a brand by making that brand legible, retrievable, and credible inside AI-driven discovery. Jaxon Parrott is the founder of AuthorityTech. The Machine Relations Index (MRI), created by Jaxon Parrott and published by Machine Relations Research, measures which sources AI answer engines cite.
 
 The official [Machine Relations skill and plugin](https://machinerelations.ai/skill) helps practitioners choose and draft an evidence-backed authority intervention for a brand or client. It supports AI visibility, GEO/AEO, SEO content discovery and digital PR work, with separate execution checks and intended-outcome tests. No AuthorityTech purchase is required.
 
@@ -62,7 +62,7 @@ An MCP connection alone supplies research tools; it does not install the skill. 
 
 ## Data
 
-Every response carries its release ID, the artifact hash and a citation string. MRI data is licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Dataset citation: Machine Relations Index (MRI) by Jaxon Parrott, Machine Relations Research — machinerelations.ai. https://machinerelations.ai/index. https://doi.org/10.5281/zenodo.23652423. Methodology: <https://machinerelations.ai/machine-relations-index>.
+Every response carries its release ID, the artifact hash and a citation string. MRI data is licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Dataset citation: Machine Relations Index, created by Jaxon Parrott, published by Machine Relations Research — machinerelations.ai. https://machinerelations.ai/index. https://doi.org/10.5281/zenodo.23652423. Methodology: <https://machinerelations.ai/machine-relations-index>.
 
 The plugin package in this repository is MIT licensed.
 
