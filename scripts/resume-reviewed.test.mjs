@@ -159,7 +159,7 @@ test('an empty original artifact is finalized on upload and a metadata response 
   });
   const github = githubFor(finalized, { missing: true });
   const result = await resumeReviewed({
-    dist, release: release(), token: TOKEN, fetch: zen.fetch, gh: github.gh, readAsset: github.readAsset, hooks: async () => true,
+    dist, release: release(), token: TOKEN, fetch: zen.fetch, gh: github.gh, readAsset: github.readAsset,
   });
   assert.equal(result.ok, true);
   assert.equal(result.mutation, 'published');
@@ -240,7 +240,7 @@ test('a published record is adopted only when the files, release bytes and tag c
   const zen = client(async () => ({ body: published }));
   const github = githubFor(finalized);
   const result = await resumeReviewed({
-    dist, release: release(), token: TOKEN, fetch: zen.fetch, gh: github.gh, readAsset: github.readAsset, hooks: async () => true,
+    dist, release: release(), token: TOKEN, fetch: zen.fetch, gh: github.gh, readAsset: github.readAsset,
   });
   assert.equal(result.ok, true);
   assert.equal(result.action, 'github-only');
@@ -408,7 +408,6 @@ test('a published Zenodo record with no tag gets a GitHub release of the finaliz
   const result = await resumeReviewed({
     dist, release: release(), token: TOKEN, fetch: zen.fetch, gh,
     readAsset: async (name) => readFileSync(join(finalized, name)),
-    hooks: async () => true,
   });
   assert.equal(result.ok, true);
   assert.equal(result.action, 'github-only');

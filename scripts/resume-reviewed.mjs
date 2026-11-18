@@ -11,7 +11,7 @@ import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { sha256, writeSums } from './build-release.mjs';
 import { COMMIT_FILE, CONCEPT_DOI, LIBRARY_FILE, LIBRARY_TITLE, REPO, SUMS_FILE, readRelease } from './library.mjs';
-import { releaseNotes, waitForLatest, zenodoMetadata } from './publish-release.mjs';
+import { releaseNotes, zenodoMetadata } from './publish-release.mjs';
 import { assessDraft } from './zenodo-draft.mjs';
 
 export const REVIEWED_COMMIT = '9a3357ab787e9f54559474c2f943e775be1e5675';
@@ -330,20 +330,8 @@ async function ensureGithub({ dist, gh, readAsset }) {
   return { ...(await matchGithub({ tag, required, gh, readAsset })), created: true };
 }
 
-async function notifySites(version, hooks) {
-  if (hooks) return hooks(version);
-  const urls = (process.env.VERCEL_DEPLOY_HOOKS ?? '').split('\n').map((item) => item.trim()).filter(Boolean);
-  if (!urls.length) throw new Error('No deploy hooks configured; the sites will not rebuild from this release');
-  await waitForLatest(version);
-  for (const url of urls) {
-    const response = await fetch(url, { method: 'POST', signal: AbortSignal.timeout(60_000) });
-    if (!response.ok) throw new Error(`deploy hook failed (${response.status})`);
-  }
-  return true;
-}
-
 export async function resumeReviewed({
-  dist, release, token, api = 'https://zenodo.org/api', fetch: doFetch = fetch, gh, hooks, readAsset,
+  dist, release, token, api = 'https://zenodo.org/api', fetch: doFetch = fetch, gh, readAsset,
 } = {}) {
   if (!release || release.version !== REVIEWED_VERSION) {
     return { ok: false, stopped: 'wrong-package-version', version: release?.version ?? null, mutation: 'not-attempted' };
@@ -401,11 +389,6 @@ export async function resumeReviewed({
         created,
         mutation: created || decision.action !== 'github-only' ? 'unknown' : 'not-attempted',
       };
-    }
-    try {
-      await notifySites(REVIEWED_VERSION, hooks);
-    } catch (error) {
-      return { ok: false, stopped: 'hooks', message: error.message, mutation: 'unknown' };
     }
     return { ok: true, action: decision.action, commit: REVIEWED_COMMIT, version: REVIEWED_VERSION, doi: REVIEWED_DOI, mutation: 'published' };
   } finally {

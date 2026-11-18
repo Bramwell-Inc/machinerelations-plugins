@@ -1,6 +1,6 @@
 // node --test scripts/release.test.mjs
-// Runs the real publish path against a fake Zenodo, a fake `gh` and a fake
-// deploy hook, because a published Zenodo version can never be deleted.
+// Runs the real publish path against a fake Zenodo and a fake `gh`, because
+// a published Zenodo version can never be deleted.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createServer } from 'node:http';
@@ -147,24 +147,6 @@ process.exit(2);
   return { log, releases };
 }
 
-/** Deploy hooks plus GitHub's releases/latest library.json, which can lag a fresh release. */
-function hookServer() {
-  const calls = [];
-  const state = { latest: null, staleReads: 0, reads: 0 };
-  const server = createServer((req, res) => {
-    if (req.url.startsWith('/latest')) {
-      state.reads++;
-      const stale = state.staleReads > 0 && state.staleReads--;
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ version: stale ? '0.0.0' : state.latest?.() }));
-    }
-    calls.push(req.url);
-    res.writeHead(201, { 'Content-Type': 'application/json' });
-    res.end('{"job":{"id":"j1"}}');
-  });
-  return { server, calls, state };
-}
-
 const listen = (server) => new Promise((ok) => server.listen(0, '127.0.0.1', ok));
 
 // Any date after every real release: a test bump must not depend on when the last release happened.
@@ -202,11 +184,9 @@ function treeCopy(dir) {
   return { tree, bump };
 }
 
-test('publish: create, rerun, adopt, draft recovery, hook retry, tamper refusal, next version', async () => {
+test('publish: create, rerun, adopt, draft recovery, tamper refusal, next version', async () => {
   const zen = fakeZenodo();
-  const hooks = hookServer();
   await listen(zen.server);
-  await listen(hooks.server);
   const dir = mkdtempSync(join(tmpdir(), 'mr-release-'));
   const gh = fakeGh(dir);
   const { tree, bump } = treeCopy(dir);
@@ -218,13 +198,10 @@ test('publish: create, rerun, adopt, draft recovery, hook retry, tamper refusal,
       ...process.env,
       NODE_USE_ENV_PROXY: '', HTTP_PROXY: '', HTTPS_PROXY: '', http_proxy: '', https_proxy: '',
       GITHUB_RUN_ATTEMPT: '1',
-      LATEST_LIBRARY_URL: `http://127.0.0.1:${hooks.server.address().port}/latest`,
-      LATEST_WAIT_MS: '10',
       PATH: `${dir}:${process.env.PATH}`,
       ZENODO_API: `http://127.0.0.1:${zen.server.address().port}/api`,
       ZENODO_TOKEN: 'test-zenodo-token',
       GH_TOKEN: 'test-gh-token',
-      VERCEL_DEPLOY_HOOKS: `http://127.0.0.1:${hooks.server.address().port}/hook-a\nhttp://127.0.0.1:${hooks.server.address().port}/hook-b\n`,
       ...extraEnv,
     },
   })).stdout;
@@ -235,7 +212,6 @@ test('publish: create, rerun, adopt, draft recovery, hook retry, tamper refusal,
     execFileSync(process.execPath, [join(tree, 'scripts/build-release.mjs'), '--dist', dist], { cwd: tree });
   };
   const releaseFile = (tag) => join(gh.releases, `${tag}.json`);
-  hooks.state.latest = () => JSON.parse(readFileSync(join(dist, 'library.json'), 'utf8')).version;
   try {
     execFileSync(process.execPath, ['scripts/validate-package.mjs'], { cwd: tree });
     pack();
@@ -261,26 +237,10 @@ test('publish: create, rerun, adopt, draft recovery, hook retry, tamper refusal,
     for (const name of stored.keys()) assert.ok(stored.get(name).equals(readFileSync(join(dist, name))), `${name} identical on Zenodo and GitHub`);
     const create = readFileSync(gh.log, 'utf8').trim().split('\n').map((l) => JSON.parse(l)).find((c) => c[1] === 'create');
     assert.ok(create.includes('--latest') && create.includes(library.source.commit));
-    assert.deepEqual(hooks.calls, ['/hook-a', '/hook-b']);
-    const firstReads = hooks.state.reads;
-    assert.ok(firstReads >= 1, 'checked releases/latest before rebuilding the sites');
-
-    // Rerun after success: nothing deposited, no hooks on a first attempt...
-    assert.match(await run(), /already released/);
+    assert.match(await run({ GITHUB_RUN_ATTEMPT: '2' }), /already released/);
     assert.equal(zen.state.published.length, 1);
-    assert.equal(hooks.calls.length, 2);
-    // ...but a retried run rebuilds the sites, after releases/latest serves this version.
-    hooks.state.staleReads = 2;
-    const retried = await run({ GITHUB_RUN_ATTEMPT: '2' });
-    assert.equal(hooks.calls.length, 4);
-    assert.equal(hooks.state.staleReads, 0, 'waited through the stale reads');
-    assert.match(retried, /latest library.json serves/);
-
-    // A latest that never catches up fails the run instead of rebuilding the sites with the old release.
-    hooks.state.staleReads = 1000;
-    await assert.rejects(run({ GITHUB_RUN_ATTEMPT: '2' }), /still does not serve/);
-    assert.equal(hooks.calls.length, 4);
-    hooks.state.staleReads = 0;
+    const writes = readFileSync(gh.log, 'utf8').trim().split('\n').map((line) => JSON.parse(line));
+    assert.equal(writes.filter((args) => args[1] === 'create').length, 1);
 
     // GitHub release lost after Zenodo published: adopt Zenodo's exact bytes.
     rmSync(releaseFile(library.source.tag));
@@ -298,11 +258,6 @@ test('publish: create, rerun, adopt, draft recovery, hook retry, tamper refusal,
     const recovered = JSON.parse(readFileSync(releaseFile(library.source.tag), 'utf8'));
     assert.equal(recovered.isDraft, false);
     assert.ok(recovered.assets.some((a) => a.name === 'library.json'));
-
-    // Missing hooks fail loudly.
-    rmSync(releaseFile(library.source.tag));
-    pack();
-    await assert.rejects(run({ VERCEL_DEPLOY_HOOKS: '' }), /No deploy hooks/);
 
     // Next version: a tampered artifact is refused before Zenodo publishes anything.
     const patchAfter = (version) => version.replace(/\d+$/, (patch) => String(Number(patch) + 1));
@@ -336,7 +291,6 @@ test('publish: create, rerun, adopt, draft recovery, hook retry, tamper refusal,
     assert.equal(JSON.parse(readFileSync(join(dist, 'library.json'), 'utf8')).doi.concept, library.doi.concept);
   } finally {
     zen.server.close();
-    hooks.server.close();
     rmSync(dir, { recursive: true, force: true });
   }
 });
