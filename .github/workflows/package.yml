@@ -106,7 +106,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
-          VERCEL_DEPLOY_HOOKS: ${{ secrets.VERCEL_DEPLOY_HOOK_JAXONPARROTT }}
 
   # Read an existing Zenodo draft with the release credential. Version and
   # concept come from this checkout; the reserved DOI must be 10.5281/zenodo/<draft id>.
@@ -160,7 +159,6 @@ jobs:
         env:
           ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
           GH_TOKEN: ${{ github.token }}
-          VERCEL_DEPLOY_HOOKS: ${{ secrets.VERCEL_DEPLOY_HOOK_JAXONPARROTT }}
 
   sync-mr-site:
     needs: [release, resume-reviewed]
