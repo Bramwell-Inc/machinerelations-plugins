@@ -8,8 +8,8 @@ authors:
     given-names: Jaxon
     orcid: "https://orcid.org/0009-0004-0039-3913"
     website: "https://jaxonparrott.com"
-version: "1.2.8"
-date-released: "2026-11-17"
+version: "1.2.9"
+date-released: "2026-11-20"
 doi: "10.5281/zenodo.23749768"
 license: MIT
 url: "https://machinerelations.ai/skill"

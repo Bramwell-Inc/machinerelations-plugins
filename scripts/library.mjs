@@ -44,6 +44,48 @@ export const ENTITY = (() => {
   });
 })();
 
+/** How `mri_get_engine` ranks. One text, asserted into every surface that describes the tool.
+ *  A category is that engine's own citations in the category, not a filter on the whole-engine ranking.
+ *  The live contract is OpenAPI getEngine and getEngineCategory. */
+export const ENGINE_RANKING = Object.freeze({
+  description: "With a category, rank the engine's citations within that category and read rateScope and the denominator; without a category, rank across the engine's whole window. Older releases fall back as the response states.",
+  report: 'Report rateScope and the denominator with the figure.',
+});
+
+/** Category-qualified engine calls described as a filter on the whole-engine ranking. */
+export const ENGINE_FILTER_CLAIM = /optionally limited to sources with a published segment|limited to sources with a published segment in a category|filter on the whole-engine ranking|whole-engine ranking[^.\n]{0,80}\b(?:filter|limited)\b/i;
+
+export function openApiOperationDescription(document, operationId) {
+  for (const pathItem of Object.values(document?.paths ?? {})) {
+    if (!pathItem || typeof pathItem !== 'object') continue;
+    for (const operation of Object.values(pathItem)) {
+      if (operation && operation.operationId === operationId && typeof operation.description === 'string') return operation.description;
+    }
+  }
+  throw new Error(`OpenAPI has no operation ${operationId}`);
+}
+
+/** Claims getEngine and getEngineCategory must still make for ENGINE_RANKING to be the right reading. */
+export function engineContractClaims(getEngine, getEngineCategory) {
+  return {
+    wholeWindow: /citation rate across the whole window/i.test(getEngine),
+    notACategoryRate: /not a rate inside one category/i.test(getEngine),
+    ownRuns: /that engine's own observed runs in the category/i.test(getEngineCategory),
+    withinCategory: getEngineCategory.includes('within_category'),
+    olderFallback: getEngineCategory.includes('whole_window_among_published_segments'),
+    readDenominator: /Read the returned scope and denominator/i.test(getEngineCategory),
+  };
+}
+
+export function engineDescriptionAgrees(description = ENGINE_RANKING.description) {
+  return description.includes('within that category')
+    && description.includes('rateScope')
+    && description.includes('denominator')
+    && description.includes("engine's whole window")
+    && description.includes('Older releases fall back as the response states')
+    && !ENGINE_FILTER_CLAIM.test(description);
+}
+
 /** "1.2.3" -> [1, 2, 3]; anything else throws. */
 export function parseVersion(text) {
   const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(String(text));

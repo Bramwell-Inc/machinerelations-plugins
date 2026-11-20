@@ -28,7 +28,7 @@ Six read-only tools are available:
 | --- | --- |
 | `mri_get_domain` | A specific domain’s observed citations and engine coverage |
 | `mri_list_engines` | Discover engine keys and available evidence |
-| `mri_get_engine` | An engine’s cited-source leaderboard over the observed window, optionally limited to sources with a published segment in a category |
+| `mri_get_engine` | With a category, rank the engine's citations within that category and read rateScope and the denominator; without a category, rank across the engine's whole window. Older releases fall back as the response states. |
 | `mri_list_categories` | Discover category keys, question shapes and source roles |
 | `mri_get_category` | Inspect one category’s question shapes and publication status |
 | `mri_get_cited_sources` | Rank sources within a category and question shape, with optional source-role filtering |
