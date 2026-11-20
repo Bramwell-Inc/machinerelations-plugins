@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { resolve, relative } from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { AUTHOR, CONCEPT_DOI, DESCRIPTOR, ENTITY, compareVersions, readCitation, readRelease } from './library.mjs';
+import { AUTHOR, CONCEPT_DOI, DESCRIPTOR, ENGINE_FILTER_CLAIM, ENGINE_RANKING, ENTITY, compareVersions, readCitation, readRelease } from './library.mjs';
 import { listPackageFiles, rejectedPackageFiles } from './package-files.mjs';
 
 const root = resolve('plugins/machine-relations-index');
@@ -22,7 +22,9 @@ for (const description of [codex.description, claude.description, marketplace.me
 }
 assert.ok(codex.extensions['com.openai'].interface.longDescription.startsWith(ENTITY.line), 'The directory long description leads with ENTITY.line');
 for (const file of ['README.md', resolve(root, 'README.md')]) {
-  assert.ok(readFileSync(file, 'utf8').includes(`\n\n${ENTITY.line}\n\n`), `${file} carries ENTITY.line as its own paragraph`);
+  const text = readFileSync(file, 'utf8');
+  assert.ok(text.includes(`\n\n${ENTITY.line}\n\n`), `${file} carries ENTITY.line as its own paragraph`);
+  assert.ok(text.includes(ENGINE_RANKING.description), `${file} carries the engine ranking description`);
 }
 assert.equal(readFileSync(resolve(root, 'LICENSE'), 'utf8'), readFileSync('LICENSE', 'utf8'), 'The standalone package must carry its declared license');
 
@@ -60,6 +62,8 @@ for (const path of ['/developers', '/contact', '/privacy', '/terms']) {
 }
 const skill = readFileSync(resolve(root, 'skills/machine-relations-index/SKILL.md'), 'utf8');
 assert.ok(skill.includes('source.guidance'), 'The installed skill must read the live interpretation owner');
+assert.ok(skill.includes(ENGINE_RANKING.description), 'The Index skill carries the engine ranking description');
+assert.ok(skill.includes(ENGINE_RANKING.report), 'The Index skill reports rateScope and the denominator with the figure');
 // Every skill folder is checked; adding a skill is adding its folder.
 const skillNames = readdirSync(resolve(root, 'skills'), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
 for (const name of ['machine-relations', 'machine-relations-index']) assert.ok(skillNames.includes(name), `Missing skill: ${name}`);
@@ -107,6 +111,15 @@ const publicFiles = [
   'README.md', 'CHANGELOG.md', 'CITATION.cff',
   ...execFileSync('git', ['ls-files', 'plugins'], { encoding: 'utf8' }).split('\n').filter((f) => /\.(md|json|ya?ml|txt)$/.test(f)),
 ];
+const listingFiles = [
+  ...publicFiles,
+  '.claude-plugin/marketplace.json',
+  '.agents/plugins/marketplace.json',
+  ...execFileSync('git', ['ls-files', 'review'], { encoding: 'utf8' }).split('\n').filter((f) => /\.(md|json)$/.test(f)),
+];
+for (const file of listingFiles) {
+  assert.doesNotMatch(readFileSync(file, 'utf8'), ENGINE_FILTER_CLAIM, `${file} must not describe a category as a filter on the whole-engine ranking`);
+}
 for (const file of publicFiles) {
   const text = readFileSync(file, 'utf8');
   for (const match of text.matchAll(/first machine relations agency/gi)) {

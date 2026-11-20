@@ -15,7 +15,7 @@ The plugin retains the package identifier `machine-relations-index` and remote M
 | `mri_get_cited_sources` | The ranked source domains AI engines cite for a category and question shape |
 | `mri_get_domain` | How often a site is cited, by which engines, and where it ranks |
 | `mri_list_engines` | Which engines have observations and published evidence |
-| `mri_get_engine` | One engine’s cited-source leaderboard over the observed window, optionally limited to sources with a published segment in a category |
+| `mri_get_engine` | With a category, rank the engine's citations within that category and read rateScope and the denominator; without a category, rank across the engine's whole window. Older releases fall back as the response states. |
 
 ### Production machine access is separate from PR regression
 
