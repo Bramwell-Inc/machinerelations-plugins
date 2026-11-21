@@ -14,7 +14,9 @@ export const RULES = [
   { kind: 'raw-value', hard: true, re: /(?<![\w-])(null|undefined|NaN)(?![\w-])/g, why: 'a missing value printed as code' },
   { kind: 'raw-value', hard: true, re: /\[object (Object|Promise|Array)\]/g, why: 'an object printed as text' },
   { kind: 'raw-value', hard: true, re: /\{\{[^}]{1,40}\}\}|\$\{[^}]{1,40}\}/g, why: 'an unfilled template slot' },
-  { kind: 'raw-value', hard: true, re: /(?<![\w.])(-?Infinity)(?![\w])/g, why: 'a division by zero printed' },
+  { kind: 'raw-value', hard: true, re: /(?<![\w.])(-?Infinity)(?![\w])/g,
+    test: (m, text) => m[0] !== 'Infinity' || !/^ (?:Partners|Capital|Ventures|Labs|Technologies|Group|Fund)\b/.test(text.slice(m.index + m[0].length)),
+    why: 'a division by zero printed, not an investor or company name' },
   { kind: 'raw-id', hard: true, re: /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, why: 'an internal id shown to people' },
   // Versioned internal ids ("mri_score_v2.1+2026-11-05+66c5…") and status codes ("release_unavailable") are machinery.
   { kind: 'raw-id', hard: true, re: /\b[a-z][a-z0-9]*(?:_[a-z0-9]+)*_v\d+(?:\.\d+)*(?:\+[\w.-]+)*|\b[a-z][a-z0-9]*_(?:unavailable|unknown|missing|pending|invalid|none|null|undefined|error)\b|\b(?:unknown|missing|invalid|no)_[a-z][a-z0-9_]*\b/g, why: 'an internal name shown to people' },

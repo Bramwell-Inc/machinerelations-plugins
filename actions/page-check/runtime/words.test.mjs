@@ -35,3 +35,11 @@ test('ordinary prose and prose about code pass', () => {
 test('judgment calls are notes, never blockers', () => {
   assert.deepEqual(kinds('Cited 0.00% of the time by Strac.io', false), ['zero-rate:0.00%', 'domain-case:Strac.io']);
 });
+
+// A real investor name must not block a roster page; a numeric leak still must.
+test("Infinity in a named firm is not a division by zero", () => {
+  assert.deepEqual(kinds("Led by Zero Infinity Partners and existing backers."), []);
+  assert.deepEqual(kinds("Infinity Capital invested."), []);
+  assert.deepEqual(kinds("The rate is Infinity after division by zero."), ["raw-value:Infinity"]);
+  assert.deepEqual(kinds("The rate is -Infinity."), ["raw-value:-Infinity"]);
+});
