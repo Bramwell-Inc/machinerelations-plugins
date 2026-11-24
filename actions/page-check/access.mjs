@@ -29,6 +29,9 @@ export function previewAccess({ previewUrl, bypass = '', cookie = '' }) {
   };
   // Playwright: add the headers to preview requests only. Routing turns off the browser cache, so only
   // contexts that load the preview and have something to send get it; production renders stay untouched.
+  // continue() would carry the headers across redirects, to whatever site a link or image hands off to, so a preview
+  // request is fetched here without following them: the browser follows a redirect itself, as a new request that
+  // gets only its own host's headers. The page's own waits still time it, as they did with continue().
   const sends = () => !!(REQ_URL || fixed['x-vercel-protection-bypass'] || fixed.cookie);
   const attach = async (ctx, root) => {
     if (!sends() || new URL(root).host !== host) return;
@@ -36,7 +39,8 @@ export function previewAccess({ previewUrl, bypass = '', cookie = '' }) {
       const req = route.request();
       const extra = await forUrl(req.url());
       if (!Object.keys(extra).length) return route.continue();
-      return route.continue({ headers: { ...req.headers(), ...extra } });
+      const response = await route.fetch({ headers: { ...req.headers(), ...extra }, maxRedirects: 0, timeout: 0 }).catch(() => null);
+      return response ? route.fulfill({ response }) : route.abort();
     });
   };
   return { forUrl, attach, setCookie: (c) => { fixed.cookie = c; } };
