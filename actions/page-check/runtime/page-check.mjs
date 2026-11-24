@@ -9,6 +9,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { scanWords } from './words.mjs';
 import { publicAccess, publicAccessSummary, publicAccessDetails } from './public-access.mjs';
+import { checkLink } from './check-links.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MEASURE = fs.readFileSync(path.join(HERE, 'measure.js'), 'utf8');
@@ -30,12 +31,12 @@ fs.mkdirSync(path.join(OUT, 'shots'), { recursive: true });
 // No access module: public pages only. With one, it decides which headers go to which host.
 const noAccess = { forUrl: async () => ({}), attach: async () => {} };
 const access = args.access ? await (await import(pathToFileURL(path.resolve(args.access)).href)).default({ previewUrl: URL0 }) : noAccess;
-async function get(url, extra = {}) {
+async function get(url, extra = {}, redirect = 'follow') {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      const res = await fetch(url, { headers: { 'user-agent': 'MachineRelationsPageCheck/1 (+https://machinerelations.ai)', ...(await access.forUrl(url)), ...extra }, redirect: 'follow', signal: AbortSignal.timeout(20000) });
+      const res = await fetch(url, { headers: { 'user-agent': 'MachineRelationsPageCheck/1 (+https://machinerelations.ai)', ...(await access.forUrl(url)), ...extra }, redirect, signal: AbortSignal.timeout(20000) });
       const body = await res.text();
-      return { status: res.status, type: res.headers.get('content-type') || '', body, url: res.url };
+      return { status: res.status, type: res.headers.get('content-type') || '', body, url: res.url, location: res.headers.get('location') };
     } catch (e) { if (attempt === 2) return { status: 0, type: '', body: '', error: String(e.message || e) }; }
   }
 }
@@ -323,10 +324,8 @@ async function links(root, pages) {
   await Promise.all(Array.from({ length: 8 }, async () => {
     while (list.length) {
       const p = list.shift();
-      const r = await get(root + p);
-      // A link that hands off to another site (a redirect out) is that site's to answer; a rate limit is not a broken page.
-      const offsite = r.url && new URL(r.url).origin !== new URL(root).origin;
-      if ((r.status >= 400 && r.status !== 429 && !offsite) || r.status === 0) defects.push({ kind: 'broken-link', detail: `${p} answered ${r.status || r.error}`, where: p });
+      const r = await checkLink(root, p, get);
+      if ((r.status >= 400 && r.status !== 429) || r.status === 0) defects.push({ kind: 'broken-link', detail: `${p} answered ${r.status || r.error}`, where: p });
     }
   }));
   return { defects, checked: all.size };
