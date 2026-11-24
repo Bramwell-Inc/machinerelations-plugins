@@ -9,6 +9,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { scanWords } from './words.mjs';
 import { publicAccess, publicAccessSummary, publicAccessDetails } from './public-access.mjs';
+import { checkLinks } from './links.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MEASURE = fs.readFileSync(path.join(HERE, 'measure.js'), 'utf8');
@@ -30,10 +31,12 @@ fs.mkdirSync(path.join(OUT, 'shots'), { recursive: true });
 // No access module: public pages only. With one, it decides which headers go to which host.
 const noAccess = { forUrl: async () => ({}), attach: async () => {} };
 const access = args.access ? await (await import(pathToFileURL(path.resolve(args.access)).href)).default({ previewUrl: URL0 }) : noAccess;
+const UA = 'MachineRelationsPageCheck/1 (+https://machinerelations.ai)';
+const request = async (url) => fetch(url, { headers: { 'user-agent': UA, ...(await access.forUrl(url)) }, redirect: 'manual', signal: AbortSignal.timeout(20000) });
 async function get(url, extra = {}) {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      const res = await fetch(url, { headers: { 'user-agent': 'MachineRelationsPageCheck/1 (+https://machinerelations.ai)', ...(await access.forUrl(url)), ...extra }, redirect: 'follow', signal: AbortSignal.timeout(20000) });
+      const res = await fetch(url, { headers: { 'user-agent': UA, ...(await access.forUrl(url)), ...extra }, redirect: 'follow', signal: AbortSignal.timeout(20000) });
       const body = await res.text();
       return { status: res.status, type: res.headers.get('content-type') || '', body, url: res.url };
     } catch (e) { if (attempt === 2) return { status: 0, type: '', body: '', error: String(e.message || e) }; }
@@ -316,21 +319,7 @@ async function checkSvg(ctx, src) {
   return out;
 }
 
-async function links(root, pages) {
-  const defects = []; const all = new Set();
-  for (const pg of pages) for (const m of (pg.html || '').matchAll(/href=["'](\/[^"'#?]*)/g)) all.add(m[1]);
-  const list = [...all].filter((p) => !/\.(png|jpe?g|svg|webp|ico|xml|txt|json|md|pdf|css|js)$/i.test(p) && !p.startsWith('/_next')).slice(0, 150);
-  await Promise.all(Array.from({ length: 8 }, async () => {
-    while (list.length) {
-      const p = list.shift();
-      const r = await get(root + p);
-      // A link that hands off to another site (a redirect out) is that site's to answer; a rate limit is not a broken page.
-      const offsite = r.url && new URL(r.url).origin !== new URL(root).origin;
-      if ((r.status >= 400 && r.status !== 429 && !offsite) || r.status === 0) defects.push({ kind: 'broken-link', detail: `${p} answered ${r.status || r.error}`, where: p });
-    }
-  }));
-  return { defects, checked: all.size };
-}
+const links = (root, pages) => checkLinks(root, pages, { get, request });
 
 const slug = (p) => (p === '/' ? 'home' : p.replace(/^\//, '').replace(/[^\w.-]+/g, '_').slice(0, 80));
 // A contrast finding is its colour pair: which element shows it first changes with content, the pair only with design.
