@@ -29,3 +29,25 @@ test('sends the OIDC token and bypass only to the preview host, and refreshes no
   assert.equal(routed, 1);
   srv.close();
 });
+
+test('a preview request is fetched without following redirects, so a hand-off never carries the headers', async () => {
+  delete process.env.ACTIONS_ID_TOKEN_REQUEST_URL;
+  delete process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
+  const { previewAccess } = await import(`./access.mjs?bare-${Date.now()}`);
+  const a = previewAccess({ previewUrl: 'https://site-git-x-team.vercel.app', bypass: 'b' });
+  let handler; await a.attach({ route: async (glob, h) => { handler = h; } }, 'https://site-git-x-team.vercel.app');
+  const calls = [];
+  const route = (url) => ({
+    request: () => ({ url: () => url, headers: () => ({ accept: '*/*' }) }),
+    continue: async (o) => { calls.push(['continue', url, o]); },
+    fetch: async (o) => { calls.push(['fetch', url, o]); return 'fetched'; },
+    fulfill: async (o) => { calls.push(['fulfill', url, o]); },
+  });
+  await handler(route('https://site-git-x-team.vercel.app/ask/gemini'));
+  await handler(route('https://gemini.google.com/gem/1'));
+  assert.deepEqual(calls, [
+    ['fetch', 'https://site-git-x-team.vercel.app/ask/gemini', { headers: { accept: '*/*', 'x-vercel-protection-bypass': 'b', 'x-vercel-set-bypass-cookie': 'true' }, maxRedirects: 0, timeout: 0 }],
+    ['fulfill', 'https://site-git-x-team.vercel.app/ask/gemini', { response: 'fetched' }],
+    ['continue', 'https://gemini.google.com/gem/1', undefined],
+  ]);
+});

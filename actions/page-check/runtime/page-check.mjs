@@ -9,7 +9,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { scanWords } from './words.mjs';
 import { publicAccess, publicAccessSummary, publicAccessDetails } from './public-access.mjs';
-import { checkLinks } from './links.mjs';
+import { checkLinks, reader } from './links.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MEASURE = fs.readFileSync(path.join(HERE, 'measure.js'), 'utf8');
@@ -32,16 +32,7 @@ fs.mkdirSync(path.join(OUT, 'shots'), { recursive: true });
 const noAccess = { forUrl: async () => ({}), attach: async () => {} };
 const access = args.access ? await (await import(pathToFileURL(path.resolve(args.access)).href)).default({ previewUrl: URL0 }) : noAccess;
 const UA = 'MachineRelationsPageCheck/1 (+https://machinerelations.ai)';
-const request = async (url) => fetch(url, { headers: { 'user-agent': UA, ...(await access.forUrl(url)) }, redirect: 'manual', signal: AbortSignal.timeout(20000) });
-async function get(url, extra = {}) {
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    try {
-      const res = await fetch(url, { headers: { 'user-agent': UA, ...(await access.forUrl(url)), ...extra }, redirect: 'follow', signal: AbortSignal.timeout(20000) });
-      const body = await res.text();
-      return { status: res.status, type: res.headers.get('content-type') || '', body, url: res.url };
-    } catch (e) { if (attempt === 2) return { status: 0, type: '', body: '', error: String(e.message || e) }; }
-  }
-}
+const get = reader(access.forUrl, UA);
 
 // ---------- 1. Which pages: the site's own map, one sample per page type ----------
 async function sitemapUrls(root) {
@@ -171,8 +162,8 @@ async function machineChecks(root, pages) {
     if (!ogUrl) defects.push({ kind: 'og-image', detail: 'no og:image', where });
     else if (!pg.ogChecked) {
       const ogAt = onSite(ogUrl.replace(/&amp;/g, '&'), root);
-      const img = await fetch(ogAt, { headers: await access.forUrl(ogAt), signal: AbortSignal.timeout(20000) }).catch(() => null);
-      if (!img || img.status !== 200 || !/image\//.test(img.headers.get('content-type') || '')) defects.push({ kind: 'og-image', detail: `og:image answered ${img ? img.status : 'nothing'}`, where });
+      const img = await get(ogAt);
+      if (img.status !== 200 || !/image\//.test(img.type)) defects.push({ kind: 'og-image', detail: `og:image answered ${img.status || 'nothing'}`, where });
     }
     if (!/<link[^>]+rel=["']canonical["']/i.test(html)) notes.push({ kind: 'canonical', detail: 'no canonical link', where });
     for (const m of html.matchAll(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
@@ -319,7 +310,7 @@ async function checkSvg(ctx, src) {
   return out;
 }
 
-const links = (root, pages) => checkLinks(root, pages, { get, request });
+const links = (root, pages) => checkLinks(root, pages, { get });
 
 const slug = (p) => (p === '/' ? 'home' : p.replace(/^\//, '').replace(/[^\w.-]+/g, '_').slice(0, 80));
 // A contrast finding is its colour pair: which element shows it first changes with content, the pair only with design.
