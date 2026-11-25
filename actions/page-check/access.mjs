@@ -35,12 +35,14 @@ export function previewAccess({ previewUrl, bypass = '', cookie = '' }) {
   const sends = () => !!(REQ_URL || fixed['x-vercel-protection-bypass'] || fixed.cookie);
   const attach = async (ctx, root) => {
     if (!sends() || new URL(root).host !== host) return;
+    // A render's context closes once it is measured, with any beacon or prefetch still in flight: that route has no page
+    // left to answer, and a handler that rejected would end the whole check unjudged.
     await ctx.route('**/*', async (route) => {
       const req = route.request();
       const extra = await forUrl(req.url());
-      if (!Object.keys(extra).length) return route.continue();
+      if (!Object.keys(extra).length) return route.continue().catch(() => {});
       const response = await route.fetch({ headers: { ...req.headers(), ...extra }, maxRedirects: 0, timeout: 0 }).catch(() => null);
-      return response ? route.fulfill({ response }) : route.abort();
+      return (response ? route.fulfill({ response }) : route.abort()).catch(() => {});
     });
   };
   return { forUrl, attach, setCookie: (c) => { fixed.cookie = c; } };

@@ -51,3 +51,20 @@ test('a preview request is fetched without following redirects, so a hand-off ne
     ['continue', 'https://gemini.google.com/gem/1', undefined],
   ]);
 });
+
+test('a render whose context closed mid-request does not end the check', async () => {
+  delete process.env.ACTIONS_ID_TOKEN_REQUEST_URL;
+  delete process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
+  const { previewAccess } = await import(`./access.mjs?closed-${Date.now()}`);
+  const a = previewAccess({ previewUrl: 'https://site-git-x-team.vercel.app', bypass: 'b' });
+  let handler; await a.attach({ route: async (glob, h) => { handler = h; } }, 'https://site-git-x-team.vercel.app');
+  // What Playwright answers once the context has closed under a request it was still fetching.
+  const disposed = async () => { throw new Error('Fetch response has been disposed'); };
+  const route = (url, fetch = async () => 'fetched') => ({
+    request: () => ({ url: () => url, headers: () => ({}) }),
+    fetch, fulfill: disposed, abort: disposed, continue: disposed,
+  });
+  await handler(route('https://site-git-x-team.vercel.app/_vercel/insights/view'));
+  await handler(route('https://site-git-x-team.vercel.app/_next/data.json', async () => { throw new Error('Request context disposed'); }));
+  await handler(route('https://fonts.googleapis.com/css'));
+});
