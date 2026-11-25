@@ -43,14 +43,9 @@ const rpc = async (method, params, id) => {
 };
 await rpc('initialize', { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'mr-fresh-install', version: expected.version } }, 1);
 const { tools } = await rpc('tools/list', {}, 2);
-assert.deepEqual(tools.map((tool) => tool.name).sort(), [
-  'mri_get_category',
-  'mri_get_cited_sources',
-  'mri_get_domain',
-  'mri_get_engine',
-  'mri_list_categories',
-  'mri_list_engines',
-]);
+// The plugin's README tool table is the contract: the installed endpoint serves exactly the tools it documents.
+const documented = [...readFileSync('plugins/machine-relations-index/README.md', 'utf8').matchAll(/^\| `(mri_\w+)` \|/gm)].map((m) => m[1]).sort();
+assert.deepEqual(tools.map((tool) => tool.name).sort(), documented, 'the endpoint serves exactly the tools plugins/machine-relations-index/README.md documents');
 const result = await rpc('tools/call', { name: 'mri_list_categories', arguments: {} }, 3);
 assert.ok(!result.isError, 'The installed endpoint must answer category discovery');
 assert.ok(result.content.some((part) => part.type === 'text' && part.text.length > 0));
