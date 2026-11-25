@@ -4,7 +4,7 @@ const PLURAL_OK = /(ss|us|is|news|series|species|ics|ous|plus|bus|yes|this|has|w
 // "Tier 1 outlets", "rank 1 earns", "Step 1 means": the 1 names a rank or a step, not a count.
 const LABEL_BEFORE = /\b(tier|layer|level|rank|ranked|top|no\.|number|step|phase|stage|day|week|month|year|part|chapter|section|grade|class|category|type|gen|web|version|v|position|slot|page|round|series|season|issue|vol\.?|volume|figure|fig\.|table|option|plan|priority|p|q[1-4]?|quarter|zone|jan(uary)?|feb(ruary)?|mar(ch)?|apr(il)?|may|june?|july?|aug(ust)?|sept?(ember)?|oct(ober)?|nov(ember)?|dec(ember)?)\s*$/i;
 const PROSE_BEFORE = /\b(is|are|be|been|was|or|nor|either|returns?|as|a|an|the|above|below|against|than|versus|vs\.?)\s+$/i;
-const PROSE_AFTER = /^\s+(when|if|means|otherwise|until|unless|or)\b/i;
+const PROSE_AFTER = /^(?:\s+(when|if|means|otherwise|until|unless|or)\b|,\s*not\b)/i;
 // "Ontology 1 shifts", "Gemini 1 means": a capitalised word before the 1 makes it a name, unless that word is how a count is introduced.
 const NAME_BEFORE = (before) => { const w = (before.match(/([A-Z][\w-]*)\s+$/) || [])[1]; return !!w && !/^(In|From|By|Across|With|On|For|To|At|Over|Seen|Cited|Found|Only|Just|All|About|Of)$/.test(w); };
 // A value leaks where a count or a name belongs ("cited by null sources"); "a null baseline" or "null calibration" is the word itself.
@@ -40,7 +40,7 @@ export function scanWords(text) {
       const start = Math.max(0, m.index - 40);
       const context = text.slice(start, m.index + m[0].length + 40).replace(/\s+/g, ' ').trim();
       // Prose about code ("next_cursor is null") is not a leaked value: skip matches in a sentence that quotes code,
-      // and a bare null/undefined that the sentence itself talks about ("is null when", "null means", "or null").
+      // and a bare null/undefined that the sentence itself talks about ("is null when", "null means", "or null", "undefined, not zero").
       if ((rule.kind === 'raw-value' || rule.kind === 'raw-id') && /`/.test(sentenceAround(text, m.index))) continue;
       if (rule.kind === 'raw-value' && /^(null|undefined|NaN)$/.test(m[0]) && (PROSE_BEFORE.test(text.slice(Math.max(0, m.index - 12), m.index)) || PROSE_AFTER.test(text.slice(m.index + m[0].length, m.index + m[0].length + 14)))) continue;
       if (rule.kind === 'raw-value' && m[0] === 'null' && /^ [a-z]{3,}/.test(text.slice(m.index + 4, m.index + 9)) && !LEAK_BEFORE.test(text.slice(Math.max(0, m.index - 10), m.index))) continue;
