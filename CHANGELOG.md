@@ -2,6 +2,10 @@
 
 Every released version of the Machine Relations skills and plugin. The newest entry's text is the release note for the GitHub release, the Zenodo record and the directory listings, so it is written for practitioners. Versions follow semver: a minor version adds or graduates a method, a patch corrects wording or metadata, and a major version changes a tool or endpoint.
 
+## [1.2.10] - 2026-11-25
+
+The READMEs and plugin description now list `mri_get_fidelity`, the seventh read-only tool the MRI endpoint serves: whether a cited page supports the AI's claim beside it, per engine, with no cross-engine pooled rate. Skills and endpoints are unchanged.
+
 ## [1.2.9] - 2026-11-20
 
 With a category, rank the engine's citations within that category and read rateScope and the denominator; without a category, rank across the engine's whole window. Older releases fall back as the response states. The Index skill reports rateScope and the denominator with the figure. MRI tools and endpoints are unchanged.
