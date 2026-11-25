@@ -22,7 +22,7 @@ Explore which source domains AI answer engines cite for a buyer category and que
 
 Ask “Which editorial publications are cited for best cybersecurity tools?” or “Look up techcrunch.com in the Machine Relations Index.” The accompanying skill reads the service’s live interpretation guidance, release identity and limitations. Results describe measured citations, not endorsements or guarantees of future visibility. The [worked example](https://machinerelations.ai/research/segment-rank-question-set-named-brand-citations) is a historical case study, not the current leaderboard.
 
-Six read-only tools are available:
+Seven read-only tools are available:
 
 | Tool | Research intent |
 | --- | --- |
@@ -32,6 +32,7 @@ Six read-only tools are available:
 | `mri_list_categories` | Discover category keys, question shapes and source roles |
 | `mri_get_category` | Inspect one category’s question shapes and publication status |
 | `mri_get_cited_sources` | Rank sources within a category and question shape, with optional source-role filtering |
+| `mri_get_fidelity` | Whether a cited page supports the AI's claim beside it, per engine; no cross-engine pooled rate, and an engine with no citations says "no citations yet" |
 
 ## Data handling
 
