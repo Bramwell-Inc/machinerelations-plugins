@@ -6,7 +6,7 @@ The official [Machine Relations skill and plugin](https://machinerelations.ai/sk
 
 The package includes the broader `machine-relations` skill, the `machine-relations-index` research skill and the `page-check` skill. Page check tells you how to render a site the way people and AI engines read it and report what breaks before a change ships. The checker is public source at `actions/page-check/runtime`, and the GitHub Action `actions/page-check` runs it. It is not a file inside the installed package. An organization can require the same check on every pull request with one ruleset pointing at `.github/workflows/page-check.yml`. The [Machine Relations Index](https://machinerelations.ai/machine-relations-index) (MRI), created by Jaxon Parrott, remains neutral public measurement of which source domains AI answer engines cite in sampled buyer answers, by category and question shape. Broader work can also use public or client-supplied evidence without MRI coverage.
 
-The plugin retains the package identifier `machine-relations-index` and remote MCP server at `https://machinerelations.ai/mcp` (read-only, no account). It exposes six research tools:
+The plugin retains the package identifier `machine-relations-index` and remote MCP server at `https://machinerelations.ai/mcp` (read-only, no account). It exposes seven research tools:
 
 | Tool | What it answers |
 | --- | --- |
@@ -16,6 +16,7 @@ The plugin retains the package identifier `machine-relations-index` and remote M
 | `mri_get_domain` | How often a site is cited, by which engines, and where it ranks |
 | `mri_list_engines` | Which engines have observations and published evidence |
 | `mri_get_engine` | With a category, rank the engine's citations within that category and read rateScope and the denominator; without a category, rank across the engine's whole window. Older releases fall back as the response states. |
+| `mri_get_fidelity` | Whether a cited page supports the AI's claim beside it, per engine; no cross-engine pooled rate, and an engine with no citations says "no citations yet" |
 
 ### Production machine access is separate from PR regression
 
