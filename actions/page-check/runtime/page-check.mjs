@@ -10,6 +10,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { scanWords } from './words.mjs';
 import { publicAccess, publicAccessSummary, publicAccessDetails } from './public-access.mjs';
 import { checkLinks, reader } from './links.mjs';
+import { settleScroll } from './settle.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MEASURE = fs.readFileSync(path.join(HERE, 'measure.js'), 'utf8');
@@ -202,8 +203,8 @@ async function renderAll(browser, root, pages, { shots = true } = {}) {
         if (!res || res.status() >= 400) r.defects.push({ kind: 'http', detail: `page answered ${res ? res.status() : 'nothing'}` });
         if (v.name === 'wide' && !pg.html) pg.html = await page.content();
         await page.evaluate(() => document.fonts && document.fonts.ready);
-        // Lazy content: scroll through once, then back to the top.
-        await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 800) { window.scrollTo(0, y); await new Promise((ok) => setTimeout(ok, 40)); } window.scrollTo(0, 0); });
+        // Lazy content: scroll through once, then back to the top, instantly (settle.mjs).
+        await page.evaluate(settleScroll);
         await page.waitForTimeout(300);
         // Let entrance animations and fades finish (looping ones are capped), so a half-faded heading is not judged.
         await page.evaluate(() => Promise.race([Promise.all(document.getAnimations().filter((a) => a.effect?.getTiming?.().iterations !== Infinity).map((a) => a.finished.catch(() => {}))), new Promise((ok) => setTimeout(ok, 2500))]));
