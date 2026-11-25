@@ -43,3 +43,15 @@ test("Infinity in a named firm is not a division by zero", () => {
   assert.deepEqual(kinds("The rate is Infinity after division by zero."), ["raw-value:Infinity"]);
   assert.deepEqual(kinds("The rate is -Infinity."), ["raw-value:-Infinity"]);
 });
+
+test('an explicit prose contrast is not an unfilled value', () => {
+  assert.deepEqual(kinds('An empty citation pool makes Share of Citation undefined, not a measured zero.'), []);
+  assert.deepEqual(kinds('The specification calls this undefined, not an empty string.'), []);
+  assert.deepEqual(kinds('The response contains null, not an empty list.'), []);
+  assert.deepEqual(kinds('A failed conversion produces NaN, not a numeric result.'), []);
+  assert.deepEqual(kinds('Share of Citation: undefined, notable increase.'), ['raw-value:undefined']);
+  assert.deepEqual(kinds('Share of Citation: undefined'), ['raw-value:undefined']);
+  assert.deepEqual(kinds('Cited by undefined sources, not competitors.'), ['raw-value:undefined']);
+  assert.deepEqual(kinds('The result contains NaN citations.'), ['raw-value:NaN']);
+  assert.deepEqual(kinds('Cited by null sources.'), ['raw-value:null']);
+});
