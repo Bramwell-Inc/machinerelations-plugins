@@ -55,3 +55,23 @@ test('an explicit prose contrast is not an unfilled value', () => {
   assert.deepEqual(kinds('The result contains NaN citations.'), ['raw-value:NaN']);
   assert.deepEqual(kinds('Cited by null sources.'), ['raw-value:null']);
 });
+
+
+test('undefined as an English object complement is not a leaked field', () => {
+  for (const text of [
+    "That is not a reason to leave an agency's delivery commitments undefined (Google Search Central).",
+    'Do not leave the project scope undefined.',
+    'The contract left implementation ownership undefined, creating a dispute.',
+    'Keeping decisions explicit beats leaving the next step undefined!',
+    'They kept the scope undefined; ask for a written brief.',
+  ]) assert.deepEqual(kinds(text), [], text);
+  for (const text of [
+    'Share of Citation: undefined',
+    'Leave source count: undefined.',
+    'Leave source count = undefined.',
+    'Leave the counter at undefined sources.',
+    'Cited by undefined sources, not competitors.',
+    'The result contains NaN citations.',
+    'Cited by null sources.',
+  ]) assert.equal(kinds(text).length, 1, text);
+});
