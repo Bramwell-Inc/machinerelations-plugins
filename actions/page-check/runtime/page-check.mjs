@@ -11,6 +11,7 @@ import { scanWords } from './words.mjs';
 import { publicAccess, publicAccessSummary, publicAccessDetails } from './public-access.mjs';
 import { checkLinks, reader } from './links.mjs';
 import { settleScroll } from './settle.mjs';
+import { signature as sig } from './findings.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MEASURE = fs.readFileSync(path.join(HERE, 'measure.js'), 'utf8');
@@ -314,8 +315,7 @@ async function checkSvg(ctx, src) {
 const links = (root, pages) => checkLinks(root, pages, { get });
 
 const slug = (p) => (p === '/' ? 'home' : p.replace(/^\//, '').replace(/[^\w.-]+/g, '_').slice(0, 80));
-// A contrast finding is its colour pair: which element shows it first changes with content, the pair only with design.
-const sig = (d, r) => d.kind === 'contrast' ? `${r?.type ?? ''}|${r?.view ?? ''}|contrast|${d.pair}` : `${r?.type ?? ''}|${r?.view ?? ''}|${d.kind}|${(d.where || '').replace(/"[^"]*"/, '')}|${d.kind.startsWith('a11y') || d.kind === 'small-text' || d.kind === 'small-target' ? '' : d.detail.replace(/\d+/g, '#')}`;
+
 
 // ---------- run ----------
 const t0 = Date.now();
